@@ -29,6 +29,10 @@ button, input, select { font: inherit; }
 .site-header { border-top: 5px solid var(--navy); background: white; }
 .utility { border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .utility .container { min-height: 35px; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+.utility-links { display: flex; align-items: center; gap: 11px; }
+.utility-links i { width: 1px; height: 12px; background: var(--line); }
+.utility-links b { color: var(--navy); font-weight: 600; }
+.utility-links a:hover { color: var(--orange); }
 .masthead { min-height: 94px; display: flex; align-items: center; gap: 30px; }
 .identity { display: flex; align-items: center; gap: 15px; }
 .mark {
@@ -46,6 +50,14 @@ button, input, select { font: inherit; }
 .site-nav a:hover, .site-nav a.active { color: var(--orange); }
 .site-nav a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 5px; height: 2px; background: var(--orange); }
 .menu-button { display: none; margin-left: auto; border: 0; background: none; color: var(--navy); font-size: 20px; }
+
+html[lang="en"] body { font-family: Arial, Helvetica, sans-serif; }
+html[lang="en"] h1,
+html[lang="en"] .identity strong,
+html[lang="en"] .section-heading h2,
+html[lang="en"] .feature h3,
+html[lang="en"] .record h2,
+html[lang="en"] .footer-grid h2 { font-family: Georgia, "Times New Roman", serif; }
 
 .page-hero { padding: 62px 0 50px; background: var(--soft); border-bottom: 1px solid var(--line); }
 .kicker { color: var(--orange); font: 600 11px var(--sans); letter-spacing: .14em; text-transform: uppercase; }
