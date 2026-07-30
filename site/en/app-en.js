@@ -50,9 +50,20 @@
     return `<article class="record" id="${item.id}"><div class="record-thumb">${art(item, index)}</div><div><span class="record-type">${item.type}</span><h2>${item.links?.[0] ? `<a href="${item.links[0].url}" target="_blank" rel="noreferrer">${item.title}</a>` : item.title}</h2><p class="record-meta">${item.authors} · ${item.venue}</p><span class="record-date">${item.date}</span><div class="record-links">${links}</div></div><button class="copy" data-copy="${item.id}" aria-label="Copy item link">⌁</button></article>`;
   }
 
+  async function itemsFor(kind) {
+    try {
+      const response = await fetch(`/api/content?kind=${kind}&locale=en`);
+      if (response.ok) {
+        const remote = (await response.json()).items || [];
+        if (remote.length) return remote.map((x, i) => ({ ...x, color: x.color || ["teal","blue","orange"][i % 3] }));
+      }
+    } catch {}
+    return data[kind] || [];
+  }
+
   window.AcademicSite = {
-    renderListing(kind) {
-      const source = data[kind] || [];
+    async renderListing(kind) {
+      const source = await itemsFor(kind);
       const list = document.querySelector("#record-list");
       const search = document.querySelector("#search");
       const year = document.querySelector("#year-filter");
@@ -71,10 +82,12 @@
       [search, year, type].forEach(el => el.addEventListener(el.tagName === "INPUT" ? "input" : "change", draw));
       draw();
     },
-    renderHome() {
-      const features = [...data.publications.slice(0, 2), ...data.software.slice(0, 2), ...data.articles.slice(0, 2)];
+    async renderHome() {
+      const [publications, software, articles] = await Promise.all(["publications","software","articles"].map(itemsFor));
+      const features = [...publications.filter(x=>x.featured).slice(0,2), ...software.filter(x=>x.featured).slice(0,2), ...articles.filter(x=>x.featured).slice(0,2)];
+      if (!features.length) features.push(...publications.slice(0,2), ...software.slice(0,2), ...articles.slice(0,2));
       document.querySelector("#waterfall").innerHTML = features.map((x, i) => {
-        const page = data.publications.includes(x) ? "publications.html" : data.software.includes(x) ? "software.html" : "articles.html";
+        const page = publications.includes(x) ? "publications.html" : software.includes(x) ? "software.html" : "articles.html";
         return `<a class="feature" href="${page}#${x.id}"><div class="feature-visual">${art(x, i)}</div><div class="feature-body"><span class="label">${x.type}</span><h3>${x.title}</h3><p>${x.abstract}</p></div></a>`;
       }).join("");
     }
