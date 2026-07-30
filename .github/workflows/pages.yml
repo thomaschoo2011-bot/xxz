@@ -1,6 +1,6 @@
 name: Deploy Professor Zhu academic site
 
-# Multi-page Chinese academic homepage
+# Bilingual Chinese and English academic homepage
 on:
   push:
     branches: [main]
