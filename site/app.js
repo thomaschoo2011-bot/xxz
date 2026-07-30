@@ -17,10 +17,10 @@
       <div class="masthead container">
         <a class="identity" href="index.html"><span class="mark">祝</span><span><strong>祝雪峰 教授</strong><small>Xuefeng Zhu · Academic Homepage</small></span></a>
         <button class="menu-button" aria-label="打开导航" aria-expanded="false">☰</button>
+        <nav class="site-nav" aria-label="主导航"><div class="nav-inner">
+          ${nav.map(([href, label]) => `<a href="${href}" class="${path === href || (path === "" && href === "index.html") ? "active" : ""}">${label}</a>`).join("")}
+        </div></nav>
       </div>
-      <nav class="site-nav" aria-label="主导航"><div class="nav-inner container">
-        ${nav.map(([href, label]) => `<a href="${href}" class="${path === href || (path === "" && href === "index.html") ? "active" : ""}">${label}</a>`).join("")}
-      </div></nav>
     </header>`;
 
   const footer = `
