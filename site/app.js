@@ -13,7 +13,7 @@
   const header = `
     <a class="skip" href="#main">跳到主要内容</a>
     <header class="site-header">
-      <div class="utility"><div class="container"><span>大连理工大学 · 力学与航空航天学院</span><a href="mailto:xuefeng@dlut.edu.cn">xuefeng@dlut.edu.cn</a></div></div>
+      <div class="utility"><div class="container"><span>大连理工大学 · 力学与航空航天学院</span><span class="utility-links"><a href="mailto:xuefeng@dlut.edu.cn">xuefeng@dlut.edu.cn</a><i></i><b>中文</b><a href="en/index.html">EN</a></span></div></div>
       <div class="masthead container">
         <a class="identity" href="index.html"><span class="mark">祝</span><span><strong>祝雪峰 教授</strong><small>Xuefeng Zhu · Academic Homepage</small></span></a>
         <button class="menu-button" aria-label="打开导航" aria-expanded="false">☰</button>
