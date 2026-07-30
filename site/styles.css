@@ -29,7 +29,7 @@ button, input, select { font: inherit; }
 .site-header { border-top: 5px solid var(--navy); background: white; }
 .utility { border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .utility .container { min-height: 35px; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
-.masthead { min-height: 94px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+.masthead { min-height: 94px; display: flex; align-items: center; gap: 30px; }
 .identity { display: flex; align-items: center; gap: 15px; }
 .mark {
   width: 50px; height: 50px; display: grid; place-items: center;
@@ -37,16 +37,15 @@ button, input, select { font: inherit; }
 }
 .identity strong { display: block; font: 600 21px var(--serif); letter-spacing: .07em; }
 .identity small { display: block; margin-top: 1px; color: var(--muted); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
-.site-nav { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.nav-inner { display: flex; align-items: center; min-height: 52px; }
+.site-nav { margin-left: auto; }
+.nav-inner { display: flex; align-items: center; gap: 32px; min-height: 52px; }
 .site-nav a {
-  height: 52px; display: flex; align-items: center; padding: 0 28px;
-  border-left: 1px solid var(--line); font-size: 14px; position: relative;
+  height: 52px; display: flex; align-items: center; padding: 0 2px;
+  font-size: 14px; position: relative;
 }
-.site-nav a:last-child { border-right: 1px solid var(--line); }
 .site-nav a:hover, .site-nav a.active { color: var(--orange); }
-.site-nav a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: var(--orange); }
-.menu-button { display: none; border: 0; background: none; color: var(--navy); font-size: 20px; }
+.site-nav a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 5px; height: 2px; background: var(--orange); }
+.menu-button { display: none; margin-left: auto; border: 0; background: none; color: var(--navy); font-size: 20px; }
 
 .page-hero { padding: 62px 0 50px; background: var(--soft); border-bottom: 1px solid var(--line); }
 .kicker { color: var(--orange); font: 600 11px var(--sans); letter-spacing: .14em; text-transform: uppercase; }
@@ -132,19 +131,20 @@ h1 { margin: 10px 0 18px; color: var(--navy); font: 600 clamp(35px, 5vw, 55px)/1
   .home-grid { grid-template-columns: 1fr; gap: 30px; }
   .waterfall { columns: 2; }
   .article-grid { grid-template-columns: 1fr; }
-  .site-nav a { padding: 0 18px; }
+  .nav-inner { gap: 18px; }
+  .site-nav a { font-size: 13px; }
 }
 @media (max-width: 620px) {
   .container { width: min(100% - 28px, 1160px); }
   .utility { display: none; }
   .masthead { min-height: 76px; }
+  .masthead { flex-wrap: wrap; }
   .menu-button { display: block; }
-  .site-nav { display: none; }
+  .site-nav { display: none; order: 3; width: 100%; margin-left: 0; }
   .site-nav.open { display: block; }
-  .nav-inner { display: block; padding: 7px 14px; }
+  .nav-inner { display: block; padding: 7px 0; }
   .site-nav a { height: 44px; border: 0; padding: 0; }
-  .site-nav a:last-child { border: 0; }
-  .site-nav a.active::after { width: 28px; right: auto; }
+  .site-nav a.active::after { width: 28px; right: auto; bottom: 3px; }
   .page-hero, .home-hero { padding: 44px 0; }
   .section { padding: 50px 0; }
   .section-heading { align-items: start; }
