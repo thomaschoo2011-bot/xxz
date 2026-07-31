@@ -84,7 +84,8 @@
       const year = document.querySelector("#year-filter");
       const type = document.querySelector("#type-filter");
       const years = [...new Set(source.map(x => x.year))].sort((a, b) => b - a);
-      const types = [...new Set(source.map(x => x.type))];
+      const publicationTypes = ["预印本", "期刊论文", "会议论文", "学术专著", "书籍章节", "研究报告"];
+      const types = [...new Set([...(kind === "publications" ? publicationTypes : []), ...source.map(x => x.type)])];
       year.innerHTML = `<option value="">全部年份</option>${years.map(x => `<option>${x}</option>`).join("")}`;
       type.innerHTML = `<option value="">全部类型</option>${types.map(x => `<option>${x}</option>`).join("")}`;
       function draw() {
