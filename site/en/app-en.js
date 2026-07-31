@@ -69,7 +69,8 @@
       const year = document.querySelector("#year-filter");
       const type = document.querySelector("#type-filter");
       const years = [...new Set(source.map(x => x.year))].sort((a, b) => b - a);
-      const types = [...new Set(source.map(x => x.type))];
+      const publicationTypes = ["Preprint", "Journal Article", "Conference Paper", "Academic Book", "Book Chapter", "Research Report"];
+      const types = [...new Set([...(kind === "publications" ? publicationTypes : []), ...source.map(x => x.type)])];
       year.innerHTML = `<option value="">All years</option>${years.map(x => `<option>${x}</option>`).join("")}`;
       type.innerHTML = `<option value="">All types</option>${types.map(x => `<option>${x}</option>`).join("")}`;
       function draw() {
