@@ -71,9 +71,12 @@ h1 { margin: 10px 0 18px; color: var(--navy); font: 600 clamp(35px, 5vw, 55px)/1
 .more { color: var(--orange); font-size: 13px; border-bottom: 1px solid currentColor; white-space: nowrap; }
 
 .home-hero { padding: 66px 0; background: var(--soft); border-bottom: 1px solid var(--line); }
-.home-bio { max-width: 1060px; }
+.home-bio { max-width: 1160px; display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 56px; align-items: center; }
 .home-bio .kicker { display: block; margin-bottom: 18px; }
-.home-bio p { max-width: 1000px; margin: 0; color: #344d5b; font-size: 16px; line-height: 2.05; text-align: justify; }
+.home-bio p { margin: 0; color: #344d5b; font-size: 16px; line-height: 2.05; text-align: justify; }
+.profile-photo-placeholder { width: 230px; aspect-ratio: 4/5; margin: 0; display: grid; place-content: center; gap: 12px; color: #84949d; background: #eef1f2; border: 1px solid #d7dfe2; text-align: center; }
+.photo-symbol { width: 70px; height: 70px; display: grid; place-items: center; margin: auto; border-radius: 50%; color: white; background: var(--navy); font: 600 29px var(--serif); }
+.profile-photo-placeholder figcaption { font-size: 11px; letter-spacing: .12em; }
 .home-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 70px; align-items: center; }
 .home-hero h1 { font-size: clamp(38px, 5vw, 60px); }
 .home-hero .intro { max-width: 680px; }
@@ -143,6 +146,8 @@ h1 { margin: 10px 0 18px; color: var(--navy); font: 600 clamp(35px, 5vw, 55px)/1
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.14); padding: 16px 0; color: #95a9b2; font-size: 11px; }
 
 @media (max-width: 860px) {
+  .home-bio { grid-template-columns: 1fr 190px; gap: 30px; }
+  .profile-photo-placeholder { width: 190px; }
   .home-grid { grid-template-columns: 1fr; gap: 30px; }
   .waterfall { columns: 2; }
   .article-grid { grid-template-columns: 1fr; }
@@ -161,6 +166,8 @@ h1 { margin: 10px 0 18px; color: var(--navy); font: 600 clamp(35px, 5vw, 55px)/1
   .site-nav a { height: 44px; border: 0; padding: 0; }
   .site-nav a.active::after { width: 28px; right: auto; bottom: 3px; }
   .page-hero, .home-hero { padding: 44px 0; }
+  .home-bio { grid-template-columns: 1fr; }
+  .profile-photo-placeholder { width: min(220px, 68vw); justify-self: center; }
   .section { padding: 50px 0; }
   .section-heading { align-items: start; }
   .waterfall { columns: 1; }
