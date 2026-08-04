@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /ht/
+
+Sitemap: https://xuefengzhu.com/sitemap.xml
