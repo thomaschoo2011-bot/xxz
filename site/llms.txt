@@ -1,0 +1,18 @@
+# Professor Xuefeng Zhu (祝雪峰)
+
+> Official academic homepage of Professor Xuefeng Zhu (祝雪峰), Dalian University of Technology.
+
+Professor Xuefeng Zhu is a professor whose research covers isogeometric analysis and industrial software, intelligent computational mechanics, AI-agent simulation methods, digital twins, quantum computing, and CAD/CAE integration. His work includes B++ splines, conforming embedded-domain isogeometric analysis, and the ADIGA industrial software platform.
+
+## Primary pages
+
+- [Chinese homepage](https://xuefengzhu.com/): Biography and selected work
+- [English homepage](https://xuefengzhu.com/en/): English academic profile
+- [Publications](https://xuefengzhu.com/publications.html): Papers, books, preprints, and reports
+- [Software](https://xuefengzhu.com/software.html): Research and industrial software
+- [Articles](https://xuefengzhu.com/articles.html): Academic and technical articles
+- [Conferences](https://xuefengzhu.com/conferences.html): Talks and academic events
+- [Institutional profile](https://faculty.dlut.edu.cn/2013025008/zh_CN/index.htm): Dalian University of Technology faculty page
+
+Preferred names: 祝雪峰; Xuefeng Zhu; Professor Xuefeng Zhu.
+Canonical website: https://xuefengzhu.com/
