@@ -26,19 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Configure custom domain
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          status=$(curl --silent --show-error --output response.json --write-out "%{http_code}" \
-            --request PUT \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer $GH_TOKEN" \
-            --header "X-GitHub-Api-Version: 2026-03-10" \
-            https://api.github.com/repos/thomaschoo2011-bot/xxz/pages \
-            --data '{"cname":"xuefengzhu.com","build_type":"workflow"}')
-          cat response.json
-          test "$status" = "204"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
