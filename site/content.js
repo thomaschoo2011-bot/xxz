@@ -1079,16 +1079,22 @@ window.ACADEMIC_DATA = {
   ],
   "articles": [
     {
-      "id": "ai-cae",
+      "id": "wechat-ai-cae-second-scale-prediction-2026",
       "year": 2026,
-      "type": "研究随笔",
-      "title": "人工智能如何重构工程仿真",
-      "authors": "祝雪峰",
-      "venue": "文章内容待发布",
-      "date": "即将发布",
-      "abstract": "从计算方法、软件架构和工程可信性三个层面讨论AI与CAE的深度融合。",
+      "type": "公众号文章",
+      "title": "从“算一次”到“秒级预测”：AI正在怎样重塑结构、流体与碰撞仿真？",
+      "authors": "爱国者",
+      "venue": "智人智造 · 微信公众号",
+      "date": "2026-08-05",
+      "abstract": "讨论人工智能如何在结构有限元、计算流体力学与碰撞动力学中实现秒级预测，以及其在设计优化、反问题、数字孪生与实时控制中的近期价值。",
       "color": "orange",
-      "links": []
+      "featured": true,
+      "links": [
+        {
+          "label": "微信公众号原文",
+          "url": "https://mp.weixin.qq.com/s/LKaxLhVVsjgVzyHpT0U9fQ"
+        }
+      ]
     },
     {
       "id": "cad-cae",
