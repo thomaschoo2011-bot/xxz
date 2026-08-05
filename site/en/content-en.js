@@ -1,6 +1,24 @@
 window.ACADEMIC_DATA = {
   "publications": [
     {
+      "id": "enhanced-pinn-vorticity-velocity-2025",
+      "year": 2025,
+      "type": "Preprint",
+      "title": "Enhanced Physics-Informed Neural Network for 2D/3D Incompressible Navier-Stokes Equations in Vorticity-Velocity Formulation",
+      "authors": "Xuefeng Zhu, Chao Huang, Zexu Ma, Kai Shi, Shusheng Zhang, Yuan Gao, Zhijia Lin, Xiaochuan You, Ping Hu",
+      "venue": "Preprint",
+      "date": "March 2025",
+      "abstract": "An enhanced physics-informed neural network based on the vorticity–velocity formulation is proposed for two- and three-dimensional incompressible Navier–Stokes equations. With a similar network architecture, it achieves results comparable to the velocity–pressure formulation while requiring only 20–30% of the training time.",
+      "color": "blue",
+      "featured": true,
+      "links": [
+        {
+          "label": "Preprint full text",
+          "url": "https://www.researchgate.net/publication/389777423_Enhanced_Physics-Informed_Neural_Network_for_2D3D_Incompressible_Navier-Stokes_Equations_in_Vorticity-Velocity_Formulation"
+        }
+      ]
+    },
+    {
       "id": "346609",
       "year": 2024,
       "type": "Journal Article",
