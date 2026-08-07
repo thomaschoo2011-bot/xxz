@@ -6,7 +6,8 @@
     ["publications.html", "Publications"],
     ["conferences.html", "Conferences"],
     ["software.html", "Software"],
-    ["articles.html", "Articles"]
+    ["articles.html", "Articles"],
+    ["news.html", "News"]
   ];
 
   const header = `
