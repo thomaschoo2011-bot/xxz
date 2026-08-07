@@ -1,6 +1,6 @@
 const $ = s => document.querySelector(s);
 const state = { kind: "publications", items: [] };
-const names = { publications:"出版物", conferences:"会议", software:"软件", articles:"文章" };
+const names = { publications:"出版物", conferences:"会议", software:"软件", articles:"文章", news:"新闻" };
 async function api(path, options={}) {
   const r = await fetch(`/api/${path}`, { credentials:"same-origin", ...options, headers:{ ...(options.body instanceof FormData?{}:{"content-type":"application/json"}), ...(options.headers||{}) } });
   const data = await r.json().catch(()=>({}));
