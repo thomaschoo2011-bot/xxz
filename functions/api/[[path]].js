@@ -21,7 +21,7 @@ async function authenticated(request, env) {
 async function ensureSchema(db) {
   await db.prepare(`CREATE TABLE IF NOT EXISTS content (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    kind TEXT NOT NULL CHECK(kind IN ('publications','conferences','software','articles')),
+    kind TEXT NOT NULL CHECK(kind IN ('publications','conferences','software','articles','news')),
     locale TEXT NOT NULL DEFAULT 'zh' CHECK(locale IN ('zh','en')),
     year INTEGER,
     type TEXT NOT NULL,
@@ -40,7 +40,7 @@ async function ensureSchema(db) {
 }
 
 function cleanItem(body) {
-  const kinds = ["publications", "conferences", "software", "articles"];
+  const kinds = ["publications", "conferences", "software", "articles", "news"];
   if (!kinds.includes(body.kind) || !["zh", "en"].includes(body.locale) || !String(body.title || "").trim()) return null;
   let links = [];
   try { links = Array.isArray(body.links) ? body.links : JSON.parse(body.links || "[]"); } catch {}
@@ -79,7 +79,7 @@ export async function onRequest(context) {
     const url = new URL(request.url);
     const kind = url.searchParams.get("kind");
     const locale = url.searchParams.get("locale") || "zh";
-    if (!["publications", "conferences", "software", "articles"].includes(kind) || !["zh", "en"].includes(locale))
+    if (!["publications", "conferences", "software", "articles", "news"].includes(kind) || !["zh", "en"].includes(locale))
       return json({ error: "Invalid query" }, 400);
     const result = await env.DB.prepare("SELECT * FROM content WHERE kind=? AND locale=? ORDER BY featured DESC, sort_order DESC, year DESC, id DESC").bind(kind, locale).all();
     const items = result.results.map(x => ({ ...x, date: x.date_text, featured: Boolean(x.featured), links: JSON.parse(x.links_json || "[]") }));
