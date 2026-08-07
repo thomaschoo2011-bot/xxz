@@ -7,7 +7,8 @@
     ["publications.html", "出版物"],
     ["conferences.html", "会议"],
     ["software.html", "软件"],
-    ["articles.html", "文章"]
+    ["articles.html", "文章"],
+    ["news.html", "新闻"]
   ];
 
   const header = `
