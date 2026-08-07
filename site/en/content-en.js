@@ -781,5 +781,6 @@ window.ACADEMIC_DATA = {
       "color": "blue",
       "links": []
     }
-  ]
+  ],
+  "news": []
 };
