@@ -1,4 +1,10 @@
 (function () {
+  if (!document.querySelector("script[data-site-analytics]")) {
+    const analytics = document.createElement("script");
+    analytics.src = "/analytics.js";
+    analytics.dataset.siteAnalytics = "true";
+    document.head.appendChild(analytics);
+  }
   const data = window.ACADEMIC_DATA || {};
   const path = location.pathname.split("/").pop() || "index.html";
 
