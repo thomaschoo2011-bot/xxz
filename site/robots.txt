@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /ht/
-Disallow: /count.htm
 
 Sitemap: https://xuefengzhu.com/sitemap.xml
