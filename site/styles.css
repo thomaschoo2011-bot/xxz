@@ -74,7 +74,8 @@ h1 { margin: 10px 0 18px; color: var(--navy); font: 600 clamp(35px, 5vw, 55px)/1
 .home-bio { max-width: 1160px; display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 56px; align-items: center; }
 .home-bio .kicker { display: block; margin-bottom: 18px; }
 .home-bio p { margin: 0; color: #344d5b; font-size: 16px; line-height: 2.05; text-align: justify; }
-.profile-photo-placeholder { width: 230px; aspect-ratio: 4/5; margin: 0; display: grid; place-content: center; gap: 12px; color: #84949d; background: #eef1f2; border: 1px solid #d7dfe2; text-align: center; }
+.profile-photo-placeholder { width: 230px; aspect-ratio: 4/5; margin: 0; display: grid; place-content: center; gap: 12px; color: #84949d; background: #eef1f2 url("assets/xuefeng-portrait.webp?v=20260809") center top / cover no-repeat; border: 1px solid #d7dfe2; text-align: center; }
+.profile-photo-placeholder img { visibility: hidden; }
 .photo-symbol { width: 70px; height: 70px; display: grid; place-items: center; margin: auto; border-radius: 50%; color: white; background: var(--navy); font: 600 29px var(--serif); }
 .profile-photo-placeholder figcaption { font-size: 11px; letter-spacing: .12em; }
 .home-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 70px; align-items: center; }
