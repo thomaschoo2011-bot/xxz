@@ -1,0 +1,31 @@
+/* ADIGA product pages */
+.adiga-page{background:#f5f7f8;color:#173247}
+.adiga-hero{position:relative;overflow:hidden;background:linear-gradient(130deg,#071c2d 0%,#0c3550 55%,#12605f 100%);color:#fff;padding:92px 0 76px}
+.adiga-hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(90deg,transparent,#000)}
+.adiga-hero-grid{position:relative;display:grid;grid-template-columns:1.02fr .98fr;gap:64px;align-items:center}
+.adiga-eyebrow{display:inline-flex;align-items:center;gap:9px;color:#82e0d3;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+.adiga-eyebrow:before{content:"";width:28px;height:1px;background:#82e0d3}
+.adiga-logo{margin:18px 0 16px;font:700 clamp(52px,7vw,92px)/.95 Georgia,serif;letter-spacing:-.045em}
+.adiga-logo em{color:#f29a4a;font-style:normal}
+.adiga-tagline{max-width:650px;margin:0;color:#d8e6ec;font-size:clamp(18px,2vw,25px);line-height:1.7}
+.adiga-actions{display:flex;flex-wrap:wrap;gap:13px;margin-top:34px}
+.adiga-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 23px;border:1px solid rgba(255,255,255,.38);border-radius:3px;color:#fff;font-size:14px;font-weight:600;transition:.2s}
+.adiga-btn:hover{transform:translateY(-2px);border-color:#fff}
+.adiga-btn.primary{background:#d86d22;border-color:#d86d22}
+.adiga-btn.light{background:#fff;color:#123249;border-color:#fff}
+.adiga-visual{filter:drop-shadow(0 22px 35px rgba(0,0,0,.25))}
+.adiga-visual svg{display:block;width:100%;height:auto}
+.adiga-strip{background:#fff;border-bottom:1px solid #dbe2e5}
+.adiga-stats{display:grid;grid-template-columns:repeat(4,1fr)}
+.adiga-stat{padding:25px 22px;border-right:1px solid #e1e6e8}
+.adiga-stat:last-child{border-right:0}.adiga-stat strong{display:block;color:#0b5061;font:600 20px Georgia,serif}.adiga-stat span{color:#667982;font-size:12px}
+.adiga-section{padding:82px 0}.adiga-section.white{background:#fff}.adiga-section.dark{background:#0a273a;color:#fff}
+.adiga-head{max-width:760px;margin-bottom:42px}.adiga-head .kicker{color:#c45a12}.adiga-head h2{margin:10px 0 12px;color:inherit;font:600 clamp(30px,4vw,48px)/1.25 Georgia,"Noto Serif SC",serif}.adiga-head p{margin:0;color:#60747e;font-size:16px;line-height:1.9}.dark .adiga-head p{color:#b8cbd3}
+.adiga-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#dbe3e6;border:1px solid #dbe3e6}
+.adiga-step{position:relative;background:#fff;padding:34px 30px}.adiga-step b{display:block;color:#d16620;font:600 12px/1 sans-serif;letter-spacing:.12em}.adiga-step h3{margin:14px 0 10px;color:#15364a;font:600 21px Georgia,"Noto Serif SC",serif}.adiga-step p{margin:0;color:#61757e;font-size:13px;line-height:1.8}
+.adiga-capabilities{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}.adiga-card{background:#fff;border:1px solid #dfe5e7;padding:30px;box-shadow:0 12px 32px rgba(18,47,62,.05)}.adiga-card .icon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:20px;background:#e6f1f0;color:#0f6b67;font:700 18px Georgia,serif}.adiga-card h3{margin:0 0 9px;color:#17384b;font:600 19px Georgia,"Noto Serif SC",serif}.adiga-card p{margin:0;color:#637780;font-size:13px;line-height:1.8}
+.adiga-industries{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.adiga-industry{min-height:148px;padding:24px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04)}.adiga-industry strong{display:block;margin-bottom:10px;color:#fff;font:600 18px Georgia,"Noto Serif SC",serif}.adiga-industry span{color:#adc2cb;font-size:13px;line-height:1.7}
+.adiga-license{display:grid;grid-template-columns:1fr 1fr;gap:22px}.adiga-plan{background:#fff;border:1px solid #dfe5e7;padding:38px}.adiga-plan.commercial{background:#12374a;color:#fff;border-color:#12374a}.adiga-plan .plan-label{color:#c65d18;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}.adiga-plan h3{margin:12px 0;color:inherit;font:600 28px Georgia,"Noto Serif SC",serif}.adiga-plan p{min-height:72px;color:#657981;line-height:1.8}.adiga-plan.commercial p{color:#c4d3d9}.adiga-plan ul{padding-left:18px;color:#526a75;font-size:13px;line-height:2}.adiga-plan.commercial ul{color:#d6e2e7}.adiga-plan .adiga-btn{margin-top:18px}
+.adiga-note{margin-top:18px;color:#7a8a92;font-size:12px;line-height:1.7}
+@media(max-width:860px){.adiga-hero-grid{grid-template-columns:1fr;gap:38px}.adiga-visual{max-width:620px}.adiga-stats{grid-template-columns:1fr 1fr}.adiga-stat:nth-child(2){border-right:0}.adiga-flow{grid-template-columns:1fr}.adiga-capabilities,.adiga-license{grid-template-columns:1fr}.adiga-industries{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.adiga-hero{padding:62px 0 48px}.adiga-stats,.adiga-industries{grid-template-columns:1fr}.adiga-stat{border-right:0;border-bottom:1px solid #e1e6e8}.adiga-actions{display:grid}.adiga-btn{width:100%}.adiga-section{padding:58px 0}}
