@@ -1086,13 +1086,14 @@ window.ACADEMIC_DATA = {
       "id": "geometry-analysis",
       "year": 2026,
       "type": "研究软件",
-      "title": "几何分析一体化工具",
-      "authors": "研究方向",
-      "venue": "CAD精确几何、样条表示与高精度计算",
-      "date": "持续研发",
-      "abstract": "探索从几何模型到数值分析的统一表达与工程实现。",
+      "title": "国产CAD和CAE一体化等几何分析软件",
+      "authors": "ADIGA",
+      "venue": "精确几何、B++样条、等几何分析与工业级仿真",
+      "date": "产品持续研发",
+      "abstract": "ADIGA以CAD精确几何直接驱动CAE高精度计算，覆盖结构、流体、显式动力学与智能仿真。",
       "color": "blue",
-      "links": []
+      "featured": true,
+      "links": [{"label": "ADIGA产品网站", "url": "/adiga/"}]
     }
   ],
   "articles": [

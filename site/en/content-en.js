@@ -747,13 +747,14 @@ window.ACADEMIC_DATA = {
       "id": "geometry-analysis",
       "year": 2026,
       "type": "Research Software",
-      "title": "Integrated Geometry–Analysis Tools",
-      "authors": "Research direction",
-      "venue": "Exact CAD geometry, spline representations, and high-fidelity computation",
-      "date": "In development",
-      "abstract": "Unified representations and engineering workflows from geometric models to numerical analysis.",
+      "title": "ADIGA Integrated CAD–CAE Isogeometric Analysis Software",
+      "authors": "ADIGA",
+      "venue": "Exact geometry, B++ splines, isogeometric analysis and industrial simulation",
+      "date": "Continuous development",
+      "abstract": "ADIGA drives high-fidelity CAE directly from exact CAD geometry across structures, fluids, explicit dynamics and AI-enabled simulation.",
       "color": "blue",
-      "links": []
+      "featured": true,
+      "links": [{"label": "ADIGA Product Site", "url": "/adiga/en/"}]
     }
   ],
   "articles": [
