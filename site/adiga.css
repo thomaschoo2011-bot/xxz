@@ -8,9 +8,8 @@
 .adiga-logo{margin:18px 0 16px;font:700 clamp(52px,7vw,92px)/.95 Georgia,serif;letter-spacing:-.045em}
 .adiga-logo em{color:#f29a4a;font-style:normal}
 .brand img{display:block;width:148px;height:auto}
-.adiga-color-logo{display:flex;align-items:baseline;gap:.015em;margin:20px 0 8px;font:800 clamp(62px,8vw,104px)/.95 Arial,sans-serif;letter-spacing:-.07em;text-shadow:0 10px 28px rgba(0,0,0,.25)}
-.adiga-color-logo span:nth-child(1){color:#35d6be}.adiga-color-logo span:nth-child(2){color:#47a7ff}.adiga-color-logo span:nth-child(3){color:#8c7cff}.adiga-color-logo span:nth-child(4){color:#ed65b5}.adiga-color-logo span:nth-child(5){color:#ffad45}
-.adiga-color-sub{margin:0 0 23px;color:#a9cbd4;font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase}
+.adiga-color-logo{display:inline-block;margin:22px 0 7px;font:700 clamp(66px,8.5vw,112px)/.9 "Helvetica Neue",Arial,sans-serif;letter-spacing:-.065em;background:linear-gradient(105deg,#f8fbfc 0%,#dce9ee 38%,#9fc2d0 68%,#58c8b5 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 12px 22px rgba(0,0,0,.22))}
+.adiga-color-sub{display:flex;align-items:center;gap:14px;margin:8px 0 27px;color:#b9cbd2;font:500 10px/1.3 "Helvetica Neue",Arial,sans-serif;letter-spacing:.34em;text-transform:uppercase}.adiga-color-sub:before{content:"";width:42px;height:1px;background:#57c6b3}
 .adiga-tagline{max-width:650px;margin:0;color:#d8e6ec;font-size:clamp(18px,2vw,25px);line-height:1.7}
 .adiga-actions{display:flex;flex-wrap:wrap;gap:13px;margin-top:34px}
 .adiga-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 23px;border:1px solid rgba(255,255,255,.38);border-radius:3px;color:#fff;font-size:14px;font-weight:600;transition:.2s}
