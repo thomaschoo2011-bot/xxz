@@ -7,6 +7,8 @@
 .adiga-eyebrow:before{content:"";width:28px;height:1px;background:#82e0d3}
 .adiga-logo{margin:18px 0 16px;font:700 clamp(52px,7vw,92px)/.95 Georgia,serif;letter-spacing:-.045em}
 .adiga-logo em{color:#f29a4a;font-style:normal}
+.brand img{display:block;width:148px;height:auto}
+.adiga-logo-image{display:block;width:min(390px,82%);height:auto;margin:22px 0 18px;filter:drop-shadow(0 10px 20px rgba(0,0,0,.18))}
 .adiga-tagline{max-width:650px;margin:0;color:#d8e6ec;font-size:clamp(18px,2vw,25px);line-height:1.7}
 .adiga-actions{display:flex;flex-wrap:wrap;gap:13px;margin-top:34px}
 .adiga-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 23px;border:1px solid rgba(255,255,255,.38);border-radius:3px;color:#fff;font-size:14px;font-weight:600;transition:.2s}
