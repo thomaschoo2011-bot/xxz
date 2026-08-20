@@ -96,6 +96,7 @@ h1 { margin: 10px 0 18px; color: var(--navy); font: 600 clamp(35px, 5vw, 55px)/1
 }
 .feature:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(23,54,74,.08); }
 .feature-visual { aspect-ratio: 16/8.5; overflow: hidden; background: #edf1f2; }
+.feature-visual img { width: 100%; height: 100%; object-fit: contain; object-position: center; background: white; }
 .feature:nth-child(3n+2) .feature-visual { aspect-ratio: 16/11; }
 .feature-body { padding: 22px; }
 .label { display: inline-block; color: var(--orange); font-size: 10px; font-weight: 600; letter-spacing: .1em; }
