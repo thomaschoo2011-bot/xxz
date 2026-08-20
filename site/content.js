@@ -1,6 +1,21 @@
 window.ACADEMIC_DATA = {
   "publications": [
     {
+      "id": "novel-embedded-thb-iga-fsi-2026",
+      "year": 2026,
+      "type": "预印本",
+      "title": "A Novel Embedded Isogeometric Approach Based on Truncated Hierarchical B-Splines for Fluid-Structure Interaction Analysis",
+      "authors": "Xuefeng Zhu, Wei Meng, Yongsheng Mi, Kai Shi, Yue Mei, Chennakesava Kadapa, Ping Hu, Zheng-Dong Ma",
+      "venue": "预印本",
+      "date": "2026-08",
+      "abstract": "提出一种面向复杂几何、大变形和大规模三维流固耦合问题的嵌入域等几何分析框架。该方法融合THB样条局部自适应加密、浸入边界处理、稳定流固耦合以及CPU-GPU异构并行计算。",
+      "image_url": "assets/publications/novel-embedded-thb-iga-fsi-2026.webp",
+      "topics": ["等几何分析", "固体力学"],
+      "color": "blue",
+      "featured": true,
+      "links": []
+    },
+    {
       "id": "enhanced-pinn-vorticity-velocity-2025",
       "year": 2025,
       "type": "预印本",

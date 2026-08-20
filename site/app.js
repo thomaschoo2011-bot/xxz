@@ -86,8 +86,11 @@
   }
 
   function record(item, index) {
+    const visual = item.image_url
+      ? `<img src="${item.image_url}" alt="${item.title} 首页缩略图" loading="lazy">`
+      : art(item, index);
     return `<article class="record" id="${item.id}">
-      <div class="record-thumb">${art(item, index)}</div>
+      <div class="record-thumb">${visual}</div>
       <div><span class="record-type">${item.type}</span><h2>${item.links?.[0] ? `<a href="${item.links[0].url}" target="_blank" rel="noreferrer">${item.title}</a>` : item.title}</h2>
       <p class="record-meta">${item.authors} · ${item.venue}</p><span class="record-date">${item.date}</span>
       <div class="record-links">${links(item)}</div></div>
