@@ -134,7 +134,8 @@
       if (!features.length) features.push(...publications.slice(0,2), ...software.slice(0,2), ...articles.slice(0,2));
       document.querySelector("#waterfall").innerHTML = features.map((x, i) => {
         const page = publications.includes(x) ? "publications.html" : software.includes(x) ? "software.html" : "articles.html";
-        return `<a class="feature" href="${page}#${x.id}"><div class="feature-visual">${art(x, i)}</div><div class="feature-body"><span class="label">${x.type}</span><h3>${x.title}</h3><p>${x.abstract}</p></div></a>`;
+        const visual = x.image_url ? `<img src="${x.image_url}" alt="Thumbnail for ${x.title}" loading="lazy">` : art(x, i);
+        return `<a class="feature" href="${page}#${x.id}"><div class="feature-visual">${visual}</div><div class="feature-body"><span class="label">${x.type}</span><h3>${x.title}</h3><p>${x.abstract}</p></div></a>`;
       }).join("");
     }
   };
