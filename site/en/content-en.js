@@ -1,6 +1,21 @@
 window.ACADEMIC_DATA = {
   "publications": [
     {
+      "id": "novel-embedded-thb-iga-fsi-2026",
+      "year": 2026,
+      "type": "Preprint",
+      "title": "A Novel Embedded Isogeometric Approach Based on Truncated Hierarchical B-Splines for Fluid-Structure Interaction Analysis",
+      "authors": "Xuefeng Zhu, Wei Meng, Yongsheng Mi, Kai Shi, Yue Mei, Chennakesava Kadapa, Ping Hu, Zheng-Dong Ma",
+      "venue": "Preprint",
+      "date": "August 2026",
+      "abstract": "A robust and scalable embedded isogeometric framework for fluid-structure interaction involving complex geometries, large structural deformations, and large-scale three-dimensional applications. It combines adaptive THB-spline refinement, immersed boundary treatment, stable coupling, and heterogeneous CPU-GPU computing.",
+      "image_url": "../assets/publications/novel-embedded-thb-iga-fsi-2026.webp",
+      "topics": ["Isogeometric Analysis", "Solid Mechanics"],
+      "color": "blue",
+      "featured": true,
+      "links": []
+    },
+    {
       "id": "enhanced-pinn-vorticity-velocity-2025",
       "year": 2025,
       "type": "Preprint",
