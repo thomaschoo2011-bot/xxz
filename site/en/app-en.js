@@ -10,6 +10,7 @@
   const nav = [
     ["index.html", "Home"],
     ["publications.html", "Publications"],
+    ["projects.html", "Projects"],
     ["conferences.html", "Conferences"],
     ["software.html", "Software"],
     ["articles.html", "Articles"],
@@ -65,6 +66,21 @@
     return `<article class="record" id="${item.id}"><div class="record-thumb">${art(item, index)}</div><div><span class="record-type">${item.type}</span><h2>${item.links?.[0] ? `<a href="${item.links[0].url}" target="_blank" rel="noreferrer">${item.title}</a>` : item.title}</h2><p class="record-meta">${item.authors} · ${item.venue}</p><span class="record-date">${item.date}</span><div class="record-links">${links}</div></div><button class="copy" data-copy="${item.id}" aria-label="Copy item link">⌁</button></article>`;
   }
 
+  const researchTopics = [
+    ["Solid Mechanics", /solid|structur|mechanic|elastic|plastic|stress|strain|vibration|buckling|fracture|crack|contact|impact|composite|shell|beam/i],
+    ["Isogeometric Analysis", /isogeometric|spline|nurbs|b\+\+|b-rep|cad|embedded domain|geometry/i],
+    ["AI Simulation", /neural|deep learning|machine learning|data-driven|artificial intelligence|physics-informed|pinn|actor-critic|prediction/i],
+    ["Mathematics", /mathemat|algorithm|numerical method|optimization method|finite element method|equation/i],
+    ["Battery & Energy", /battery|fuel cell|energy|oxygen permeation|membrane/i]
+  ];
+
+  function topicFor(item) {
+    if (Array.isArray(item.topics) && item.topics.length) return item.topics;
+    const text = `${item.title || ""} ${item.venue || ""} ${item.abstract || ""}`;
+    const matched = researchTopics.filter(([, rule]) => rule.test(text)).map(([name]) => name);
+    return matched.length ? matched : ["Other"];
+  }
+
   async function itemsFor(kind) {
     try {
       const response = await fetch(`/api/content?kind=${kind}&locale=en`);
@@ -83,19 +99,30 @@
       const search = document.querySelector("#search");
       const year = document.querySelector("#year-filter");
       const type = document.querySelector("#type-filter");
+      const topic = document.querySelector("#topic-filter");
       const years = [...new Set(source.map(x => x.year))].sort((a, b) => b - a);
       const publicationTypes = ["Preprint", "Journal Article", "Conference Paper", "Academic Book", "Book Chapter", "Research Report"];
       const types = [...new Set([...(kind === "publications" ? publicationTypes : []), ...source.map(x => x.type)])];
       year.innerHTML = `<option value="">All years</option>${years.map(x => `<option>${x}</option>`).join("")}`;
       type.innerHTML = `<option value="">All types</option>${types.map(x => `<option>${x}</option>`).join("")}`;
+      if (topic && kind === "publications") {
+        const topicNames = researchTopics.map(([name]) => name);
+        topic.innerHTML = [`<button type="button" class="active" data-topic="">All fields</button>`, ...topicNames.map(x => `<button type="button" data-topic="${x}">${x}</button>`), `<button type="button" data-topic="Other">Other</button>`].join("");
+      }
       function draw() {
         const q = search.value.trim().toLowerCase();
-        const items = source.filter(x => (!q || `${x.title}${x.authors}${x.venue}`.toLowerCase().includes(q)) && (!year.value || String(x.year) === year.value) && (!type.value || x.type === type.value));
+        const selectedTopic = topic?.querySelector(".active")?.dataset.topic || "";
+        const items = source.filter(x => (!q || `${x.title}${x.authors}${x.venue}`.toLowerCase().includes(q)) && (!year.value || String(x.year) === year.value) && (!type.value || x.type === type.value) && (!selectedTopic || topicFor(x).includes(selectedTopic)));
         document.querySelector("#result-count").textContent = items.length;
         list.innerHTML = items.length ? items.map(record).join("") : `<div class="empty">No records are available yet. Additional items can be added in content-en.js.</div>`;
         list.querySelectorAll(".copy").forEach(btn => btn.addEventListener("click", () => navigator.clipboard.writeText(`${location.href.split("#")[0]}#${btn.dataset.copy}`)));
       }
       [search, year, type].forEach(el => el.addEventListener(el.tagName === "INPUT" ? "input" : "change", draw));
+      topic?.querySelectorAll("button").forEach(btn => btn.addEventListener("click", () => {
+        topic.querySelector(".active")?.classList.remove("active");
+        btn.classList.add("active");
+        draw();
+      }));
       draw();
     },
     async renderHome() {

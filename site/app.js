@@ -11,6 +11,7 @@
   const nav = [
     ["index.html", "首页"],
     ["publications.html", "出版物"],
+    ["projects.html", "项目"],
     ["conferences.html", "会议"],
     ["software.html", "软件"],
     ["articles.html", "文章"],
@@ -69,6 +70,21 @@
     return (item.links || []).map(x => `<a href="${x.url}" target="_blank" rel="noreferrer">${x.label} ↗</a>`).join("");
   }
 
+  const researchTopics = [
+    ["固体力学", /solid|structur|mechanic|elastic|plastic|stress|strain|vibration|buckling|fracture|crack|contact|impact|composite|shell|beam|拓扑|结构|固体|力学|弹性|塑性|应力|应变|振动|屈曲|断裂|裂纹|接触|冲击|复合材料|壳|梁/i],
+    ["等几何分析", /isogeometric|spline|nurbs|b\+\+|b-rep|cad|embedded domain|几何|样条|嵌入域/i],
+    ["AI仿真", /neural|deep learning|machine learning|data-driven|artificial intelligence|physics-informed|pinn|actor-critic|prediction|智能|人工智能|深度学习|机器学习|数据驱动|预测/i],
+    ["数学", /mathemat|algorithm|numerical method|optimization method|finite element method|方程|数学|算法|数值方法/i],
+    ["电池与能源", /battery|fuel cell|energy|oxygen permeation|membrane|电池|燃料电池|能源|氧渗透|膜/i]
+  ];
+
+  function topicFor(item) {
+    if (Array.isArray(item.topics) && item.topics.length) return item.topics;
+    const text = `${item.title || ""} ${item.venue || ""} ${item.abstract || ""}`;
+    const matched = researchTopics.filter(([, rule]) => rule.test(text)).map(([name]) => name);
+    return matched.length ? matched : ["其他"];
+  }
+
   function record(item, index) {
     return `<article class="record" id="${item.id}">
       <div class="record-thumb">${art(item, index)}</div>
@@ -98,19 +114,30 @@
       const search = document.querySelector("#search");
       const year = document.querySelector("#year-filter");
       const type = document.querySelector("#type-filter");
+      const topic = document.querySelector("#topic-filter");
       const years = [...new Set(source.map(x => x.year))].sort((a, b) => b - a);
       const publicationTypes = ["预印本", "期刊论文", "会议论文", "学术专著", "书籍章节", "研究报告"];
       const types = [...new Set([...(kind === "publications" ? publicationTypes : []), ...source.map(x => x.type)])];
       year.innerHTML = `<option value="">全部年份</option>${years.map(x => `<option>${x}</option>`).join("")}`;
       type.innerHTML = `<option value="">全部类型</option>${types.map(x => `<option>${x}</option>`).join("")}`;
+      if (topic && kind === "publications") {
+        const topicNames = researchTopics.map(([name]) => name);
+        topic.innerHTML = [`<button type="button" class="active" data-topic="">全部方向</button>`, ...topicNames.map(x => `<button type="button" data-topic="${x}">${x}</button>`), `<button type="button" data-topic="其他">其他</button>`].join("");
+      }
       function draw() {
         const q = search.value.trim().toLowerCase();
-        const items = source.filter(x => (!q || `${x.title}${x.authors}${x.venue}`.toLowerCase().includes(q)) && (!year.value || String(x.year) === year.value) && (!type.value || x.type === type.value));
+        const selectedTopic = topic?.querySelector(".active")?.dataset.topic || "";
+        const items = source.filter(x => (!q || `${x.title}${x.authors}${x.venue}`.toLowerCase().includes(q)) && (!year.value || String(x.year) === year.value) && (!type.value || x.type === type.value) && (!selectedTopic || topicFor(x).includes(selectedTopic)));
         document.querySelector("#result-count").textContent = items.length;
         list.innerHTML = items.length ? items.map(record).join("") : `<div class="empty">暂无匹配内容。可在 content.js 中继续批量添加。</div>`;
         list.querySelectorAll(".copy").forEach(btn => btn.addEventListener("click", () => navigator.clipboard.writeText(`${location.href.split("#")[0]}#${btn.dataset.copy}`)));
       }
       [search, year, type].forEach(el => el.addEventListener(el.tagName === "INPUT" ? "input" : "change", draw));
+      topic?.querySelectorAll("button").forEach(btn => btn.addEventListener("click", () => {
+        topic.querySelector(".active")?.classList.remove("active");
+        btn.classList.add("active");
+        draw();
+      }));
       draw();
     },
     async renderHome() {

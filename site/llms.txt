@@ -9,6 +9,7 @@ Professor Xuefeng Zhu is a professor whose research covers isogeometric analysis
 - [Chinese homepage](https://xuefengzhu.com/): Biography and selected work
 - [English homepage](https://xuefengzhu.com/en/): English academic profile
 - [Publications](https://xuefengzhu.com/publications.html): Papers, books, preprints, and reports
+- [Projects](https://xuefengzhu.com/projects.html): National research programs and principal research themes
 - [Software](https://xuefengzhu.com/software.html): Research and industrial software
 - [Articles](https://xuefengzhu.com/articles.html): Academic and technical articles
 - [Conferences](https://xuefengzhu.com/conferences.html): Talks and academic events
