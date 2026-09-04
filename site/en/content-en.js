@@ -1,6 +1,21 @@
 window.ACADEMIC_DATA = {
   "publications": [
     {
+      "id": "weil-positivity-compact-windows-2026",
+      "year": 2026,
+      "type": "Preprint",
+      "title": "Weil Positivity in Compact Windows: A Finite Reduction, Certified Two-Sided Bounds, and a Landau–Widom Decay Law",
+      "authors": "Xuefeng Zhu",
+      "venue": "Preprint",
+      "date": "September 3, 2026",
+      "abstract": "This work studies Weil positivity in compactly supported windows and its relation to the Riemann Hypothesis. It reduces window positivity to positive semidefiniteness of a single finite matrix, establishes unconditional certified two-sided bounds using interval arithmetic, and identifies an empirical decay law consistent with the Landau–Widom eigenvalue-plunge rate.",
+      "image_url": "../assets/publications/weil-positivity-compact-windows-2026.webp",
+      "topics": ["Mathematics"],
+      "color": "blue",
+      "featured": true,
+      "links": []
+    },
+    {
       "id": "novel-embedded-thb-iga-fsi-2026",
       "year": 2026,
       "type": "Preprint",
