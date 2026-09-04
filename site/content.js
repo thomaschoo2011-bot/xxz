@@ -1,6 +1,21 @@
 window.ACADEMIC_DATA = {
   "publications": [
     {
+      "id": "weil-positivity-compact-windows-2026",
+      "year": 2026,
+      "type": "预印本",
+      "title": "Weil Positivity in Compact Windows: A Finite Reduction, Certified Two-Sided Bounds, and a Landau–Widom Decay Law",
+      "authors": "Xuefeng Zhu",
+      "venue": "预印本",
+      "date": "2026-09-03",
+      "abstract": "研究紧支撑窗口中的Weil正定性及其与黎曼猜想的关系。论文将窗口正定性约化为单个有限矩阵的半正定性判定，并以区间算术给出无条件认证的双边界，同时揭示窗口基态衰减与Landau–Widom特征值跃迁率相吻合的经验规律。",
+      "image_url": "assets/publications/weil-positivity-compact-windows-2026.webp",
+      "topics": ["数学"],
+      "color": "blue",
+      "featured": true,
+      "links": []
+    },
+    {
       "id": "novel-embedded-thb-iga-fsi-2026",
       "year": 2026,
       "type": "预印本",
