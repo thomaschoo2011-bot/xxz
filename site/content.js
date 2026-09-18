@@ -1158,5 +1158,18 @@ window.ACADEMIC_DATA = {
       "links": []
     }
   ],
-  "news": []
+  "news": [
+    {
+      "id": "ccf-bls-intelligent-cad-cae-2026",
+      "year": 2026,
+      "type": "会议报道",
+      "title": "CCF秀湖会议第四十七期：智能CAD/CAE工业软件",
+      "authors": "CCF秀湖会议",
+      "venue": "中国计算机学会",
+      "date": "2026-09-11",
+      "abstract": "CCF秀湖会议第四十七期围绕智能CAD/CAE工业软件展开学术与产业交流。",
+      "color": "blue",
+      "links": [{"label": "阅读CCF原报道", "url": "https://bls.ccf.org.cn/posts/news/47.html"}]
+    }
+  ]
 };
