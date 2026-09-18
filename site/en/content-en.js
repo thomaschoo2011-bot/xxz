@@ -813,5 +813,18 @@ window.ACADEMIC_DATA = {
       "links": []
     }
   ],
-  "news": []
+  "news": [
+    {
+      "id": "ccf-bls-intelligent-cad-cae-2026",
+      "year": 2026,
+      "type": "Conference News",
+      "title": "47th CCF Beautiful Lake Seminar: Intelligent CAD/CAE Industrial Software",
+      "authors": "CCF Beautiful Lake Seminars",
+      "venue": "China Computer Federation",
+      "date": "September 11, 2026",
+      "abstract": "The 47th CCF Beautiful Lake Seminar brought together academic and industry perspectives on intelligent CAD/CAE industrial software.",
+      "color": "blue",
+      "links": [{"label": "Read the original CCF report (Chinese)", "url": "https://bls.ccf.org.cn/posts/news/47.html"}]
+    }
+  ]
 };
