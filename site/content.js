@@ -1098,7 +1098,19 @@ window.ACADEMIC_DATA = {
       "links": []
     }
   ],
-  "conferences": [],
+  "conferences": [
+    {
+      "id": "cadcae-2026",
+      "year": 2026,
+      "type": "会议官网",
+      "title": "CAD/CAE 2026",
+      "authors": "CAD/CAE 2026",
+      "venue": "会议信息",
+      "date": "2026",
+      "color": "blue",
+      "links": [{"label": "访问会议官网", "url": "http://gcl.ustc.edu.cn/static/CADCAE2026/index.html"}]
+    }
+  ],
   "software": [
     {
       "id": "intelligent-simulation",
