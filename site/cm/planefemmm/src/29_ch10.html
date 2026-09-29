@@ -1,0 +1,327 @@
+
+<!-- ================================================== 第 10 章 ================================================== -->
+<section id="ch10">
+<h2><span class="chno">10</span>应力后处理与收敛性：结果能信到第几位</h2>
+
+<p>有限元算完位移只是完成了一半。工程上真正关心的是<b>应力</b>，而应力恰恰是有限元解里<b>最不准</b>的那部分。本章解释为什么会这样、怎样把它修好，以及如何用数值实验判断"网格够不够密"。</p>
+
+<h3>10.1 位移准、应力粗：精度差一个档次</h3>
+
+<p>回顾整条链条：</p>
+
+<div class="formula"><span class="eq" style="font-size:17px">
+<b class="m">d</b>　<span style="color:#7f8c98">（解方程，最准）</span>　→
+<b class="m">ε</b> = <b class="m">Bd</b>　<span style="color:#bf8f14">（求一次导，降一阶）</span>　→
+<b class="m">σ</b> = <b class="m">Dε</b>　<span style="color:#b03a2e">（乘常数，不再变差）</span>
+</span><span class="eqno">(4.82)</span></div>
+
+<p>位移是<b>直接求解</b>的量，而且最小势能原理保证它在能量范数下最优；应变却要对位移<b>求导</b>。多项式每求一次导，次数降一阶：CST 的位移是<b>一次</b>完全多项式，导数就是<b>零次</b>——常数。于是</p>
+
+<table class="left">
+<thead><tr><th style="width:18%">单元</th><th style="width:24%">位移场</th><th style="width:24%">应变 / 应力场</th><th>后果</th></tr></thead>
+<tbody>
+<tr><td><b>CST</b></td><td>线性（完全一次）</td><td><b>常数</b></td><td>整个单元一个应力值，单元之间<b>阶梯跳跃</b></td></tr>
+<tr><td><b>LST</b></td><td>二次</td><td>线性</td><td>单元内应力线性变化，跳跃大幅减小</td></tr>
+<tr><td><b>Q4</b></td><td>双线性（含 <i class="v">xy</i>）</td><td><i class="v">σ</i><sub>x</sub> 随 <i class="v">y</i> 线性、<i class="v">σ</i><sub>y</sub> 随 <i class="v">x</i> 线性</td><td>能表示纯弯曲的线性应力，但有剪切自锁</td></tr>
+<tr><td><b>Q8</b></td><td>二次（八节点）</td><td>双线性</td><td>工程上最常用的平面单元</td></tr>
+</tbody>
+</table>
+
+<div class="warn">
+  <div class="t-title">▲ 一条实用的经验法则</div>
+  <b>若位移误差是 <i class="v">ε</i>，单元应力误差大致是 √<i class="v">ε</i> 的量级</b>——换句话说，位移算准到 1 % 的网格，应力可能还差 10 %。
+  这不是危言耸听：本章 10.6 节的实测表里，8×4 的 CST 网格挠度误差 17.5 %，而单元应力在同一位置的误差超过 60 %。
+  <b>凡是以应力为判据的设计（强度、疲劳、断裂），网格必须比"位移收敛"的要求再密一档。</b>
+</div>
+
+<h3>10.2 绕节点平均法</h3>
+
+<p>既然真实应力是连续的，而计算出的单元应力在节点处<b>各说各话</b>，最自然的修补办法就是取平均。对节点 <i class="v">k</i>，把环绕它的 <i class="v">m</i> 个单元的应力求算术平均：</p>
+
+<div class="formula" style="border-left-color:#1e8449"><span class="eq" style="font-size:17px">
+<b class="m">σ</b><sub><i class="v">k</i></sub> = <span class="frac"><span>1</span><span><i class="v">m</i></span></span>
+Σ<sub><i class="v">e</i>=1</sub><sup><i class="v">m</i></sup> <b class="m">σ</b><sup>(<i class="v">e</i>)</sup>
+</span><span class="eqno">(4.83)</span></div>
+
+<p>更合理的是按<b>单元面积加权</b>（大单元代表更大的区域，应当占更大权重）：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">σ</b><sub><i class="v">k</i></sub> =
+<span class="frac"><span>Σ<sub><i class="v">e</i></sub> <i class="v">A</i><sup>(<i class="v">e</i>)</sup> <b class="m">σ</b><sup>(<i class="v">e</i>)</sup></span><span>Σ<sub><i class="v">e</i></sub> <i class="v">A</i><sup>(<i class="v">e</i>)</sup></span></span>
+</span><span class="eqno">(4.84)</span></div>
+
+<p>节点值算出来后，单元内部用形函数插值，就得到了连续的应力云图——<b>所有商业软件默认显示的就是这个</b>。</p>
+
+<div class="warn">
+  <div class="t-title">▲ 平均法的三个"不可平均"的场合</div>
+  ① <b>跨材料界面不能平均</b>。钢和混凝土界面上，法向应力连续但切向应变连续，<i class="v">σ</i><sub>x</sub> 本来就该跳。把它们平均掉会得到一个两边都不对的值——软件里这叫"按材料分组平均"；<br>
+  ② <b>跨厚度突变不能平均</b>。板厚从 10 mm 跳到 20 mm 处，应力真实地不连续；<br>
+  ③ <b>自由表面与角点要小心</b>。边界节点只有单侧的单元贡献，平均值系统性地<b>偏向内部</b>，会低估表面应力——而表面恰恰是应力最大、最需要准确的地方。商业软件对此的处理是从内部<b>外推</b>到表面，而不是简单平均。
+</div>
+
+<h3>10.3 两单元平均法</h3>
+
+<p>另一条路线不求节点值，而求<b>公共边中点</b>的值：相邻两个单元共享一条边，取这两个单元应力的算术平均，作为该边中点的应力：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">σ</b><sub>中点</sub> = ½(<b class="m">σ</b><sup>(<i class="v">e</i>1)</sup> + <b class="m">σ</b><sup>(<i class="v">e</i>2)</sup>)
+</span><span class="eqno">(4.85)</span></div>
+
+<p>它的道理比绕节点平均更"硬"：公共边中点恰好位于两个单元形心连线的中间，而常应力单元的应力值可以理解为"形心处的应力"，所以这个平均相当于<b>两点线性插值</b>，具有二阶精度。缺点是给出的点位不在节点上，不便于直接画云图，工程上主要用于<b>关键截面的手工校核</b>。</p>
+
+<div class="tip">
+  <div class="t-title">◎ 更高级的做法：超收敛点与 SPR</div>
+  单元内部存在一些<b>应力精度特别高</b>的位置（Barlow 点，对 Q4 恰为 2×2 高斯点），在那里应力误差比单元平均值还低一阶，称为<b>超收敛</b>。
+  现代软件用<b>超收敛片恢复</b>（SPR，Zienkiewicz &amp; Zhu 1992）：在每个节点周围取一片单元，用这些超收敛点的值做最小二乘拟合，再外推到节点。
+  它比 (4.83) 准得多，而且顺带给出<b>逐单元的误差估计</b>，是自适应网格加密的基础。Zienkiewicz &amp; Taylor 的《The Finite Element Method: Its Basis and Fundamentals》第 14 章（误差、恢复过程与误差估计）对此有完整推导，见参考文献 [4][8]。
+</div>
+
+<h3>10.4 跳跃量：一个免费的误差指示器</h3>
+
+<p>真解的应力（在均匀材料内部）是连续的，所以<b>相邻单元的应力差完全来自离散误差</b>。把它作为误差指标：</p>
+
+<div class="formula" style="border-left-color:#7d3c98"><span class="eq">
+<i class="v">η</i><sub><i class="v">k</i></sub> = max<sub><i class="v">e</i>∈<i class="v">k</i></sub> <b class="m">σ</b><sup>(<i class="v">e</i>)</sup> − min<sub><i class="v">e</i>∈<i class="v">k</i></sub> <b class="m">σ</b><sup>(<i class="v">e</i>)</sup>
+　　（节点 <i class="v">k</i> 处的跳跃量）
+</span><span class="eqno">(4.86)</span></div>
+
+<div class="good">
+  <div class="t-title">✓ 它的三个用法，一分钱不花</div>
+  ① <b>判断网格够不够。</b><i class="v">η</i> 与该处应力量级之比若小于 5 %，可认为网格已足够；大于 20 % 则必须加密；<br>
+  ② <b>指出该在哪里加密。</b><i class="v">η</i> 的空间分布就是误差的空间分布——自适应加密算法正是照着它来的；<br>
+  ③ <b>不需要任何参考解。</b>与"加密一次再比较"不同，它<b>一次计算就能给出</b>误差信息。
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ 唯一的例外：真正的应力奇异点</div>
+  尖角、裂纹尖端、集中力作用点处，真解的应力是<b>无穷大</b>。这些地方 <i class="v">η</i> 不会随网格加密而减小，<b>永远"不收敛"</b>——加密只会得到越来越大的应力值。
+  此时正确的做法不是继续加密，而是：<b>换判据</b>（用断裂力学的 <i class="v">K</i><sub>I</sub> 或 <i class="v">J</i> 积分）、<b>改模型</b>（把尖角改成真实的圆角）、或<b>用能量类量</b>（应变能、总反力）作为收敛判据。
+  这是第 2.2 节那条法则的完整版本。
+</div>
+
+<h3>10.5 数值实验：悬臂深梁的网格收敛</h3>
+
+<p><b>算例：</b>2 m × 1 m 悬臂板（<i class="v">L</i>/<i class="v">h</i> = 2，属<b>深梁</b>），<i class="v">t</i> = 10 mm，<i class="v">E</i> = 210 GPa，<i class="v">ν</i> = 1/3，左端整条边固支，右端受向下的总剪力 <i class="v">P</i> = 10 kN（按边长梯形分配到右边界各节点）。用同一张 <i class="v">n</i><sub>x</sub>×<i class="v">n</i><sub>y</sub> 的矩形网格，分别切成 CST（每格两个三角形）和 Q4，比较<b>端部平均挠度</b>。</p>
+
+<p>两个解析参照：</p>
+<div class="formula"><span class="eq">
+Euler 梁：<i class="v">δ</i> = <span class="frac"><span><i class="v">PL</i><sup>3</sup></span><span>3<i class="v">EI</i></span></span> = 0.152381 mm　；
+Timoshenko 梁（<i class="v">k</i> = 1.2）：<i class="v">δ</i> = <span class="frac"><span><i class="v">PL</i><sup>3</sup></span><span>3<i class="v">EI</i></span></span> + <span class="frac"><span>1.2<i class="v">PL</i></span><span><i class="v">GA</i></span></span> = 0.182857 mm
+</span><span class="eqno">(4.87)</span></div>
+
+<p>可见剪切变形贡献了 20 %——深梁问题<b>不能用 Euler 梁理论</b>。下表以最细网格（48×24 的 Q4，挠度 0.182038 mm）为参照值：</p>
+
+<div class="asm-wrap">
+<table>
+<thead><tr>
+<th>网格</th><th>节点</th><th>自由度</th><th>CST 单元数</th>
+<th>CST 挠度 (mm)</th><th>误差</th><th>Q4 挠度 (mm)</th><th>误差</th></tr></thead>
+<tbody>
+<tr><td>2×1</td><td>6</td><td>12</td><td>4</td><td>0.058892</td><td style="color:#b03a2e">−67.65 %</td><td>0.120635</td><td style="color:#b03a2e">−33.73 %</td></tr>
+<tr><td>4×2</td><td>15</td><td>30</td><td>16</td><td>0.104954</td><td style="color:#b03a2e">−42.34 %</td><td>0.156453</td><td style="color:#b03a2e">−14.05 %</td></tr>
+<tr><td>8×4</td><td>45</td><td>90</td><td>64</td><td>0.150113</td><td style="color:#bf8f14">−17.54 %</td><td>0.173745</td><td style="color:#bf8f14">−4.56 %</td></tr>
+<tr><td>16×8</td><td>153</td><td>306</td><td>256</td><td>0.171998</td><td style="color:#bf8f14">−5.52 %</td><td>0.179673</td><td style="color:#1e8449">−1.30 %</td></tr>
+<tr><td>32×16</td><td>561</td><td>1 122</td><td>1 024</td><td>0.179315</td><td style="color:#1e8449">−1.50 %</td><td>0.181585</td><td style="color:#1e8449">−0.25 %</td></tr>
+<tr style="background:var(--main-ll)"><td><b>48×24</b></td><td>1 225</td><td>2 450</td><td>2 304</td><td>0.180918</td><td style="color:#1e8449">−0.62 %</td><td><b>0.182038</b></td><td><b>参照值</b></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="good">
+  <div class="t-title">✓ 这张表里藏着五条结论</div>
+  ① <b>全部误差都是负的。</b>有限元解<b>无例外地偏硬</b>，位移单调偏小——正是第 5.7 节最小势能下限性质的直接体现，而且它对 CST 和 Q4 <b>同时</b>成立；<br>
+  ② <b>单调收敛。</b>每次加密都更接近参照值，没有任何一次"越算越远"。这是收敛准则（完备性 + 协调性）被满足的证据；<br>
+  ③ <b>Q4 完胜 CST。</b>同一张网格下 Q4 的误差只有 CST 的 1/4 ~ 1/5；要达到 1.5 % 的精度，CST 需要 1 122 个自由度，Q4 只要约 300 个。<b>单元阶次比网格密度更值钱</b>；<br>
+  ④ <b>误差比约为 4。</b>Q4 从 4.56 % → 1.30 % → 0.25 %，每次加密降为原来的 1/3.5 ~ 1/5，趋向 1/4，说明位移收敛阶是 <i class="v">O</i>(<i class="v">h</i><sup>2</sup>)；CST 从 17.54 % → 5.52 % → 1.50 %，比值 3.2、3.7，同样趋向 4，只是常数大得多；<br>
+  ⑤ <b>收敛到的是 Timoshenko 解，不是 Euler 解。</b>0.182038 mm 与 (4.87) 的 0.182857 mm 相差 0.45 %，而与 Euler 的 0.152381 mm 相差 19 %。有限元解的是<b>二维弹性问题</b>，自动包含了剪切变形，这正是它比梁理论"更真"的地方。
+</div>
+
+<p>由相邻两级网格的结果可以反推<b>收敛阶</b>（Richardson 外推）：</p>
+<div class="formula"><span class="eq">
+<i class="v">p</i> = log<sub>2</sub> <span class="frac"><span><i class="v">δ</i><sub>参照</sub> − <i class="v">δ</i><sub><i class="v">h</i></sub></span><span><i class="v">δ</i><sub>参照</sub> − <i class="v">δ</i><sub><i class="v">h</i>/2</sub></span></span>
+　⇒
+<i class="v">δ</i><sub>∞</sub> ≈ <i class="v">δ</i><sub><i class="v">h</i>/2</sub> + <span class="frac"><span><i class="v">δ</i><sub><i class="v">h</i>/2</sub> − <i class="v">δ</i><sub><i class="v">h</i></sub></span><span>2<sup><i class="v">p</i></sup> − 1</span></span>
+</span><span class="eqno">(4.88)</span></div>
+
+<div class="tip">
+  <div class="t-title">◎ 把它变成工程习惯：<b>至少算两套网格</b></div>
+  只算一套网格的有限元结果<b>没有误差信息</b>，本质上是不可信的。
+  最低成本的做法是算两套（<i class="v">h</i> 和 <i class="v">h</i>/2），若两者相差小于工程容差就接受 <i class="v">h</i>/2 的解；算三套则可以用 (4.88) 反推收敛阶 <i class="v">p</i> 并外推出 <i class="v">δ</i><sub>∞</sub>，同时验证 <i class="v">p</i> 是否接近理论值（<i class="v">p</i> 明显偏离 2 往往说明有奇异点或单元严重畸形）。
+  ASME V&amp;V 20 与各国压力容器规范把这套流程写成了强制条款，称为<b>网格收敛研究</b>（mesh convergence study）。
+</div>
+
+<div class="lab" id="lab9">
+  <div class="lab-head"><span class="lab-tag">实验台 9</span>收敛实验台：CST vs Q4<span class="lab-hint">拖动网格级别，实时组装求解并把误差画到双对数坐标上</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>网格级别</label><input type="range" id="l9m" min="1" max="4" step="1" value="2"><span class="val" id="l9mv">4×2</span></div>
+      <div class="ctrl"><label>单元类型</label>
+        <select id="l9k"><option value="CST">CST（3 节点三角形）</option><option value="Q4" selected>Q4（4 节点四边形）</option></select>
+      </div>
+      <div class="ctrl"><button class="lab-btn" id="l9run">▶ 计算本级</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px">
+      <svg viewBox="0 0 660 270" id="l9svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="lab-out">
+      <div class="kv">自由度<b id="l9dof">—</b></div>
+      <div class="kv">单元数<b id="l9ne">—</b></div>
+      <div class="kv">端部挠度<b id="l9d">—</b></div>
+      <div class="kv">相对误差<b id="l9err">—</b></div>
+      <div class="kv">与 Euler 梁比<b id="l9eu">—</b></div>
+      <div class="kv">实测收敛阶 p<b id="l9p">—</b></div>
+    </div>
+    <div class="lab-note" id="l9note">左图是变形后的网格（放大显示），右图是误差–自由度双对数曲线。曲线的<b>斜率</b>就是收敛阶：越陡越好。切换单元类型，看两条曲线相距多远。</div>
+  </div>
+</div>
+
+<h3>10.6 数值实验：应力恢复能补回多少</h3>
+
+<p>同一个悬臂板，取 16×8 的 CST 网格（306 个自由度），沿<b>跨中截面</b> <i class="v">x</i> = 1 m 切开。该截面弯矩 <i class="v">M</i> = <i class="v">P</i>(<i class="v">L</i> − <i class="v">x</i>) = 10 kN·m，梁理论给出线性分布 <i class="v">σ</i><sub>x</sub> = <i class="v">My</i>′/<i class="v">I</i>（<i class="v">y</i>′ = <i class="v">y</i> − 0.5 m，<i class="v">I</i> = 8.3333×10<sup>−4</sup> m<sup>4</sup>）。下表列出每个节点周围单元的<b>原始</b><i class="v">σ</i><sub>x</sub>极值、跳跃量、绕节点平均值，以及与梁理论的比较（单位 MPa）：</p>
+
+<div class="asm-wrap">
+<table>
+<thead><tr><th><i class="v">y</i> (m)</th><th>邻接单元数</th><th>原始最小</th><th>原始最大</th><th>跳跃 <i class="v">η</i></th><th>绕节点平均</th><th>梁理论 <i class="v">My</i>′/<i class="v">I</i></th><th>偏差</th></tr></thead>
+<tbody>
+<tr><td>0.000（下表面）</td><td>3</td><td>−6.1652</td><td>−3.8751</td><td>2.290</td><td>−5.1638</td><td>−6.0000</td><td style="color:#b03a2e">−13.9 %</td></tr>
+<tr><td>0.125</td><td>6</td><td>−6.1652</td><td>−2.5547</td><td>3.611</td><td>−4.2916</td><td>−4.5000</td><td style="color:#1e8449">−4.6 %</td></tr>
+<tr><td>0.250</td><td>6</td><td>−4.6500</td><td>−1.2356</td><td>3.414</td><td>−2.8741</td><td>−3.0000</td><td style="color:#1e8449">−4.2 %</td></tr>
+<tr><td>0.375</td><td>6</td><td>−3.1355</td><td>+0.0842</td><td>3.220</td><td>−1.4561</td><td>−1.5000</td><td style="color:#1e8449">−2.9 %</td></tr>
+<tr style="background:var(--main-ll)"><td>0.500（中性轴）</td><td>6</td><td>−1.6185</td><td>+1.4069</td><td><b>3.025</b></td><td>−0.0356</td><td><b>0.0000</b></td><td>绝对偏差 0.036</td></tr>
+<tr><td>0.625</td><td>6</td><td>−0.0972</td><td>+2.7331</td><td>2.830</td><td>+1.3884</td><td>+1.5000</td><td style="color:#bf8f14">−7.4 %</td></tr>
+<tr><td>0.750</td><td>6</td><td>+1.4285</td><td>+4.0601</td><td>2.632</td><td>+2.8152</td><td>+3.0000</td><td style="color:#bf8f14">−6.2 %</td></tr>
+<tr><td>0.875</td><td>6</td><td>+2.9567</td><td>+5.3832</td><td>2.427</td><td>+4.2414</td><td>+4.5000</td><td style="color:#bf8f14">−5.8 %</td></tr>
+<tr><td>1.000（上表面）</td><td>3</td><td>+4.4833</td><td>+6.1034</td><td>1.620</td><td>+5.3233</td><td>+6.0000</td><td style="color:#b03a2e">−11.3 %</td></tr>
+</tbody>
+</table>
+</div>
+
+<figure>
+<svg viewBox="0 0 660 244" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="跨中截面原始单元应力的阶梯分布与绕节点平均后的连续分布">
+  <g font-family="Segoe UI" font-size="11.5">
+  <!-- 坐标 -->
+  <line x1="290" y1="24" x2="290" y2="214" stroke="#7f8c98" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="120" y1="214" x2="470" y2="214" stroke="#1f2d3d" stroke-width="1.4"/>
+  <line x1="120" y1="214" x2="120" y2="24" stroke="#1f2d3d" stroke-width="1.4"/>
+  <text x="295" y="230" fill="#7f8c98">σ = 0</text>
+  <text x="470" y="232" fill="#1f2d3d" font-weight="700">σ&#8202;<tspan font-size="9" dy="3">x</tspan><tspan dy="-3"> (MPa)</tspan></text>
+  <text x="100" y="20" fill="#1f2d3d" font-weight="700">y (m)</text>
+  <!-- 刻度 x: -6 -> 120 ; 0 -> 290 ; 6 -> 460 -->
+  <g fill="#7f8c98" font-size="10.5" text-anchor="middle">
+    <text x="120" y="228">−6</text><text x="177" y="228">−4</text><text x="233" y="228">−2</text>
+    <text x="347" y="228">2</text><text x="403" y="228">4</text><text x="460" y="228">6</text>
+  </g>
+  <g fill="#7f8c98" font-size="10.5" text-anchor="end">
+    <text x="114" y="218">0</text><text x="114" y="171">0.25</text><text x="114" y="124">0.5</text><text x="114" y="77">0.75</text><text x="114" y="30">1.0</text>
+  </g>
+  <!-- 梁理论直线 : y=0 -> sigma=-6 (x=120) ; y=1 -> +6 (x=460) -->
+  <line x1="120" y1="214" x2="460" y2="26" stroke="#1f2d3d" stroke-width="2" stroke-dasharray="7 4"/>
+  <text x="474" y="34" fill="#1f2d3d" font-size="11">梁理论</text>
+  <!-- 绕节点平均折线：sigma -> x = 290 + s*28.33 ; y -> 214 - Y*188 -->
+  <g class="drawin">
+  <polyline points="143.7,214 168.4,190.5 208.6,167 248.7,143.5 289.0,120 329.3,96.5 369.7,73 410.2,49.5 440.8,26"
+            fill="none" stroke="#1e8449" stroke-width="2.6"/>
+  <!-- 原始单元常应力阶梯（示意：每级取该带内两个单元的两个值） -->
+  <g stroke="#b03a2e" stroke-width="1.7" fill="none" opacity="0.85">
+    <path d="M115,214 L115,190.5 L217,190.5 L217,167 L158,167 L158,143.5 L244,143.5 L244,120 L180,120 L180,96.5 L367,96.5 L367,73 L318,73 L318,49.5 L442,49.5 L442,26"/>
+  </g>
+  </g>
+  <g fill="#1e8449"><circle cx="143.7" cy="214" r="3.2"/><circle cx="168.4" cy="190.5" r="3.2"/><circle cx="208.6" cy="167" r="3.2"/><circle cx="248.7" cy="143.5" r="3.2"/><circle cx="289.0" cy="120" r="3.2"/><circle cx="329.3" cy="96.5" r="3.2"/><circle cx="369.7" cy="73" r="3.2"/><circle cx="410.2" cy="49.5" r="3.2"/><circle cx="440.8" cy="26" r="3.2"/></g>
+  <!-- 图例 -->
+  <g font-size="11.5">
+    <line x1="500" y1="70" x2="530" y2="70" stroke="#b03a2e" stroke-width="1.7"/>
+    <text x="536" y="74" fill="#b03a2e">单元常应力（阶梯）</text>
+    <line x1="500" y1="94" x2="530" y2="94" stroke="#1e8449" stroke-width="2.6"/>
+    <text x="536" y="98" fill="#1e8449">绕节点平均</text>
+    <line x1="500" y1="118" x2="530" y2="118" stroke="#1f2d3d" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="536" y="122" fill="#1f2d3d">梁理论</text>
+  </g>
+  <text x="536" y="152" fill="#7f8c98" font-size="10.5">16×8 CST，跨中截面</text>
+  <text x="536" y="168" fill="#7f8c98" font-size="10.5">M = 10 kN·m</text>
+  <text x="536" y="192" fill="#b03a2e" font-size="10.5">注意两端表面处</text>
+  <text x="536" y="206" fill="#b03a2e" font-size="10.5">平均值明显偏内</text>
+  </g>
+</svg>
+<figcaption><b>图 4.12</b>　同一批数据的三种表示。红色阶梯线是<b>原始单元常应力</b>，同一高度上相差 2.4 ~ 3.6 MPa；绿色折线是<b>绕节点平均</b>后的结果，与梁理论（黑虚线）几乎重合；只在上下两个自由表面处明显偏内——因为那里只有 3 个单元贡献，平均值被内部的较小值拉低了。</figcaption>
+</figure>
+
+<div class="good">
+  <div class="t-title">✓ 三条值得记住的观察</div>
+  ① <b>平均把误差从"数倍"降到"几个百分点"。</b>原始单元应力在跨中截面上下限相差 3 MPa（相当于该处应力的 50 % 以上），平均后内部节点的偏差只有 3 ~ 7 %——<b>免费的一次精度提升</b>；<br>
+  ② <b>中性轴上的平均值 −0.036 MPa ≈ 0</b>，而参与平均的原始值从 −1.62 到 +1.41。这说明平均法消掉的主要是<b>符号相反的等量误差</b>；<br>
+  ③ <b>两个自由表面的偏差（−13.9 %、−11.3 %）明显大于内部。</b>这正是 10.2 节警告的边界偏置。工程上要么在表面附近额外加密，要么从内部两层节点<b>线性外推</b>到表面：由 <i class="v">y</i> = 0.125 与 0.250 的平均值外推到 <i class="v">y</i> = 0，得 −4.2916 − (−2.8741 + 4.2916) = −5.709 MPa，偏差从 −13.9 % 收窄到 −4.9 %。
+</div>
+
+<p>顺便看看跳跃量 (4.86) 是否真能当误差指示器。取跨中中性轴节点，逐级加密：</p>
+
+<table>
+<thead><tr><th>网格</th><th><i class="v">h</i> (m)</th><th>该节点跳跃 <i class="v">η</i> (MPa)</th><th><i class="v">y</i>=0.75 处平均应力 (MPa)</th><th>与梁理论 3.0 MPa 的偏差</th></tr></thead>
+<tbody>
+<tr><td>2×1</td><td>1.000</td><td>3.047</td><td>—</td><td>—</td></tr>
+<tr><td>4×2</td><td>0.500</td><td>6.764</td><td>—</td><td>—</td></tr>
+<tr><td>8×4</td><td>0.250</td><td>5.228</td><td>2.3514</td><td style="color:#b03a2e">−21.6 %</td></tr>
+<tr><td>16×8</td><td>0.125</td><td>3.025</td><td>2.8152</td><td style="color:#bf8f14">−6.2 %</td></tr>
+<tr><td>32×16</td><td>0.0625</td><td>1.573</td><td>2.9527</td><td style="color:#1e8449">−1.6 %</td></tr>
+</tbody>
+</table>
+
+<div class="tip">
+  <div class="t-title">◎ 两个收敛阶，差一档</div>
+  从 8×4 往后，跳跃量 <i class="v">η</i> 每加密一次约<b>减半</b>（5.23 → 3.03 → 1.57），即 <i class="v">O</i>(<i class="v">h</i>)；而平均后的应力误差每次约降到 <b>1/3.5 ~ 1/4</b>（21.6 % → 6.2 % → 1.6 %），即 <i class="v">O</i>(<i class="v">h</i><sup>2</sup>)。
+  <b>平均使应力的收敛阶提高了一整阶</b>，与位移同阶——这就是后处理的价值。
+  头两行（2×1、4×2）<i class="v">η</i> 反而上升，是因为那时网格还没有"分辨"出应力场，跳跃量小是<b>因为应力整体都算小了</b>，不代表精度高。<b>误差指示器只有在网格进入渐近收敛区后才可信</b>，这也是必须至少算三套网格的原因。
+</div>
+
+<div class="lab" id="lab10">
+  <div class="lab-head"><span class="lab-tag">实验台 10</span>应力云图：原始 vs 平均<span class="lab-hint">同一套解，切换单元常应力与绕节点平均，看阶梯如何被抹平</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>网格级别</label><input type="range" id="l10m" min="1" max="4" step="1" value="3"><span class="val" id="l10mv">8×4</span></div>
+      <div class="ctrl"><label>显示分量</label>
+        <select id="l10c"><option value="0" selected>σₓ</option><option value="1">σ_y</option><option value="2">τ_xy</option><option value="3">von Mises</option></select>
+      </div>
+      <div class="ctrl"><button class="lab-btn" id="l10mode">当前：单元常应力</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px">
+      <svg viewBox="0 0 660 250" id="l10svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="lab-out">
+      <div class="kv">单元数<b id="l10ne">—</b></div>
+      <div class="kv">最大值 (MPa)<b id="l10max">—</b></div>
+      <div class="kv">最小值 (MPa)<b id="l10min">—</b></div>
+      <div class="kv">最大跳跃 η (MPa)<b id="l10jump">—</b></div>
+      <div class="kv">跨中 σₓ 峰值<b id="l10mid">—</b></div>
+    </div>
+    <div class="lab-note" id="l10note">左边是云图，右边是色标。切到「绕节点平均」后阶梯消失，但<b>极值也被削掉了一点</b>——这正是平均法的代价：它同时也是一次平滑（低通滤波）。做强度校核时要清楚软件给你看的是哪一个。</div>
+  </div>
+</div>
+
+<h3>10.7 交付前的检查清单</h3>
+
+<div class="good">
+  <div class="t-title">✓ 一份可以逐条打勾的清单</div>
+  <b>模型层面</b><br>
+  ☐ 单元形状：长宽比 &lt; 3，最小内角 &gt; 30°，没有翻转（负面积）；<br>
+  ☐ 网格协调：没有悬空节点，材料/厚度界面上网格对齐；<br>
+  ☐ 约束：恰好消去 3 个刚体自由度，没有过约束（对照例题 4-5）；<br>
+  ☐ 载荷：等效节点力的<b>合力与合力矩</b>都与原分布载荷相同（对照第 6 章）。<br>
+  <b>求解层面</b><br>
+  ☐ <b class="m">K</b> 对角元全正、行和为零、施加约束后正定；<br>
+  ☐ 求解器没有报警（负主元、奇异、pivot 过小）。<br>
+  <b>结果层面</b><br>
+  ☐ ΣR = −ΣF，自由节点反力为零；<br>
+  ☐ 变形图的形态与直觉一致（这一条抓出的错误比所有数值检查加起来还多）；<br>
+  ☐ 至少两套网格，关键量的相对变化小于工程容差；<br>
+  ☐ 关键部位的应力跳跃 <i class="v">η</i> 相对量 &lt; 5 %；<br>
+  ☐ 与一个独立估算（材料力学公式、手册、实验）量级相符；<br>
+  ☐ 报告里写清楚给出的是<b>单元应力还是平均应力</b>，以及对称模型的反力是否已还原倍数。
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ 最后一句忠告</div>
+  有限元不会告诉你模型错了，它只会<b>忠实地求解你给它的那个模型</b>。
+  本章所有技术——平均、跳跃指示器、收敛研究、清单——都是为了回答同一个问题：<b>我给它的那个模型，和我心里想的那个结构，是同一个吗？</b>
+  这个问题没有任何自动化工具能替你回答。
+</div>
+
+</section>

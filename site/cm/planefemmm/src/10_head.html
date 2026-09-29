@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>第 4 章　平面问题有限元法 · 计算力学拔尖班讲义</title>
+<meta name="description" content="平面应力与平面应变问题的有限元方法：能量原理导出单元刚度矩阵、刚度集成法组装总刚、分布载荷的积分等效、边界条件施加方法与经典例题。单文件离线讲义，含动画与交互实验台。">
+<style>
+{{CSS}}
+</style>
+</head>
+<body>
+
+<div id="progbar"></div>
+<div class="topbar">
+  <span class="tb-title">计算力学 · 第 4 章</span>
+  <span class="tb-now" id="tbNow">平面问题有限元法</span>
+  <button id="btnAnim" title="暂停 / 恢复页面动画">⏸ 动画</button>
+  <button id="btnTheme" title="浅色 / 深色主题">🌙 深色</button>
+  <button onclick="window.print()" title="打印或导出 PDF">🖨 打印</button>
+</div>
+<button id="totop" title="返回顶部">↑</button>
+
+<div class="sidebar">
+  <div class="brand">计算力学 · 第 4 章<small>平面问题有限元法 · 拔尖班讲义</small></div>
+  <nav id="toc">
+    <a href="#ch0"><span class="dot"></span>封面 · 使用说明</a>
+    <a href="#ch1"><span class="dot"></span>1 从杆件到连续体</a>
+    <a href="#ch2"><span class="dot"></span>2 离散化：网格与编号</a>
+    <a href="#ch3"><span class="dot"></span>3 位移模式与形函数</a>
+    <a href="#ch4"><span class="dot"></span>4 几何矩阵与应力矩阵</a>
+    <a href="#ch5"><span class="dot"></span>5 能量原理导出单刚</a>
+    <a href="#ch6"><span class="dot"></span>6 载荷矩阵：积分等效</a>
+    <a href="#ch7"><span class="dot"></span>7 单刚组装总刚</a>
+    <a href="#ch8"><span class="dot"></span>8 边界条件的施加</a>
+    <a href="#ch9"><span class="dot"></span>9 经典例题三则</a>
+    <a href="#ch10"><span class="dot"></span>10 应力后处理与收敛</a>
+    <a href="#ch11"><span class="dot"></span>11 小结 · 自测 · 习题</a>
+  </nav>
+</div>
+
+<main>
+
+<div class="cover" id="ch0">
+  <h1>第 4 章　平面问题有限元法</h1>
+  <div class="sub">Finite Element Method for Two-Dimensional Elasticity</div>
+
+  <svg class="hero-svg" viewBox="0 0 660 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="平面板离散为三角形网格并受分布载荷">
+    <!-- 固定端 -->
+    <g stroke="#7f8c98" stroke-width="2">
+      <line x1="96" y1="34" x2="96" y2="142"/>
+      <line x1="96" y1="40" x2="86" y2="50"/><line x1="96" y1="58" x2="86" y2="68"/>
+      <line x1="96" y1="76" x2="86" y2="86"/><line x1="96" y1="94" x2="86" y2="104"/>
+      <line x1="96" y1="112" x2="86" y2="122"/><line x1="96" y1="130" x2="86" y2="140"/>
+    </g>
+    <!-- 三角形网格 -->
+    <g fill="none" stroke="#9fb8c9" stroke-width="1.6">
+      <rect x="96" y="34" width="432" height="108" fill="#f2f7fb"/>
+      <line class="hero-bar" x1="96" y1="88" x2="528" y2="88"/>
+      <line class="hero-bar b2" x1="168" y1="34" x2="168" y2="142"/>
+      <line class="hero-bar b3" x1="240" y1="34" x2="240" y2="142"/>
+      <line class="hero-bar" x1="312" y1="34" x2="312" y2="142"/>
+      <line class="hero-bar b2" x1="384" y1="34" x2="384" y2="142"/>
+      <line class="hero-bar b3" x1="456" y1="34" x2="456" y2="142"/>
+      <line class="hero-bar" x1="96" y1="34" x2="168" y2="88"/>
+      <line class="hero-bar b2" x1="168" y1="34" x2="240" y2="88"/>
+      <line class="hero-bar b3" x1="240" y1="34" x2="312" y2="88"/>
+      <line class="hero-bar" x1="312" y1="34" x2="384" y2="88"/>
+      <line class="hero-bar b2" x1="384" y1="34" x2="456" y2="88"/>
+      <line class="hero-bar b3" x1="456" y1="34" x2="528" y2="88"/>
+      <line class="hero-bar b2" x1="96" y1="88" x2="168" y2="142"/>
+      <line class="hero-bar b3" x1="168" y1="88" x2="240" y2="142"/>
+      <line class="hero-bar" x1="240" y1="88" x2="312" y2="142"/>
+      <line class="hero-bar b2" x1="312" y1="88" x2="384" y2="142"/>
+      <line class="hero-bar b3" x1="384" y1="88" x2="456" y2="142"/>
+      <line class="hero-bar" x1="456" y1="88" x2="528" y2="142"/>
+      <rect x="96" y="34" width="432" height="108" stroke="#5d7f96" stroke-width="2"/>
+    </g>
+    <!-- 节点 -->
+    <g fill="#fff" stroke="#1a5276" stroke-width="1.8">
+      <circle cx="96" cy="34" r="3.6"/><circle cx="240" cy="34" r="3.6"/><circle cx="384" cy="34" r="3.6"/><circle cx="528" cy="34" r="3.6"/>
+      <circle cx="96" cy="88" r="3.6"/><circle cx="240" cy="88" r="3.6"/><circle cx="384" cy="88" r="3.6"/><circle cx="528" cy="88" r="3.6"/>
+      <circle cx="96" cy="142" r="3.6"/><circle cx="240" cy="142" r="3.6"/><circle cx="384" cy="142" r="3.6"/><circle cx="528" cy="142" r="3.6"/>
+    </g>
+    <!-- 上边均布载荷 -->
+    <g class="hero-load" stroke="#b03a2e" stroke-width="2" fill="#b03a2e">
+      <line x1="120" y1="8" x2="120" y2="24"/><polygon points="120,30 115,19 125,19"/>
+      <line x1="168" y1="8" x2="168" y2="24"/><polygon points="168,30 163,19 173,19"/>
+      <line x1="216" y1="8" x2="216" y2="24"/><polygon points="216,30 211,19 221,19"/>
+      <line x1="264" y1="8" x2="264" y2="24"/><polygon points="264,30 259,19 269,19"/>
+      <line x1="312" y1="8" x2="312" y2="24"/><polygon points="312,30 307,19 317,19"/>
+      <line x1="360" y1="8" x2="360" y2="24"/><polygon points="360,30 355,19 365,19"/>
+      <line x1="408" y1="8" x2="408" y2="24"/><polygon points="408,30 403,19 413,19"/>
+      <line x1="456" y1="8" x2="456" y2="24"/><polygon points="456,30 451,19 461,19"/>
+      <line x1="504" y1="8" x2="504" y2="24"/><polygon points="504,30 499,19 509,19"/>
+      <line x1="112" y1="8" x2="512" y2="8" stroke-width="2.4"/>
+      <text x="548" y="14" font-size="14" font-family="Segoe UI" stroke="none">q</text>
+    </g>
+    <text x="556" y="94" font-size="13" font-family="Segoe UI" fill="#7f8c98">t</text>
+    <text x="556" y="112" font-size="11" font-family="Segoe UI" fill="#9fb8c9">厚度</text>
+  </svg>
+
+  <div class="chips">
+    <span class="chip">11 章 · 正文约 1.4 万字</span>
+    <span class="chip">18 幅插图 + 2 段原创 GIF</span>
+    <span class="chip">10 个可交互实验台</span>
+    <span class="chip">3 道完整数值例题</span>
+    <span class="chip">全部数值经 Python 校核</span>
+    <span class="chip">离线单文件 · 可打印</span>
+  </div>
+
+  <div class="meta">
+    课程：计算力学（Computational Mechanics）　|　适用：力学拔尖班 · 大学二年级<br>
+    本章是第 3 章《杆件有限元方法》的直接延续：从"天然离散"的杆系走向"必须人为离散"的连续体。
+    参考课程与教材见 <a href="#ch11">第 11.7 节</a>。
+  </div>
+</div>
+
+<div class="obj">
+  <div class="obj-title">◎ 本章学习目标（学完本章你应当能够……）</div>
+  <ol>
+    <li><b>判别</b>一个工程问题应按<span class="pill ps">平面应力</span>还是<span class="pill pe">平面应变</span>处理，并写出相应的弹性矩阵 <b class="m">D</b>，说明两者只差一组材料常数替换；</li>
+    <li><b>构造</b>三节点三角形单元（CST）的位移模式与形函数，用 Pascal 三角形<b>解释</b>为什么必须取完全一次多项式，并<b>检验</b>收敛准则（完备性 + 协调性）；</li>
+    <li><b>由最小势能原理独立推导</b>单元刚度矩阵 <b class="m">k</b><sup>e</sup> = ∫<b class="m">B</b><sup>T</sup><b class="m">DB</b> <i class="v">t</i> d<i class="v">A</i>，并从推导过程<b>论证</b>它为什么必然对称、奇异、与单元位置无关；</li>
+    <li><b>实施</b>刚度集成法（"对号入座"）把各单元 6×6 单刚装配成 2<i class="v">n</i>×2<i class="v">n</i> 总刚，并<b>预测</b>总刚的零元分布与带宽；</li>
+    <li><b>推导</b>任意分布载荷的等效节点载荷——包括均布线载荷、均布面载荷、线性/抛物线/静水压等非均布载荷——掌握边积分主公式与面积坐标积分公式，并<b>说明</b>"能量等效"与"静力等效"的区别；</li>
+    <li><b>比较</b>直接缩减法、化 1 置 0 法、乘大数法（罚函数）与主从自由度法四种边界条件施加方式的精度与代价，正确处理<b>非零已知位移</b>与<b>斜支座</b>；</li>
+    <li><b>完成</b>一个平面问题的全流程求解：离散 → 单元分析 → 组装 → 载荷等效 → 施加约束 → 解方程 → 求应力 → 后处理平均 → 平衡校核与收敛性判断。</li>
+  </ol>
+</div>
+
+<div class="borrow">
+  <div class="t-title">◎ 讲义说明（本讲义借鉴了哪些讲法）</div>
+  本讲义以课件《平面问题有限元》为骨架，并在若干关键处采用了国外经典课程的处理方式：
+  单元刚度矩阵<b>不从直接刚度法而从最小势能原理推出</b>——这是 K.-J. Bathe 在 MIT 2.092 与《Finite Element Procedures》第 4 章的标准路线，好处是同一套推导对任何单元、任何维数都成立；
+  <b>形函数的三条性质（Kronecker delta、单位分解、边界线性）与收敛准则的对应关系</b>，取自 C. A. Felippa 的 CU Boulder <em>Introduction to Finite Element Methods</em> 第 15、16 章；
+  <b>等效节点载荷用"虚功相等"定义而非"静力合力相等"</b>，并用 8 节点单元 1/6 : 2/3 : 1/6 这个反直觉结果作为分水岭，取自 Felippa 讲义中"一致节点力"（consistent nodal forces）的处理与 Cook 等《Concepts and Applications》第 4 章；
+  <b>"有限元位移解自下方收敛、结构显得偏刚"</b>的 Rayleigh–Ritz 解释，取自 Bathe《Finite Element Procedures》第 4.3 节（收敛性与单调收敛性质）与 Zienkiewicz &amp; Taylor 对变分近似的一般讨论，见参考文献 <a href="#ch11">[1][4]</a>；
+  <b>Pascal 三角形与几何各向同性</b>的讲法取自 Logan 与 Reddy。全部数值例题均由独立的 Python / NumPy 程序验算，秩、行和、条件数、特征值等中间量在正文中一并给出，读者可逐项复核。
+</div>

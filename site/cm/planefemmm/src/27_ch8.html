@@ -1,0 +1,251 @@
+
+<!-- ================================================== 第 8 章 ================================================== -->
+<section id="ch8">
+<h2><span class="chno">8</span>边界条件的施加：让奇异矩阵变得可解</h2>
+
+<p>组装完成的 <b class="m">Kd</b> = <b class="m">F</b> 有 2<i class="v">n</i> 个方程、2<i class="v">n</i> 个未知数，看起来可以解了，实际却<b>解不出来</b>：<b class="m">K</b> 的秩只有 2<i class="v">n</i> − 3。物理原因一目了然——结构还没被固定，它可以整体平移和转动，位移不唯一。本章介绍四种消除刚体自由度的方法，并给出它们在精度、效率、编程难度上的取舍。</p>
+
+<h3>8.1 三种边界条件</h3>
+
+<table class="left">
+<thead><tr><th style="width:24%">类型</th><th style="width:30%">数学形式</th><th>在有限元中怎么处理</th></tr></thead>
+<tbody>
+<tr><td><b>位移边界（本质 / Dirichlet）</b></td><td><i class="v">u</i> = <span style="text-decoration:overline"><i class="v">u</i></span> 在 <i class="v">S</i><sub>u</sub> 上</td>
+  <td><b>必须显式施加</b>。这是本章的主题。</td></tr>
+<tr><td><b>力边界（自然 / Neumann）</b></td><td><b class="m">σ·n</b> = <b class="m">t̄</b> 在 <i class="v">S</i><sub>t</sub> 上</td>
+  <td><b>不需要施加</b>——它已经被 (4.42) 的面力积分自动满足了。这正是"自然"二字的含义。</td></tr>
+<tr><td><b>自由边界</b></td><td><b class="m">t̄</b> = 0</td>
+  <td>什么都不做。<b>零面力是默认状态</b>——这是初学者最容易困惑的一点：不加载荷就是自由边界。</td></tr>
+</tbody>
+</table>
+
+<div class="tip">
+  <div class="t-title">◎ 为什么力边界"自然"而位移边界"本质"</div>
+  推导最小势能原理时，位移场必须<b>事先</b>满足位移边界条件（属于容许位移场的定义），所以它是泛函本身的<b>本质约束</b>；而力边界条件是变分 <i class="v">δΠ</i> = 0 的<b>副产品</b>（分部积分后的边界项），它<b>自然而然</b>地被满足。
+  Hughes 第 1–2 章用"essential / natural"这对术语系统地阐述了这个区别，它在所有变分问题中都成立。
+</div>
+
+<h3>8.2 方法一：直接缩减法（划行划列）</h3>
+
+<p>最直白的办法：既然某些自由度已知为零，它们就不是未知数，从方程组里<b>删掉</b>。把自由度分成已知（下标 c）与未知（下标 f）两组，方程分块写作</p>
+
+<div class="formula"><span class="eq">
+<span class="mat c2"><span><b class="m">K</b><sub>ff</sub></span><span><b class="m">K</b><sub>fc</sub></span><span><b class="m">K</b><sub>cf</sub></span><span><b class="m">K</b><sub>cc</sub></span></span>
+<span class="mat c1"><span><b class="m">d</b><sub>f</sub></span><span><b class="m">d</b><sub>c</sub></span></span>
+=
+<span class="mat c1"><span><b class="m">F</b><sub>f</sub></span><span><b class="m">R</b><sub>c</sub></span></span>
+</span><span class="eqno">(4.66)</span></div>
+
+<p>若 <b class="m">d</b><sub>c</sub> = <b class="m">0</b>，第一行直接给出</p>
+
+<div class="formula" style="border-left-color:#1e8449"><span class="eq">
+<b class="m">K</b><sub>ff</sub> <b class="m">d</b><sub>f</sub> = <b class="m">F</b><sub>f</sub>　　（阶数降为 2<i class="v">n</i> − <i class="v">n</i><sub>c</sub>，且<b>正定</b>）
+</span><span class="eqno">(4.67)</span></div>
+
+<p>解出 <b class="m">d</b><sub>f</sub> 后，第二行<b>顺带给出支反力</b>：<b class="m">R</b><sub>c</sub> = <b class="m">K</b><sub>cf</sub><b class="m">d</b><sub>f</sub>。</p>
+
+<div class="lcards" style="grid-template-columns:1fr 1fr">
+  <div class="lcard" style="border-color:#8fd0a8;text-align:left">
+    <div class="lc-t" style="color:#1e8449">✓ 优点</div>
+    <div class="lc-n" style="color:var(--ink);font-size:13px">阶数<b>真的降低</b>了，存储和计算量都减少；<b class="m">K</b><sub>ff</sub> 是严格正定的，条件数<b>不受任何人为干扰</b>；理论上最干净。</div>
+  </div>
+  <div class="lcard" style="border-color:#e8b4ad;text-align:left">
+    <div class="lc-t" style="color:#b03a2e">✗ 缺点</div>
+    <div class="lc-n" style="color:var(--ink);font-size:13px">要建立"整体编号 ↔ 缩减后编号"的映射表，<b>编程繁琐</b>；矩阵要重新搬运一遍，破坏已经建好的带状/稀疏结构；约束一变就得全部重来。</div>
+  </div>
+</div>
+
+<h3>8.3 方法二：化 1 置 0 法（对角元置一）</h3>
+
+<p>保持矩阵阶数不变，只把约束自由度对应的<b>那一行、那一列全部清零</b>，对角元改成 1，右端项改成 0（或已知位移值）：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">K</i><sub>rs</sub> ← 0 (<i class="v">s</i> ≠ <i class="v">r</i>)　，
+<i class="v">K</i><sub>sr</sub> ← 0 (<i class="v">s</i> ≠ <i class="v">r</i>)　，
+<i class="v">K</i><sub>rr</sub> ← 1　，
+<i class="v">F</i><sub>r</sub> ← <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>
+</span><span class="eqno">(4.68)</span></div>
+
+<p>这样第 <i class="v">r</i> 个方程退化成 1·<i class="v">d</i><sub>r</sub> = <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>，强制给出所需的位移值；而把第 <i class="v">r</i> <b>列</b>也清零，是为了保持矩阵<b>对称</b>（否则无法用 Cholesky 分解）。</p>
+
+<div class="warn">
+  <div class="t-title">▲ 清零第 r 列之前，必须先"移项"</div>
+  若 <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub> ≠ 0，第 <i class="v">r</i> 列中的元素 <i class="v">K</i><sub>sr</sub>·<span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub> 对其他方程是有贡献的，不能一删了事，必须先搬到右端：
+  <div class="formula" style="background:transparent;margin:8px 0"><span class="eq"><i class="v">F</i><sub>s</sub> ← <i class="v">F</i><sub>s</sub> − <i class="v">K</i><sub>sr</sub> · <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>　，　对所有 <i class="v">s</i> ≠ <i class="v">r</i></span></div>
+  漏掉这一步是<b>非零强迫位移问题最常见的错误</b>，结果表现为"位移量级对但分布形态不对"。零位移约束时 <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub> = 0，这一步自动消失，所以很多人从未意识到它的存在。
+</div>
+
+<p>化 1 置 0 法编程简单、不改变矩阵规模，是教学程序和很多中小型求解器的首选。代价是：被约束的那些方程仍占着存储；而且支反力不能直接从方程读出（那一行已被改写），要另外用 <b class="m">R</b> = <b class="m">Kd</b> − <b class="m">F</b> 用<b>原始</b>的 <b class="m">K</b> 算。</p>
+
+<h3>8.4 方法三：乘大数法（罚函数法）</h3>
+
+<p>连清零都省了——只在对角元上<b>加一个极大的数</b>：</p>
+
+<div class="formula" style="border-left-color:#7d3c98"><span class="eq">
+<i class="v">K</i><sub>rr</sub> ← <i class="v">K</i><sub>rr</sub> + <i class="v">α</i>　，
+<i class="v">F</i><sub>r</sub> ← <i class="v">F</i><sub>r</sub> + <i class="v">α</i> · <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>　，
+<i class="v">α</i> = 10<sup><i class="v">p</i></sup> · max(<i class="v">K</i><sub>ii</sub>)
+</span><span class="eqno">(4.69)</span></div>
+
+<p>原理：第 <i class="v">r</i> 个方程变成 Σ<i class="v">K</i><sub>rs</sub><i class="v">d</i><sub>s</sub> + <i class="v">α d</i><sub>r</sub> = <i class="v">F</i><sub>r</sub> + <i class="v">α</i><span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>。当 <i class="v">α</i> 远大于其余各项时，方程被 <i class="v">α</i> 项主宰，近似给出 <i class="v">d</i><sub>r</sub> ≈ <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>。</p>
+
+<p>从能量角度看，这相当于在被约束的自由度上<b>接了一根刚度为 <i class="v">α</i> 的弹簧</b>，在总势能里加了一个罚项 ½<i class="v">α</i>(<i class="v">d</i><sub>r</sub> − <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>)<sup>2</sup>。弹簧越硬，约束越准，但矩阵越病态。这是一个<b>典型的取舍</b>：</p>
+
+<div class="asm-wrap">
+<table>
+<thead><tr><th>罚因子 <i class="v">α</i>/max(<i class="v">K</i><sub>ii</sub>)</th><th>条件数 cond(<b class="m">K</b>)</th><th>约束违反 max|<i class="v">u</i><sub>固定</sub>|</th><th>自由位移误差</th><th>评价</th></tr></thead>
+<tbody>
+<tr><td>10<sup>4</sup></td><td>2.212 × 10<sup>5</sup></td><td>3.91 × 10<sup>−7</sup> mm</td><td>7.14 × 10<sup>−7</sup> mm</td><td>约束太软，误差可见</td></tr>
+<tr><td>10<sup>6</sup></td><td>2.211 × 10<sup>7</sup></td><td>3.91 × 10<sup>−9</sup> mm</td><td>7.14 × 10<sup>−9</sup> mm</td><td>基本够用</td></tr>
+<tr style="background:var(--main-ll)"><td><b>10<sup>8</sup></b></td><td>2.211 × 10<sup>9</sup></td><td>3.91 × 10<sup>−11</sup> mm</td><td>7.14 × 10<sup>−11</sup> mm</td><td><b>推荐区间</b></td></tr>
+<tr style="background:var(--main-ll)"><td><b>10<sup>10</sup></b></td><td>2.211 × 10<sup>11</sup></td><td>3.91 × 10<sup>−13</sup> mm</td><td>7.14 × 10<sup>−13</sup> mm</td><td><b>推荐区间</b></td></tr>
+<tr style="background:var(--main-ll)"><td><b>10<sup>12</sup></b></td><td>2.211 × 10<sup>13</sup></td><td>3.91 × 10<sup>−15</sup> mm</td><td>7.15 × 10<sup>−15</sup> mm</td><td><b>推荐区间上界</b></td></tr>
+<tr><td>10<sup>14</sup></td><td>1.886 × 10<sup>15</sup></td><td>3.91 × 10<sup>−17</sup> mm</td><td>7.12 × 10<sup>−17</sup> mm</td><td>已接近双精度极限</td></tr>
+<tr><td>10<sup>16</sup></td><td>1.705 × 10<sup>17</sup></td><td>3.91 × 10<sup>−19</sup> mm</td><td>3.39 × 10<sup>−18</sup> mm</td><td>条件数估计开始失真</td></tr>
+<tr><td>10<sup>18</sup></td><td style="color:#b03a2e"><b>3.092 × 10<sup>32</sup></b></td><td>3.91 × 10<sup>−21</sup> mm</td><td>0（已被舍入吞没）</td><td style="color:#b03a2e">数值已崩溃</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="good">
+  <div class="t-title">✓ 从这张表读出三件事</div>
+  ① <b>约束违反量严格与 1/<i class="v">α</i> 成正比</b>：<i class="v">α</i> 每涨 100 倍，违反量降 100 倍——完全符合罚函数理论的一阶估计；<br>
+  ② <b>条件数严格与 <i class="v">α</i> 成正比</b>，直到 10<sup>14</sup> 左右开始偏离，10<sup>18</sup> 处彻底失真（此时 <i class="v">α</i> 与其余元素的比值已超过双精度的 10<sup>16</sup> 有效位，加法中的小项被<b>整体舍掉</b>）；<br>
+  ③ 二者相乘约为常数 ⇒ 不存在"既准又稳"的 <i class="v">α</i>。工程上取 <b>10<sup>8</sup> ~ 10<sup>12</sup></b>，让两边的误差都远小于工程精度即可。
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ 罚函数法的隐性代价</div>
+  ① 结果是<b>近似</b>的，约束不会被精确满足（表里的 10<sup>−11</sup> mm 虽小但不是 0）；<br>
+  ② 破坏了单调下限性质（第 5.7 节四个前提之一），"网格越细位移越大"不再保证；<br>
+  ③ 迭代求解器（共轭梯度等）的收敛速度 ∝ √cond，<b>大 <i class="v">α</i> 会让迭代次数剧增</b>。所以大规模迭代求解一般不用罚函数，改用直接缩减或 Lagrange 乘子。<br>
+  ④ 支反力必须用原始 <b class="m">K</b> 反算，或者直接取 <i class="v">R</i><sub>r</sub> = −<i class="v">α</i>(<i class="v">d</i><sub>r</sub> − <span style="text-decoration:overline"><i class="v">d</i></span><sub>r</sub>)，即"弹簧被压缩了多少"。
+</div>
+
+<h3>8.5 方法四：Lagrange 乘子法</h3>
+
+<p>把约束 <b class="m">Cd</b> = <b class="m">g</b> 用乘子 <b class="m">λ</b> 挂到总势能上：<i class="v">Π</i>* = <i class="v">Π</i> + <b class="m">λ</b><sup>T</sup>(<b class="m">Cd</b> − <b class="m">g</b>)，对 <b class="m">d</b> 和 <b class="m">λ</b> 分别取驻值，得到<b>扩阶</b>方程组</p>
+
+<div class="formula"><span class="eq">
+<span class="mat c2"><span><b class="m">K</b></span><span><b class="m">C</b><sup>T</sup></span><span><b class="m">C</b></span><span><b class="m">0</b></span></span>
+<span class="mat c1"><span><b class="m">d</b></span><span><b class="m">λ</b></span></span>
+=
+<span class="mat c1"><span><b class="m">F</b></span><span><b class="m">g</b></span></span>
+</span><span class="eqno">(4.70)</span></div>
+
+<p>约束被<b>精确</b>满足，且 <b class="m">λ</b> 的物理意义正是<b>支反力</b>（相差一个符号），可以直接读出。代价是矩阵扩大、且不再正定（成为对称不定的鞍点问题），需要专门的求解器。它是处理<b>多点约束</b>（MPC）最规范的工具。</p>
+
+<h3>8.6 非零已知位移：例题四</h3>
+
+<details class="steps" open>
+<summary><b>例题 4-4</b>　两种方法处理强迫位移，结果必须一致</summary>
+<div>
+<p><b>题设：</b>沿用下一章例题五的 2 m × 1 m 悬臂板（<i class="v">t</i> = 10 mm，<i class="v">E</i> = 210 GPa，<i class="v">ν</i> = 1/3，左端节点 1、2 完全固定，右端节点 3、4）。不加外载，只强迫<b>节点 3 沿 <i class="v">x</i> 移动 0.5 mm</b>，求其余位移与支反力。</p>
+
+<p><b>解法 A（移项 + 缩减）：</b>把 <i class="v">u</i><sub>3</sub> 列入已知，按 8.3 节的警告先移项 <b class="m">F</b> ← <b class="m">F</b> − <b class="m">K</b><sub>(:,u3)</sub> × 0.5 mm，再对剩下 3 个自由度求解。</p>
+<p><b>解法 B（乘大数）：</b>取 <i class="v">α</i> = 10<sup>12</sup>max(<i class="v">K</i><sub>ii</sub>)，对 <i class="v">u</i><sub>3</sub> 作 (4.69) 处理。</p>
+
+<table>
+<thead><tr><th>自由度</th><th>解法 A（mm）</th><th>解法 B（mm）</th><th>偏差</th></tr></thead>
+<tbody>
+<tr><td><i class="v">u</i><sub>3</sub>（强迫值）</td><td>0.500000</td><td>0.500000</td><td>&lt; 10<sup>−13</sup></td></tr>
+<tr><td><i class="v">v</i><sub>3</sub></td><td>0.373984</td><td>0.373984</td><td>&lt; 10<sup>−13</sup></td></tr>
+<tr><td><i class="v">u</i><sub>4</sub></td><td>0.178862</td><td>0.178862</td><td>&lt; 10<sup>−13</sup></td></tr>
+<tr><td><i class="v">v</i><sub>4</sub></td><td>0.268293</td><td>0.268293</td><td>&lt; 10<sup>−13</sup></td></tr>
+</tbody>
+</table>
+
+<p><b>支反力校核：</b>由 <b class="m">R</b> = <b class="m">Kd</b>（无外载）算得</p>
+<table>
+<thead><tr><th>节点</th><th><i class="v">R</i><sub>x</sub>（kN）</th><th><i class="v">R</i><sub>y</sub>（kN）</th></tr></thead>
+<tbody>
+<tr><td>1（固定）</td><td>−359.337</td><td>−17.607</td></tr>
+<tr><td>2（固定）</td><td>0.000</td><td>+17.607</td></tr>
+<tr><td>3（施加强迫位移处）</td><td>+359.337</td><td>0.000</td></tr>
+<tr><td>4（自由）</td><td>0.000</td><td>0.000</td></tr>
+<tr style="background:var(--main-ll)"><td><b>合计</b></td><td><b>0.000</b> ✓</td><td><b>0.000</b> ✓</td></tr>
+</tbody>
+</table>
+
+<div class="good">
+  <div class="t-title">✓ 三条自洽性检查全部通过</div>
+  ① 两种方法给出的位移在 10<sup>−13</sup> mm 内一致——说明罚因子取 10<sup>12</sup> 时误差已远低于任何工程精度；<br>
+  ② <b>自由节点 4 的"反力"恰为零</b>——它没有约束，也没有外载，当然不该有力；这是检验程序索引是否正确的极佳靶标；<br>
+  ③ <b>全部反力之和为零</b>——整个结构在没有外载时必须自平衡。这条校核适用于任何模型，强烈建议写进每个后处理脚本。
+</div>
+</div>
+</details>
+
+<div class="lab" id="lab8">
+  <div class="lab-head"><span class="lab-tag">实验台 8</span>四法对比 + 罚因子扫描<span class="lab-hint">同一个问题用四种方法处理边界条件，看矩阵形态、条件数与精度</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>方法</label>
+        <select id="l8m">
+          <option value="0">原始（未施加）</option>
+          <option value="1">① 直接缩减法</option>
+          <option value="2" selected>② 化 1 置 0 法</option>
+          <option value="3">③ 乘大数（罚函数）</option>
+        </select>
+      </div>
+      <div class="ctrl"><label>罚指数 p（α = 10ᵖ·K<sub>max</sub>）</label><input type="range" id="l8p" min="2" max="18" step="1" value="10"><span class="val" id="l8pv">10</span></div>
+      <div class="ctrl"><label>强迫位移 u₃ (mm)</label><input type="range" id="l8u" min="0" max="0.5" step="0.05" value="0"><span class="val" id="l8uv">0.00</span></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+      <div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;font-family:Segoe UI">刚度矩阵形态（8×8）</div>
+        <div class="kgrid" id="l8grid" style="grid-template-columns:repeat(8,1fr)"></div>
+      </div>
+      <div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;font-family:Segoe UI">变形图（放大 3000 倍）</div>
+        <svg viewBox="0 0 320 190" id="l8svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+    <div class="lab-out">
+      <div class="kv">u₃ (mm)<b id="l8a">—</b></div>
+      <div class="kv">v₃ (mm)<b id="l8b">—</b></div>
+      <div class="kv">u₄ (mm)<b id="l8c">—</b></div>
+      <div class="kv">v₄ (mm)<b id="l8d">—</b></div>
+      <div class="kv">条件数<b id="l8cond">—</b></div>
+      <div class="kv">约束违反<b id="l8viol">—</b></div>
+      <div class="kv">与精确解偏差<b id="l8err">—</b></div>
+    </div>
+    <div class="lab-note" id="l8note"></div>
+  </div>
+</div>
+
+<h3>8.7 斜支座与多点约束</h3>
+
+<p>前面三种方法都假定约束方向与坐标轴<b>平行</b>。若支座是斜的（如滚轴沿与 <i class="v">x</i> 轴成 <i class="v">θ</i> 角的斜面滑动），约束条件是两个自由度的<b>线性组合</b>：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">u</i><sub>r</sub> sin<i class="v">θ</i> − <i class="v">v</i><sub>r</sub> cos<i class="v">θ</i> = 0　（法向位移为零）
+</span><span class="eqno">(4.71)</span></div>
+
+<p>处理办法有两条：</p>
+
+<ol>
+<li><b>局部坐标旋转。</b>对该节点作坐标变换 <b class="m">d</b>′ = <b class="m">T d</b>，其中 <b class="m">T</b> 是 2×2 旋转矩阵。相应地把 <b class="m">K</b> 的第 <i class="v">r</i> 号节点行块与列块都作合同变换 <b class="m">T</b><b class="m">K</b><sub>rs</sub>、<b class="m">K</b><sub>sr</sub><b class="m">T</b><sup>T</sup>。新坐标下约束又变成"某个自由度 = 0"，回到方法一～三。这是商业软件的标准做法（ANSYS 的 <code>NROTAT</code>、Abaqus 的 <code>*TRANSFORM</code>）。</li>
+<li><b>直接作为 MPC 处理。</b>用 (4.70) 的 Lagrange 乘子，或消去从自由度（主从法）。</li>
+</ol>
+
+<p>更一般的<b>多点约束</b>还包括：刚性连接（两节点保持固定距离）、周期性边界（<i class="v">u</i><sub>左</sub> = <i class="v">u</i><sub>右</sub>，用于代表性体积单元）、绑定接触（不同密度网格的黏结）。它们统一写成 <b class="m">Cd</b> = <b class="m">g</b>，然后用 Lagrange 乘子或<b>主从消元</b>求解。</p>
+
+<h3>8.8 约束是否"足够"：一个必须养成的习惯</h3>
+
+<div class="warn">
+  <div class="t-title">▲ 欠约束与过约束</div>
+  <b>欠约束</b>：残留刚体自由度 ⇒ 求解器报"矩阵奇异""pivot 为零""自由度 N 有刚体运动"。平面问题至少需要<b>三个</b>独立约束（例如一点固定 + 另一点限制一个方向）。<br>
+  <b>过约束</b>：施加了物理上不存在的约束 ⇒ 结构<b>人为变硬</b>，求解器<b>不会报任何错</b>，只是算出偏小的位移和虚假的支反力。这比欠约束危险得多。<br>
+  第 9 章的例题五会用<b>同一块板的两种约束方案</b>，定量展示过约束带来的 0.82 % 刚度偏差和本不该出现的 <i class="v">σ</i><sub>y</sub>。
+</div>
+
+<div class="good">
+  <div class="t-title">✓ 求解前后的四条自检清单</div>
+  ① <b>求解前</b>：数一数约束是否至少消除了 3 个刚体自由度，且没有多余；<br>
+  ② <b>求解前</b>：检查 <b class="m">K</b> 的对角元是否全部为正、行和是否为零；<br>
+  ③ <b>求解后</b>：<b class="m">R</b> = <b class="m">Kd</b> − <b class="m">F</b>，验算全部支反力之和 = 外载合力的相反数；<br>
+  ④ <b>求解后</b>：检查自由节点的"反力"是否为零，被约束节点的位移是否确实等于给定值。
+</div>
+
+</section>

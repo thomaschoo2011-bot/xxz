@@ -1,0 +1,310 @@
+
+<!-- ================================================== 第 7 章 ================================================== -->
+<section id="ch7">
+<h2><span class="chno">7</span>单刚组装总刚：对号入座</h2>
+
+<p>到这里，每个单元都有了自己的 6×6 刚度矩阵 <b class="m">k</b><sup>e</sup> 和 6×1 载荷列阵 <b class="m">f</b><sup>e</sup>。但它们各说各话——单元 ① 的"第 3 个自由度"和单元 ② 的"第 3 个自由度"很可能指的是结构上完全不同的两个方向。本章把这些局部的小矩阵<b>缝合</b>成描述整个结构的大方程。</p>
+
+<h3>7.1 组装的两个等价依据</h3>
+
+<div class="lcards" style="grid-template-columns:1fr 1fr">
+  <div class="lcard" style="text-align:left">
+    <div class="lc-t" style="color:#1a5276">依据一：节点平衡</div>
+    <div class="lc-n" style="font-size:13.5px;color:var(--ink)">
+    把任一节点单独取出来作隔离体，围绕它的<b>所有单元</b>都对它施加内力。节点的平衡方程是
+    <div style="text-align:center;margin:8px 0;font-family:Consolas,monospace">Σ<sub>e</sub> F<sup>e</sup><sub>节点</sub> = P<sub>节点</sub></div>
+    而每个单元施加的内力就是 <b class="m">k</b><sup>e</sup><b class="m">d</b><sup>e</sup> 中对应的行。于是总刚的某一行 = 环绕该节点的各单元对应行之<b>和</b>。
+    </div>
+  </div>
+  <div class="lcard" style="text-align:left">
+    <div class="lc-t" style="color:#7d3c98">依据二：能量叠加</div>
+    <div class="lc-n" style="font-size:13.5px;color:var(--ink)">
+    结构的总应变能是各单元应变能之和：<i class="v">U</i> = Σ<sub>e</sub> <i class="v">U</i><sup>e</sup>。把 (4.32) 全部用<b>整体</b>位移列阵 <b class="m">d</b> 表示后相加，括号里自然出现
+    <div style="text-align:center;margin:8px 0;font-family:Consolas,monospace">K = Σ<sub>e</sub> (扩大后的 k<sup>e</sup>)</div>
+    这条路线更形式化，也更容易写成程序。
+    </div>
+  </div>
+</div>
+
+<p>两条路线殊途同归，得到的都是同一句话：<b>整体刚度矩阵的每个元素，等于所有相关单元刚度矩阵对应元素的代数和</b>。这就是<b>刚度集成法</b>（direct stiffness method）。</p>
+
+<h3>7.2 形式化写法：贡献矩阵</h3>
+
+<p>引入 6×2<i class="v">n</i> 的<b>布尔定位矩阵</b> <b class="m">G</b><sup>e</sup>（每行只有一个 1，其余全 0），它把整体位移列阵"抽取"成单元位移列阵：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">d</b><sup>e</sup> = <b class="m">G</b><sup>e</sup> <b class="m">d</b>　，　(6×1) = (6×2<i class="v">n</i>)(2<i class="v">n</i>×1)
+</span><span class="eqno">(4.60)</span></div>
+
+<p>代入 (4.32) 并对所有单元求和：</p>
+
+<div class="formula" style="border-left-color:#b03a2e"><span class="eq" style="font-size:17px">
+<b class="m">K</b> = Σ<sub><i class="v">e</i>=1</sub><sup><i class="v">n</i><sub>e</sub></sup> (<b class="m">G</b><sup>e</sup>)<sup>T</sup> <b class="m">k</b><sup>e</sup> <b class="m">G</b><sup>e</sup>
+　，
+<b class="m">F</b> = Σ<sub><i class="v">e</i>=1</sub><sup><i class="v">n</i><sub>e</sub></sup> (<b class="m">G</b><sup>e</sup>)<sup>T</sup> <b class="m">f</b><sup>e</sup>
+</span><span class="eqno">(4.61)</span></div>
+
+<p>(<b class="m">G</b><sup>e</sup>)<sup>T</sup><b class="m">k</b><sup>e</sup><b class="m">G</b><sup>e</sup> 是一个 2<i class="v">n</i>×2<i class="v">n</i> 的大矩阵，但只有 6×6 = 36 个位置非零——它叫这个单元的<b>贡献矩阵</b>（或扩大矩阵）。总刚就是把所有贡献矩阵"摞"在一起相加。</p>
+
+<div class="warn">
+  <div class="t-title">▲ 公式好看，但千万别这么编程</div>
+  (4.61) 是<b>理论表述</b>。若真的构造 <b class="m">G</b><sup>e</sup> 并做两次矩阵乘法，每个单元要做 <i class="v">O</i>((2<i class="v">n</i>)<sup>2</sup>·6) 次乘法，其中 99.99 % 是在和 0 相乘。
+  10 万自由度的模型这样组装要跑上几天。实际程序一律用下一节的<b>定位数组</b>，把它变成 36 次加法。
+</div>
+
+<h3>7.3 实用做法：LM 定位数组与"对号入座"</h3>
+
+<p>节点编号 <i class="v">n</i> 的两个自由度在整体列阵中的行号是</p>
+
+<div class="formula"><span class="eq">
+<i class="v">x</i> 方向：2<i class="v">n</i> − 1　，　<i class="v">y</i> 方向：2<i class="v">n</i>
+</span><span class="eqno">(4.62)</span></div>
+
+<p>对每个单元，按局部节点顺序 (<i class="v">i</i>, <i class="v">j</i>, <i class="v">m</i>) 列出 6 个整体行号，存成一个长度为 6 的数组，这就是<b>定位数组 LM</b>（location matrix）。组装的全部代码只有四行：</p>
+
+<pre><code>for e in elements:                  # 遍历单元
+    LM = [2*i-1, 2*i, 2*j-1, 2*j, 2*m-1, 2*m]
+    for a in range(6):
+        for b in range(6):
+            K[LM[a]][LM[b]] += k_e[a][b]     # 对号入座，累加
+</code></pre>
+
+<div class="good">
+  <div class="t-title">✓ 记住"累加"这两个字</div>
+  是 <b>+=</b> 而不是 <b>=</b>。多个单元共享同一个节点时，它们对同一个位置的贡献必须<b>叠加</b>。
+  写成赋值是初学者最常见的 bug——程序不会报错，但算出的结构会比实际软得多（后来的单元把前面的覆盖掉了）。
+</div>
+
+<h3>7.4 动画：一个单元一个单元地"入座"</h3>
+
+<figure class="gifbox">
+  <img src="{{GIF_ASM}}" alt="单元刚度矩阵组装成整体刚度矩阵的动画：四个单元依次把 6×6 子块按定位数组落到 10×10 总刚的对应位置并累加">
+  <figcaption><b>动画 ①</b>　<b>单刚组装总刚的全过程</b>。左侧是网格与当前处理的单元（高亮），中间是它的 6×6 单刚，右侧是不断被填充的整体刚度矩阵。金色高亮表示<b>当前正在写入</b>的位置，深色表示<b>已被多个单元累加</b>过的位置。动画最后定格在"贡献次数矩阵"上——一个位置被累加了几次，一眼可见。</figcaption>
+</figure>
+
+<h3>7.5 例题二：五节点四单元的完整组装</h3>
+
+<details class="steps" open>
+<summary><b>例题 4-3</b>　边长为 1 的正方形板，中心加一个节点划成 4 个三角形，求总刚的结构（平面应力，<i class="v">ν</i> = 1/3，厚 <i class="v">t</i>）</summary>
+<div>
+
+<p><b>题设：</b>节点 1(0,0)、2(1,0)、3(1,1)、4(0,1)、5(0.5, 0.5)。四个单元均<b>逆时针</b>：</p>
+
+<figure>
+<svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="五节点四单元的正方形网格">
+  <g font-family="Segoe UI" font-size="12.5">
+  <!-- 网格 -->
+  <polygon points="150,190 330,190 240,100" fill="#eaf3f9" stroke="#1a5276" stroke-width="1.6"/>
+  <polygon points="330,190 330,10 240,100" fill="#eaf6f1" stroke="#1e8449" stroke-width="1.6"/>
+  <polygon points="330,10 150,10 240,100" fill="#f3ecf8" stroke="#7d3c98" stroke-width="1.6"/>
+  <polygon points="150,10 150,190 240,100" fill="#fdf3e3" stroke="#bf8f14" stroke-width="1.6"/>
+  <text x="240" y="168" text-anchor="middle" fill="#1a5276" font-weight="700">①</text>
+  <text x="300" y="104" text-anchor="middle" fill="#1e8449" font-weight="700">②</text>
+  <text x="240" y="44" text-anchor="middle" fill="#7d3c98" font-weight="700">③</text>
+  <text x="182" y="104" text-anchor="middle" fill="#bf8f14" font-weight="700">④</text>
+  <g fill="#fff" stroke="#1f2d3d" stroke-width="2.2">
+    <circle cx="150" cy="190" r="7"/><circle cx="330" cy="190" r="7"/>
+    <circle cx="330" cy="10" r="7"/><circle cx="150" cy="10" r="7"/><circle cx="240" cy="100" r="7"/>
+  </g>
+  <g font-size="12" font-weight="700" fill="#1f2d3d" text-anchor="middle">
+    <text x="150" y="194">1</text><text x="330" y="194">2</text>
+    <text x="330" y="14">3</text><text x="150" y="14">4</text><text x="240" y="104">5</text>
+  </g>
+  <g fill="#7f8c98" font-size="11.5">
+    <text x="136" y="210" text-anchor="middle">(0,0)</text><text x="344" y="210" text-anchor="middle">(1,0)</text>
+    <text x="352" y="10" text-anchor="middle">(1,1)</text><text x="128" y="10" text-anchor="middle">(0,1)</text>
+    <text x="240" y="122" text-anchor="middle">(0.5, 0.5)</text>
+  </g>
+  <!-- LM 表 -->
+  <g font-family="Consolas,monospace" font-size="12.5">
+    <text x="410" y="26" font-family="Segoe UI" font-size="13" font-weight="700" fill="#1f2d3d">定位数组 LM</text>
+    <text x="410" y="52" fill="#1a5276">① (1,2,5) → 1 2 3 4 9 10</text>
+    <text x="410" y="76" fill="#1e8449">② (2,3,5) → 3 4 5 6 9 10</text>
+    <text x="410" y="100" fill="#7d3c98">③ (3,4,5) → 5 6 7 8 9 10</text>
+    <text x="410" y="124" fill="#bf8f14">④ (4,1,5) → 7 8 1 2 9 10</text>
+  </g>
+  <g font-family="Segoe UI" font-size="12" fill="#7f8c98">
+    <text x="410" y="156">5 个节点 × 2 = 10 个自由度</text>
+    <text x="410" y="176">K 为 10×10，对称，秩 = 7</text>
+    <text x="410" y="196" fill="#b03a2e">节点 5 出现在全部 4 个单元中</text>
+  </g>
+  </g>
+</svg>
+<figcaption><b>图 4.7</b>　例题 4-3 的网格与定位数组。注意单元 ④ 的局部顺序是 (4, 1, 5) 而非 (1, 4, 5)——必须<b>逆时针</b>。</figcaption>
+</figure>
+
+<p><b>第 1 步　算一个单刚的关键子块。</b>以单元 ① 为例，节点顺序 (1, 2, 5)。对<b>节点 5</b>（局部第三个），由 (4.15) 轮换：</p>
+<div class="formula"><span class="eq">
+<i class="v">b</i><sub>5</sub><sup>(1)</sup> = <i class="v">y</i><sub>1</sub> − <i class="v">y</i><sub>2</sub> = 0 − 0 = 0　，
+<i class="v">c</i><sub>5</sub><sup>(1)</sup> = <i class="v">x</i><sub>2</sub> − <i class="v">x</i><sub>1</sub> = 1 − 0 = 1　，
+<i class="v">A</i><sup>(1)</sup> = 0.25
+</span></div>
+<p>代入 (4.39)，<i class="v">ν</i> = 1/3 时 (1−<i class="v">ν</i>)/2 = 1/3、1−<i class="v">ν</i><sup>2</sup> = 8/9、4<i class="v">A</i> = 1，故前系数 = 9<i class="v">Et</i>/8：</p>
+<div class="formula"><span class="eq">
+<b class="m">k</b><sup>(1)</sup><sub>55</sub> = <span class="frac"><span>9<i class="v">Et</i></span><span>8</span></span>
+<span class="mat c2"><span>0 + ⅓·1</span><span>0</span><span>0</span><span>1 + 0</span></span>
+= <i class="v">Et</i><span class="mat c2"><span>0.375</span><span>0</span><span>0</span><span>1.125</span></span>
+</span><span class="eqno">(4.63)</span></div>
+
+<p><b>第 2 步　利用对称性推其余三个。</b>单元 ② 相当于把单元 ① 绕中心转 90°，于是 <i class="v">b</i><sub>5</sub><sup>(2)</sup> = −1、<i class="v">c</i><sub>5</sub><sup>(2)</sup> = 0，两个对角元<b>互换</b>：</p>
+<div class="formula"><span class="eq">
+<b class="m">k</b><sup>(2)</sup><sub>55</sub> = <i class="v">Et</i><span class="mat c2"><span>1.125</span><span>0</span><span>0</span><span>0.375</span></span>
+</span></div>
+<p>单元 ③、④ 与 ①、② 分别相同（转 180°，<i class="v">b</i>、<i class="v">c</i> 变号，而 (4.39) 中 <i class="v">b</i>、<i class="v">c</i> 成对出现，同时变号结果不变）。</p>
+
+<p><b>第 3 步　累加得 <b class="m">K</b><sub>55</sub>。</b>四个单元都含节点 5，全部叠加：</p>
+<div class="formula" style="border-left-color:#1e8449"><span class="eq">
+<b class="m">K</b><sub>55</sub> = 2<i class="v">Et</i><span class="mat c2"><span>0.375</span><span>0</span><span>0</span><span>1.125</span></span>
++ 2<i class="v">Et</i><span class="mat c2"><span>1.125</span><span>0</span><span>0</span><span>0.375</span></span>
+= 3<i class="v">Et</i> <span class="mat c2"><span>1</span><span>0</span><span>0</span><span>1</span></span>
+</span><span class="eqno">(4.64)</span></div>
+
+<div class="good">
+  <div class="t-title">✓ 一个漂亮的结果</div>
+  中心节点的刚度子块是<b>各向同性</b>的——沿任何方向推它，得到的抵抗力大小相同、方向与推力共线。
+  这是网格四重对称性的必然结果：四个单元轮换 90° 后完全重合，叠加出的张量必须在 90° 旋转下不变，二阶对称张量满足此条件的只有 <i class="v">λ</i><b class="m">I</b>。
+  <b>这个推理不需要算任何数就能得到</b>，可以反过来用作程序的校核。
+</div>
+
+<p><b>第 4 步　哪些位置是零？</b>由"只有同属一个单元的节点之间才有耦合"：</p>
+
+<div class="asm-wrap">
+<table style="max-width:420px;margin:0 auto">
+<thead><tr><th>节点对</th><th>共同所属单元</th><th>K 分块</th></tr></thead>
+<tbody>
+<tr><td>1–2</td><td>①</td><td>非零</td></tr>
+<tr><td>2–3</td><td>②</td><td>非零</td></tr>
+<tr><td>3–4</td><td>③</td><td>非零</td></tr>
+<tr><td>4–1</td><td>④</td><td>非零</td></tr>
+<tr style="background:var(--main-ll)"><td><b>1–3</b></td><td><b>无</b>（对角）</td><td><b class="m" style="color:#b03a2e">K<sub>13</sub> = 0</b></td></tr>
+<tr style="background:var(--main-ll)"><td><b>2–4</b></td><td><b>无</b>（对角）</td><td><b class="m" style="color:#b03a2e">K<sub>24</sub> = 0</b></td></tr>
+<tr><td>任一角点–5</td><td>两个</td><td>非零</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><b>第 5 步　贡献次数矩阵。</b>统计每个 2×2 分块被累加了几次（0 表示恒为零块）：</p>
+
+<div class="formula"><span class="eq">
+<b>C</b> =
+<span class="mat c5">
+<span>2</span><span>1</span><span style="color:#b03a2e">0</span><span>1</span><span>2</span>
+<span>1</span><span>2</span><span>1</span><span style="color:#b03a2e">0</span><span>2</span>
+<span style="color:#b03a2e">0</span><span>1</span><span>2</span><span>1</span><span>2</span>
+<span>1</span><span style="color:#b03a2e">0</span><span>1</span><span>2</span><span>2</span>
+<span>2</span><span>2</span><span>2</span><span>2</span><span style="color:#1e8449;font-weight:700">4</span>
+</span>
+</span><span class="eqno">(4.65)</span></div>
+
+<p>行列号即节点号。对角线上的 2 表示"每个角点属于 2 个单元"；右下角的 <b>4</b> 表示"中心节点属于全部 4 个单元"；两个 0 正是 <b class="m">K</b><sub>13</sub> 与 <b class="m">K</b><sub>24</sub>。这个矩阵与上面动画最后定格的那一幅<b>完全一致</b>。</p>
+
+<p><b>第 6 步　整体校核。</b></p>
+<table>
+<thead><tr><th>校核项</th><th>预期</th><th>实算</th></tr></thead>
+<tbody>
+<tr><td>阶数</td><td>5 节点 × 2 = 10</td><td>10×10 ✓</td></tr>
+<tr><td>对称性</td><td><b class="m">K</b><sup>T</sup> = <b class="m">K</b></td><td>最大偏差 &lt; 10<sup>−16</sup> ✓</td></tr>
+<tr><td>秩</td><td>10 − 3 = 7</td><td><b>rank = 7</b> ✓</td></tr>
+<tr><td>零空间</td><td>2 平动 + 1 转动</td><td>3 个刚体模式 ✓</td></tr>
+<tr><td>每行 <i class="v">x</i>-列之和</td><td>0</td><td>&lt; 10<sup>−15</sup> ✓</td></tr>
+<tr><td><b class="m">K</b><sub>13</sub>、<b class="m">K</b><sub>24</sub></td><td>零块</td><td>全部元素恰为 0 ✓</td></tr>
+<tr><td><b class="m">K</b><sub>55</sub></td><td>3<i class="v">Et</i>·<b class="m">I</b></td><td>[[3, 0], [0, 3]]<i class="v">Et</i> ✓</td></tr>
+</tbody>
+</table>
+
+<div class="tip">
+  <div class="t-title">◎ 顺便看看带宽</div>
+  单元 ① 含节点 1、2、5，最大节点号差 <i class="v">D</i> = 5 − 1 = 4，半带宽 <i class="v">B</i> = (4+1)×2 = 10 —— 恰好等于矩阵阶数，<b>一点也没省</b>。
+  原因是把中心节点编成了最后一号，它和 1 号节点在同一个单元里。若改成 1、2、3（角）、4（中心）、5 的编号方式，<i class="v">D</i> 可以降到 3。
+  网格小的时候无所谓，几万个节点时这种编号差别就是几倍的内存与求解时间——这正是第 2.3 节法则的意义。
+</div>
+
+</div>
+</details>
+
+<div class="lab" id="lab7">
+  <div class="lab-head"><span class="lab-tag">实验台 7</span>组装台：一次落一个单元<span class="lab-hint">逐个单元"对号入座"，观察总刚被填满的过程与贡献次数</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><button class="lab-btn" id="l7next">▶ 组装下一个单元</button></div>
+      <div class="ctrl"><button class="lab-btn" id="l7all">全部组装</button></div>
+      <div class="ctrl"><button class="lab-btn" id="l7reset">↺ 重置</button></div>
+      <div class="ctrl"><button class="lab-btn" id="l7mode">显示：数值</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px;display:grid;grid-template-columns:250px 1fr;gap:20px;align-items:center">
+      <svg viewBox="0 0 250 210" id="l7svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="asm-wrap">
+        <div class="kgrid" id="l7grid" style="grid-template-columns:repeat(10,1fr)"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;font-family:Consolas,monospace">10×10 总刚，单位 Et　行列顺序 u₁v₁u₂v₂…u₅v₅</div>
+      </div>
+    </div>
+    <div class="lab-out">
+      <div class="kv">已组装单元<b id="l7ne">0 / 4</b></div>
+      <div class="kv">当前 LM<b id="l7lm">—</b></div>
+      <div class="kv">非零元个数<b id="l7nz">0</b></div>
+      <div class="kv">稀疏度<b id="l7sp">100%</b></div>
+      <div class="kv">秩<b id="l7rk">0</b></div>
+      <div class="kv">最大 |行和|<b id="l7rs">0.0e+0</b></div>
+    </div>
+    <div class="lab-note" id="l7note">点击「组装下一个单元」，金色格子表示本次写入的 36 个位置，颜色越深表示被累加的次数越多。全部组装完后，秩应当是 <b>7</b>，行和应当全为 <b>0</b>。</div>
+  </div>
+</div>
+
+<h3>7.6 总刚的性质：单刚性质的"放大版"</h3>
+
+<table class="left">
+<thead><tr><th style="width:22%">性质</th><th style="width:30%">表述</th><th>与单刚的关系 / 用途</th></tr></thead>
+<tbody>
+<tr><td><b>① 对称</b></td><td><b class="m">K</b><sup>T</sup> = <b class="m">K</b></td>
+  <td>由 (4.61)，对称矩阵的合同变换仍对称。存储与求解均可减半。</td></tr>
+<tr><td><b>② 稀疏</b></td><td><b class="m">K</b><sub>rs</sub> ≠ 0 仅当 <i class="v">r</i>、<i class="v">s</i> 同属某单元</td>
+  <td>单刚是<b>满</b>的，总刚却极稀疏——自由度越多越稀疏。大规模计算的全部希望都在这条性质上。</td></tr>
+<tr><td><b>③ 带状</b></td><td>非零元集中在主对角线附近</td>
+  <td>由 ② + 合理编号得到。半带宽由 (4.9) 估算。</td></tr>
+<tr><td><b>④ 奇异</b></td><td>秩 = 2<i class="v">n</i> − 3</td>
+  <td>与单刚的秩亏 3 同源：整个结构仍可自由飘移。<b>施加边界条件前不能求解</b>。</td></tr>
+<tr><td><b>⑤ 主对角元恒正</b></td><td><i class="v">K</i><sub>rr</sub> &gt; 0</td>
+  <td>由单刚性质 ④ 累加而来。<b>程序中若出现非正对角元，必定是建模或组装有错</b>——最常用的自检。</td></tr>
+<tr><td><b>⑥ 行和为零</b></td><td>各 <i class="v">x</i>-列之和 = 0</td>
+  <td>刚体平动不生内力，对整体依然成立。组装完立即验一次，能抓住绝大多数 LM 索引错误。</td></tr>
+<tr><td><b>⑦ 约束后正定</b></td><td>施加足够约束 ⇒ <b class="m">K</b> 正定</td>
+  <td>正定才能用 Cholesky（<b class="m">LL</b><sup>T</sup>）分解，且分解过程无需选主元，数值稳定。</td></tr>
+</tbody>
+</table>
+
+<h3>7.7 存储格式：从带状到稀疏</h3>
+
+<p>10 万自由度的模型，满阵存储需要 10<sup>10</sup> 个双精度数 = 80 GB，显然不可行。工程软件用的是下面三种之一：</p>
+
+<div class="lcards">
+  <div class="lcard">
+    <div class="lc-t">等带宽存储</div>
+    <div class="lc-r">2n × B</div>
+    <div class="lc-n">把每行带内的元素平移到左端，存成矩形数组。实现最简单，但若个别行带宽特别大就会浪费。</div>
+  </div>
+  <div class="lcard">
+    <div class="lc-t">变带宽 / 天际线</div>
+    <div class="lc-r">Skyline</div>
+    <div class="lc-n">每列只存从第一个非零元到对角元。Bathe 的 <i>Finite Element Procedures</i> 第 8 章详细讨论了它与 <b class="m">LDL</b><sup>T</sup> 分解的配合。</div>
+  </div>
+  <div class="lcard">
+    <div class="lc-t">通用稀疏 CSR</div>
+    <div class="lc-r">values / col / rowptr</div>
+    <div class="lc-n">只存非零元及其位置，配合 AMD/METIS 重排序与多波前分解。现代求解器的标准做法，编号顺序不再关键。</div>
+  </div>
+</div>
+
+<div class="tip">
+  <div class="t-title">◎ 组装本身也能并行</div>
+  由于组装只是"累加"，不同单元的贡献互不依赖，天然可并行。唯一的麻烦是两个线程可能同时写同一个位置（竞态）。
+  常用解法有三种：按颜色给单元分组（同色单元互不共享节点）、每线程各自组装再归约、或用原子加。
+  GPU 有限元程序几乎都采用第一种"图着色"策略。
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ 组装完成 ≠ 可以求解</div>
+  此刻的 <b class="m">K</b> <b>仍然奇异</b>，det <b class="m">K</b> = 0，直接调用求解器会得到"矩阵奇异"或一堆 NaN。
+  必须先施加位移边界条件，消掉那 3 个刚体自由度——这正是下一章的任务。
+</div>
+
+</section>

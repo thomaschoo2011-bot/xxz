@@ -1,0 +1,506 @@
+
+<!-- ================================================== 第 6 章 ================================================== -->
+<section id="ch6">
+<h2><span class="chno">6</span>载荷矩阵：分布载荷的积分等效</h2>
+
+<p>第 5 章的 (4.34) 已经给出了载荷列阵的表达式，但那只是一个符号。本章把三个积分<b>一个不漏地做出来</b>——这是初学有限元时最容易"背公式而不知所以然"的地方，也是本讲义着墨最多的一章。</p>
+
+<h3>6.1 问题：有限元只认识节点力</h3>
+
+<p>方程 <b class="m">Kd</b> = <b class="m">F</b> 中，<b class="m">F</b> 的每一行对应<b>一个节点自由度</b>。可是真实结构承受的往往是<b>连续分布</b>的载荷：水压、风压、自重、接触压力……它们作用在单元的边上或整个面积上，而不是"恰好作用在节点上"。</p>
+
+<p>因此必须把分布载荷<b>转化</b>为作用在节点上的集中力。这个转化过程叫<b>载荷移置</b>或<b>等效节点载荷</b>（equivalent nodal load）。问题在于：<b>什么叫"等效"？</b></p>
+
+<figure>
+<svg viewBox="0 0 660 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="两种等效原则的对比">
+  <g font-family="Segoe UI" font-size="12">
+  <!-- 左：静力等效 -->
+  <text x="165" y="20" font-size="13.5" fill="#bf8f14" font-weight="700" text-anchor="middle">静力等效（材料力学的做法）</text>
+  <line x1="50" y1="92" x2="280" y2="92" stroke="#1f2d3d" stroke-width="4"/>
+  <g stroke="#bf8f14" stroke-width="1.8" fill="#bf8f14">
+    <line x1="60" y1="46" x2="60" y2="80"/><polygon points="60,88 55,76 65,76"/>
+    <line x1="105" y1="52" x2="105" y2="80"/><polygon points="105,88 100,76 110,76"/>
+    <line x1="150" y1="58" x2="150" y2="80"/><polygon points="150,88 145,76 155,76"/>
+    <line x1="195" y1="64" x2="195" y2="80"/><polygon points="195,88 190,76 200,76"/>
+    <line x1="240" y1="70" x2="240" y2="80"/><polygon points="240,88 235,76 245,76"/>
+  </g>
+  <text x="165" y="118" text-anchor="middle" fill="#7f8c98">要求：合力相同、合力矩相同</text>
+  <text x="165" y="138" text-anchor="middle" fill="#7f8c98">（2 个方程，够定 2 个未知力）</text>
+  <text x="165" y="164" text-anchor="middle" fill="#b03a2e">但对 3 个以上节点就不够用了</text>
+  <text x="165" y="188" text-anchor="middle" fill="#b03a2e">而且与单元的位移模式无关</text>
+
+  <line x1="330" y1="10" x2="330" y2="200" stroke="#d6e4ee" stroke-width="1.5" stroke-dasharray="5 5"/>
+
+  <!-- 右：能量等效 -->
+  <text x="495" y="20" font-size="13.5" fill="#1a5276" font-weight="700" text-anchor="middle">能量等效（有限元的做法）</text>
+  <line x1="380" y1="92" x2="610" y2="92" stroke="#1f2d3d" stroke-width="4"/>
+  <!-- 虚位移曲线 -->
+  <path d="M380,92 Q420,64 460,70 T540,58 T610,44" fill="none" stroke="#7d3c98" stroke-width="2.2" stroke-dasharray="5 3"/>
+  <text x="560" y="36" fill="#7d3c98">任意虚位移 δu</text>
+  <g stroke="#1a5276" stroke-width="1.8" fill="#1a5276">
+    <line x1="380" y1="52" x2="380" y2="80"/><polygon points="380,88 375,76 385,76"/>
+    <line x1="610" y1="62" x2="610" y2="80"/><polygon points="610,88 605,76 615,76"/>
+  </g>
+  <text x="495" y="118" text-anchor="middle" fill="#7f8c98">要求：对<tspan font-weight="700">任意</tspan>虚位移，</text>
+  <text x="495" y="138" text-anchor="middle" fill="#7f8c98">节点力的虚功 = 分布力的虚功</text>
+  <text x="495" y="164" text-anchor="middle" fill="#1e8449">节点多少个都够用，唯一确定</text>
+  <text x="495" y="188" text-anchor="middle" fill="#1e8449">且自动与位移模式 N 相容</text>
+  </g>
+</svg>
+<figcaption><b>图 4.6</b>　两种等效原则。有限元采用的是<b>能量（虚功）等效</b>——它是最小势能原理的直接产物，不是额外的假定。</figcaption>
+</figure>
+
+<h3>6.2 等效的原则：虚功相等</h3>
+
+<p>回到 (4.34)。等效节点载荷的定义<b>已经包含在总势能的推导里了</b>，根本不需要额外规定。把外力功项写开：真实的分布载荷做的功是 ∫<b class="m">u</b><sup>T</sup><b class="m">t̄</b> d<i class="v">s</i>；代入 <b class="m">u</b> = <b class="m">Nd</b><sup>e</sup>，得 (<b class="m">d</b><sup>e</sup>)<sup>T</sup>∫<b class="m">N</b><sup>T</sup><b class="m">t̄</b> d<i class="v">s</i>。而节点力做的功是 (<b class="m">d</b><sup>e</sup>)<sup>T</sup><b class="m">f</b><sup>e</sup>。令两者对<b>任意</b> <b class="m">d</b><sup>e</sup> 相等，立得：</p>
+
+<div class="formula" style="border-left-color:#b03a2e"><span class="eq" style="font-size:18px">
+<b class="m">f</b><sup>e</sup> =
+<span style="color:#1e8449">∫<sub><i class="v">A</i><sup>e</sup></sub> <b class="m">N</b><sup>T</sup><b class="m">b</b> <i class="v">t</i> d<i class="v">A</i></span>
++ <span style="color:#7d3c98">∫<sub><i class="v">s</i></sub> <b class="m">N</b><sup>T</sup><b class="m">t̄</b> <i class="v">t</i> d<i class="v">s</i></span>
++ <span style="color:#bf8f14">Σ<sub><i class="v">k</i></sub> <b class="m">N</b><sup>T</sup>(<i class="v">x</i><sub><i class="v">k</i></sub>) <b class="m">P</b><sub><i class="v">k</i></sub></span>
+</span><span class="eqno">(4.42)</span></div>
+
+<p style="text-align:center;font-size:13.5px;color:var(--muted)">
+<span style="color:#1e8449">▲ 体力</span>　　<span style="color:#7d3c98">▲ 面力 / 线载荷</span>　　<span style="color:#bf8f14">▲ 单元内部的集中力</span>
+</p>
+
+<div class="good">
+  <div class="t-title">✓ 这个定义为什么是"对"的</div>
+  ① 它<b>不是人为规定</b>，而是最小势能原理的必然产物——用它算出的解，正是使总势能最小的那个解；<br>
+  ② 它<b>自动与位移模式相容</b>：换单元就换 <b class="m">N</b>，公式形式不变；<br>
+  ③ 节点再多也<b>唯一确定</b>，不存在静力等效那种"方程不够"的困境；<br>
+  ④ 它<b>保证收敛</b>。第 5.7 节的单调下限性质要求载荷按能量等效转化，否则不成立。
+</div>
+
+<h3>6.3 体力的等效：自重的 W/3 是怎么来的</h3>
+
+<p>取 (4.42) 第一项，体力 <b class="m">b</b> = [<i class="v">b</i><sub>x</sub>, <i class="v">b</i><sub>y</sub>]<sup>T</sup> 在单元内为常数（自重就是如此）。把 <b class="m">N</b><sup>T</sup>（6×2）展开，第 1 行是 [<i class="v">N</i><sub>i</sub>, 0]，第 2 行是 [0, <i class="v">N</i><sub>i</sub>]，依此类推，于是</p>
+
+<div class="formula"><span class="eq">
+<b class="m">f</b><sup>e</sup><sub>体力</sub> = <i class="v">t</i>
+<span class="mat c1">
+<span><i class="v">b</i><sub>x</sub> ∬ <i class="v">N</i><sub>i</sub> d<i class="v">A</i></span>
+<span><i class="v">b</i><sub>y</sub> ∬ <i class="v">N</i><sub>i</sub> d<i class="v">A</i></span>
+<span><i class="v">b</i><sub>x</sub> ∬ <i class="v">N</i><sub>j</sub> d<i class="v">A</i></span>
+<span><i class="v">b</i><sub>y</sub> ∬ <i class="v">N</i><sub>j</sub> d<i class="v">A</i></span>
+<span><i class="v">b</i><sub>x</sub> ∬ <i class="v">N</i><sub>m</sub> d<i class="v">A</i></span>
+<span><i class="v">b</i><sub>y</sub> ∬ <i class="v">N</i><sub>m</sub> d<i class="v">A</i></span>
+</span>
+</span><span class="eqno">(4.43)</span></div>
+
+<p>三个积分完全一样，用第 3.4 节的面积坐标公式 (4.19)，取 (<i class="v">a</i>,<i class="v">b</i>,<i class="v">c</i>) = (1,0,0)：</p>
+
+<div class="formula"><span class="eq">
+∬<sub><i class="v">A</i></sub> <i class="v">N</i><sub>i</sub> d<i class="v">A</i> = ∬<sub><i class="v">A</i></sub> <i class="v">L</i><sub>1</sub> d<i class="v">A</i>
+= <span class="frac"><span>1! · 0! · 0!</span><span>(1+0+0+2)!</span></span> · 2<i class="v">A</i>
+= <span class="frac"><span>1</span><span>6</span></span> · 2<i class="v">A</i> = <span class="frac"><span><i class="v">A</i></span><span>3</span></span>
+</span><span class="eqno">(4.44)</span></div>
+
+<p>代回，对自重 <b class="m">b</b> = [0, −<i class="v">ρg</i>]<sup>T</sup>，记单元总重 <i class="v">W</i> = <i class="v">ρg</i> · <i class="v">tA</i>：</p>
+
+<div class="formula" style="border-left-color:#1e8449"><span class="eq">
+<b class="m">f</b><sup>e</sup><sub>自重</sub> = −<span class="frac"><span><i class="v">W</i></span><span>3</span></span> [ 0　1　0　1　0　1 ]<sup>T</sup>
+</span><span class="eqno">(4.45)</span></div>
+
+<div class="tip">
+  <div class="t-title">◎ 巧合还是必然？</div>
+  三节点三角形的自重按 <b>1 : 1 : 1</b> 三等分——这恰好与<b>静力等效</b>（把重量放在形心，再按杠杆分配给三个顶点）的结果一致，因为三角形的形心正是三顶点的算术平均。
+  <b>但这只是 CST 的巧合。</b>换成 6 节点 LST，自重的能量等效结果是<b>角节点各得 0、中节点各得 W/3</b>——角点分到的竟然是零！这在静力等效的框架下完全无法想象。
+  这就引出了 6.6 节的主题。
+</div>
+
+<h3>6.4 线载荷与面力的等效：核心推导</h3>
+
+<p>这是本章的主干。设分布载荷作用在单元的<b>一条边</b> <i class="v">ij</i> 上，边长 <i class="v">L</i>，板厚 <i class="v">t</i>。沿边建立弧长坐标 <i class="v">s</i>，<i class="v">s</i> = 0 在节点 <i class="v">i</i>，<i class="v">s</i> = <i class="v">L</i> 在节点 <i class="v">j</i>。</p>
+
+<h4>6.4.1 第一步：把形函数限制到边上</h4>
+
+<p>由形函数性质 ③（第 3.3 节），在边 <i class="v">ij</i> 上有 <i class="v">N</i><sub>m</sub> ≡ 0，而 <i class="v">N</i><sub>i</sub>、<i class="v">N</i><sub>j</sub> 沿边<b>线性</b>变化，且在两端取 1 和 0。所以不必代入 (4.14) 那套 <i class="v">a</i>、<i class="v">b</i>、<i class="v">c</i>，直接写出<b>边上的一维形函数</b>：</p>
+
+<div class="formula" style="border-left-color:#7d3c98"><span class="eq">
+<i class="v">N</i><sub>i</sub>(<i class="v">s</i>) = 1 − <span class="frac"><span><i class="v">s</i></span><span><i class="v">L</i></span></span> = 1 − <i class="v">ξ</i>　，
+<i class="v">N</i><sub>j</sub>(<i class="v">s</i>) = <span class="frac"><span><i class="v">s</i></span><span><i class="v">L</i></span></span> = <i class="v">ξ</i>　，
+<i class="v">N</i><sub>m</sub>(<i class="v">s</i>) ≡ 0
+</span><span class="eqno">(4.46)</span></div>
+
+<div class="good">
+  <div class="t-title">✓ 一个立刻能用的结论</div>
+  <i class="v">N</i><sub>m</sub> ≡ 0 意味着：<b>作用在边 <i class="v">ij</i> 上的任何载荷，都不会分配给对面的节点 <i class="v">m</i>，一丝一毫都不会。</b>
+  这大大简化了手算——只需考虑受载边的两个节点。
+</div>
+
+<h4>6.4.2 第二步：一条主公式</h4>
+
+<p>观察 (4.42) 第二项的结构：被积函数总是"形函数 × 载荷函数"。如果载荷是<b>多项式</b>（工程中绝大多数情况），那么被积函数一定是 (1−<i class="v">ξ</i>)<sup><i class="v">a</i></sup><i class="v">ξ</i><sup><i class="v">b</i></sup> 这类项的线性组合。于是只要把<b>这一种积分</b>一次算清楚，所有多项式分布载荷就全解决了。</p>
+
+<div class="formula" style="border-left-color:#b03a2e;background:var(--main-ll)"><span class="eq" style="font-size:18px">
+∫<sub>0</sub><sup><i class="v">L</i></sup> <i class="v">N</i><sub>i</sub><sup><i class="v">a</i></sup> <i class="v">N</i><sub>j</sub><sup><i class="v">b</i></sup> d<i class="v">s</i>
+= ∫<sub>0</sub><sup><i class="v">L</i></sup> (1−<i class="v">ξ</i>)<sup><i class="v">a</i></sup><i class="v">ξ</i><sup><i class="v">b</i></sup> d<i class="v">s</i>
+= <span class="frac"><span><i class="v">a</i>! · <i class="v">b</i>!</span><span>(<i class="v">a</i> + <i class="v">b</i> + 1)!</span></span> · <i class="v">L</i>
+</span><span class="eqno">(4.47)</span></div>
+
+<details class="steps">
+<summary>主公式 (4.47) 的推导（三行）</summary>
+<div>
+<p>换元 <i class="v">ξ</i> = <i class="v">s</i>/<i class="v">L</i>，d<i class="v">s</i> = <i class="v">L</i> d<i class="v">ξ</i>，积分限变成 0 → 1：</p>
+<div class="formula"><span class="eq">
+∫<sub>0</sub><sup><i class="v">L</i></sup>(1−<i class="v">ξ</i>)<sup><i class="v">a</i></sup><i class="v">ξ</i><sup><i class="v">b</i></sup> d<i class="v">s</i>
+= <i class="v">L</i> ∫<sub>0</sub><sup>1</sup>(1−<i class="v">ξ</i>)<sup><i class="v">a</i></sup><i class="v">ξ</i><sup><i class="v">b</i></sup> d<i class="v">ξ</i>
+= <i class="v">L</i> · <i class="v">B</i>(<i class="v">b</i>+1, <i class="v">a</i>+1)
+</span></div>
+<p>右边是 <b>Beta 函数</b>，它与 Gamma 函数（整数时即阶乘）的关系是</p>
+<div class="formula"><span class="eq">
+<i class="v">B</i>(<i class="v">p</i>, <i class="v">q</i>) = <span class="frac"><span><i class="v">Γ</i>(<i class="v">p</i>)<i class="v">Γ</i>(<i class="v">q</i>)</span><span><i class="v">Γ</i>(<i class="v">p</i>+<i class="v">q</i>)</span></span>
+= <span class="frac"><span>(<i class="v">p</i>−1)! (<i class="v">q</i>−1)!</span><span>(<i class="v">p</i>+<i class="v">q</i>−1)!</span></span>
+</span></div>
+<p>代 <i class="v">p</i> = <i class="v">b</i>+1、<i class="v">q</i> = <i class="v">a</i>+1，即得 (4.47)。注意公式对<b>非整数指数</b>同样成立（用 Gamma 函数），所以连 <i class="v">ξ</i><sup>1/2</sup> 这类分布也能直接套。</p>
+</div>
+</details>
+
+<p>常用值先列成表，后面查着用：</p>
+
+<table>
+<thead><tr><th>(<i class="v">a</i>, <i class="v">b</i>)</th><th>被积函数</th><th><i class="v">a</i>!<i class="v">b</i>!/(<i class="v">a</i>+<i class="v">b</i>+1)!</th><th>积分值</th></tr></thead>
+<tbody>
+<tr><td>(0, 0)</td><td>1</td><td>1·1/1!</td><td><b><i class="v">L</i></b></td></tr>
+<tr><td>(1, 0)</td><td>1 − <i class="v">ξ</i></td><td>1·1/2!</td><td><b><i class="v">L</i>/2</b></td></tr>
+<tr><td>(0, 1)</td><td><i class="v">ξ</i></td><td>1·1/2!</td><td><b><i class="v">L</i>/2</b></td></tr>
+<tr><td>(2, 0)</td><td>(1 − <i class="v">ξ</i>)<sup>2</sup></td><td>2·1/3!</td><td><b><i class="v">L</i>/3</b></td></tr>
+<tr><td>(1, 1)</td><td>(1 − <i class="v">ξ</i>)<i class="v">ξ</i></td><td>1·1/3!</td><td><b><i class="v">L</i>/6</b></td></tr>
+<tr><td>(0, 2)</td><td><i class="v">ξ</i><sup>2</sup></td><td>1·2/3!</td><td><b><i class="v">L</i>/3</b></td></tr>
+<tr><td>(2, 1)</td><td>(1 − <i class="v">ξ</i>)<sup>2</sup><i class="v">ξ</i></td><td>2·1/4!</td><td><b><i class="v">L</i>/12</b></td></tr>
+<tr><td>(1, 2)</td><td>(1 − <i class="v">ξ</i>)<i class="v">ξ</i><sup>2</sup></td><td>1·2/4!</td><td><b><i class="v">L</i>/12</b></td></tr>
+<tr><td>(0, 3)</td><td><i class="v">ξ</i><sup>3</sup></td><td>1·6/4!</td><td><b><i class="v">L</i>/4</b></td></tr>
+</tbody>
+</table>
+
+<h4>6.4.3 情形一：均布线载荷</h4>
+
+<p>设沿边作用方向不变、大小恒为 <i class="v">q</i>（单位：力/长度，若给的是面压强 <i class="v">p</i>，则 <i class="v">q</i> = <i class="v">p</i>·<i class="v">t</i>）。以 <i class="v">y</i> 向为例：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>yi</sub> = ∫<sub>0</sub><sup><i class="v">L</i></sup> <i class="v">N</i><sub>i</sub> · <i class="v">q</i> · <i class="v">t</i> d<i class="v">s</i>
+= <i class="v">qt</i> ∫<sub>0</sub><sup><i class="v">L</i></sup>(1−<i class="v">ξ</i>) d<i class="v">s</i>
+= <i class="v">qt</i> · <span class="frac"><span>1!·0!</span><span>2!</span></span><i class="v">L</i>
+= <span class="frac"><span><i class="v">qtL</i></span><span>2</span></span>
+</span><span class="eqno">(4.48)</span></div>
+
+<p>同理 <i class="v">F</i><sub>yj</sub> = <i class="v">qtL</i>/2。合力 <i class="v">qtL</i> 与真实合力一致，<b>各分一半</b>。这条结论与直觉完全吻合，也是大多数人唯一记得住的一条——但下面就开始不一样了。</p>
+
+<h4>6.4.4 情形二：均布面载荷（体力式）</h4>
+
+<p>若"均布面载荷"指的是<b>作用在整个单元面积上</b>的压力（如楼板上的活荷载 <i class="v">p</i>，单位 N/m<sup>2</sup>，但沿厚度方向压在面上），就要按<b>体力</b>处理：把它折算成体力 <i class="v">b</i><sub>y</sub> = −<i class="v">p</i>/<i class="v">t</i>，代入 (4.45)：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>yi</sub> = <i class="v">F</i><sub>yj</sub> = <i class="v">F</i><sub>ym</sub> = −<span class="frac"><span><i class="v">pA</i></span><span>3</span></span>
+</span><span class="eqno">(4.49)</span></div>
+
+<div class="warn">
+  <div class="t-title">▲ 区分三种"分布载荷"，别混淆量纲</div>
+  <table style="margin:8px 0">
+  <thead><tr><th>名称</th><th>符号</th><th>量纲</th><th>作用位置</th><th>用哪一项</th></tr></thead>
+  <tbody>
+  <tr><td>体力</td><td><b class="m">b</b></td><td>N/m<sup>3</sup></td><td>单元体积内</td><td>(4.42) 第 1 项，面积分</td></tr>
+  <tr><td>面力 / 压强</td><td><b class="m">t̄</b></td><td>N/m<sup>2</sup></td><td>单元的边（侧表面）</td><td>(4.42) 第 2 项，线积分 ×<i class="v">t</i></td></tr>
+  <tr><td>线载荷</td><td><i class="v">q</i></td><td>N/m</td><td>单元的边</td><td>(4.42) 第 2 项，线积分（<i class="v">q</i> = <i class="v">t̄</i>·<i class="v">t</i>）</td></tr>
+  </tbody>
+  </table>
+  考试和实际建模中<b>错得最多的就是这里</b>：把 N/m<sup>2</sup> 的压强当成 N/m 的线载荷用，结果差一个厚度 <i class="v">t</i>。做完一定要用"总合力"反查一遍。
+</div>
+
+<h4>6.4.5 情形三：线性（三角形）分布——非均布的起点</h4>
+
+<p>设 <i class="v">q</i>(<i class="v">s</i>) = <i class="v">q</i><sub>0</sub>(1 − <i class="v">s</i>/<i class="v">L</i>) = <i class="v">q</i><sub>0</sub>(1 − <i class="v">ξ</i>)，即在节点 <i class="v">i</i> 处最大为 <i class="v">q</i><sub>0</sub>，在节点 <i class="v">j</i> 处降为零。代入积分：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>i</sub> = ∫<sub>0</sub><sup><i class="v">L</i></sup> (1−<i class="v">ξ</i>) · <i class="v">q</i><sub>0</sub>(1−<i class="v">ξ</i>) · <i class="v">t</i> d<i class="v">s</i>
+= <i class="v">q</i><sub>0</sub><i class="v">t</i> ∫<sub>0</sub><sup><i class="v">L</i></sup>(1−<i class="v">ξ</i>)<sup>2</sup> d<i class="v">s</i>
+= <i class="v">q</i><sub>0</sub><i class="v">t</i> · <span class="frac"><span>2!·0!</span><span>3!</span></span><i class="v">L</i>
+= <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>3</span></span>
+</span><span class="eqno">(4.50)</span></div>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>j</sub> = ∫<sub>0</sub><sup><i class="v">L</i></sup> <i class="v">ξ</i> · <i class="v">q</i><sub>0</sub>(1−<i class="v">ξ</i>) · <i class="v">t</i> d<i class="v">s</i>
+= <i class="v">q</i><sub>0</sub><i class="v">t</i> · <span class="frac"><span>1!·1!</span><span>3!</span></span><i class="v">L</i>
+= <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>6</span></span>
+</span><span class="eqno">(4.51)</span></div>
+
+<p><b>校核：</b>合力 = <i class="v">q</i><sub>0</sub><i class="v">tL</i>/3 + <i class="v">q</i><sub>0</sub><i class="v">tL</i>/6 = <i class="v">q</i><sub>0</sub><i class="v">tL</i>/2，正是三角形载荷图的面积 ✓。分配比 <b>2 : 1</b>，靠近载荷大的一端分得多——符合直觉，而且数值上与材料力学按形心杠杆分配的结果<b>恰好相同</b>（形心距 <i class="v">i</i> 为 <i class="v">L</i>/3，杠杆分配给 <i class="v">i</i> 的比例为 1 − 1/3 = 2/3 ✓）。</p>
+
+<h4>6.4.6 情形四：抛物线分布</h4>
+
+<p>设 <i class="v">q</i>(<i class="v">s</i>) = 4<i class="v">q</i><sub>0</sub><i class="v">ξ</i>(1 − <i class="v">ξ</i>)，两端为零、中点最大为 <i class="v">q</i><sub>0</sub>（系数 4 是为了让中点 <i class="v">ξ</i> = 1/2 处取 <i class="v">q</i><sub>0</sub>）。这是压力容器接管、薄膜受压等场合的典型分布。</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>i</sub> = 4<i class="v">q</i><sub>0</sub><i class="v">t</i>∫<sub>0</sub><sup><i class="v">L</i></sup>(1−<i class="v">ξ</i>)<sup>2</sup><i class="v">ξ</i> d<i class="v">s</i>
+= 4<i class="v">q</i><sub>0</sub><i class="v">t</i> · <span class="frac"><span>2!·1!</span><span>4!</span></span><i class="v">L</i>
+= 4<i class="v">q</i><sub>0</sub><i class="v">t</i> · <span class="frac"><span><i class="v">L</i></span><span>12</span></span>
+= <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>3</span></span>
+</span><span class="eqno">(4.52)</span></div>
+
+<p>由对称性 <i class="v">F</i><sub>j</sub> = <i class="v">q</i><sub>0</sub><i class="v">tL</i>/3，合力 2<i class="v">q</i><sub>0</sub><i class="v">tL</i>/3，正是抛物线下的面积（2/3 × 底 × 高）✓。分配比 <b>1 : 1</b>。</p>
+
+<h4>6.4.7 情形五：二次幂分布</h4>
+
+<p>设 <i class="v">q</i>(<i class="v">s</i>) = <i class="v">q</i><sub>0</sub><i class="v">ξ</i><sup>2</sup>，在 <i class="v">i</i> 端为零、在 <i class="v">j</i> 端达到 <i class="v">q</i><sub>0</sub>，中间凹。</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>i</sub> = <i class="v">q</i><sub>0</sub><i class="v">t</i>∫(1−<i class="v">ξ</i>)<i class="v">ξ</i><sup>2</sup> d<i class="v">s</i> = <i class="v">q</i><sub>0</sub><i class="v">t</i><span class="frac"><span>1!·2!</span><span>4!</span></span><i class="v">L</i> = <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>12</span></span>
+　，
+<i class="v">F</i><sub>j</sub> = <i class="v">q</i><sub>0</sub><i class="v">t</i>∫<i class="v">ξ</i><sup>3</sup> d<i class="v">s</i> = <i class="v">q</i><sub>0</sub><i class="v">t</i><span class="frac"><span>0!·3!</span><span>4!</span></span><i class="v">L</i> = <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>4</span></span>
+</span><span class="eqno">(4.53)</span></div>
+
+<p>合力 <i class="v">q</i><sub>0</sub><i class="v">tL</i>(1/12 + 1/4) = <i class="v">q</i><sub>0</sub><i class="v">tL</i>/3 ✓（∫<i class="v">ξ</i><sup>2</sup>d<i class="v">ξ</i> = 1/3）。分配比 <b>1 : 3</b>——高度不对称。</p>
+
+<h4>6.4.8 工程实例：挡土墙上的静水压力</h4>
+
+<details class="steps" open>
+<summary><b>例题 4-2</b>　水深 4 m 的直立墙面，求单元边的等效节点载荷</summary>
+<div>
+<p><b>题设：</b>竖直墙面，水从顶面（<i class="v">y</i> = 0）到底部（<i class="v">y</i> = 4 m）。水的重度 <i class="v">ρg</i> = 9800 N/m<sup>3</sup>。按平面应变取单位厚度 <i class="v">t</i> = 1 m。整个 4 m 高度用<b>一个单元边</b>（<i class="v">L</i> = 4 m）承担，节点 <i class="v">i</i> 在水面、<i class="v">j</i> 在底部。</p>
+
+<p><b>第 1 步　写出载荷函数。</b>静水压强随深度线性增长：<i class="v">p</i>(<i class="v">y</i>) = <i class="v">ρg y</i>。在底部达到最大值</p>
+<div class="formula"><span class="eq"><i class="v">q</i><sub>0</sub> = <i class="v">ρg</i> · <i class="v">h</i> = 9800 × 4 = 39 200 N/m<sup>2</sup></span></div>
+<p>用弧长坐标（<i class="v">s</i> 从水面向下）：<i class="v">q</i>(<i class="v">s</i>) = <i class="v">q</i><sub>0</sub> <i class="v">ξ</i>，<i class="v">ξ</i> = <i class="v">s</i>/<i class="v">L</i>。这是 6.4.5 的<b>反向</b>线性分布。</p>
+
+<p><b>第 2 步　积分。</b></p>
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>i</sub> = <i class="v">q</i><sub>0</sub><i class="v">t</i>∫<sub>0</sub><sup><i class="v">L</i></sup>(1−<i class="v">ξ</i>)<i class="v">ξ</i> d<i class="v">s</i> = <i class="v">q</i><sub>0</sub><i class="v">t</i> · <span class="frac"><span>1!1!</span><span>3!</span></span><i class="v">L</i> = <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>6</span></span>
+</span></div>
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>j</sub> = <i class="v">q</i><sub>0</sub><i class="v">t</i>∫<sub>0</sub><sup><i class="v">L</i></sup><i class="v">ξ</i><sup>2</sup> d<i class="v">s</i> = <i class="v">q</i><sub>0</sub><i class="v">t</i> · <span class="frac"><span>0!2!</span><span>3!</span></span><i class="v">L</i> = <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>3</span></span>
+</span></div>
+
+<p><b>第 3 步　代数。</b><i class="v">q</i><sub>0</sub><i class="v">tL</i> = 39 200 × 1 × 4 = 156 800 N</p>
+<table>
+<thead><tr><th>量</th><th>公式</th><th>数值</th><th>占比</th></tr></thead>
+<tbody>
+<tr><td><i class="v">F</i><sub>i</sub>（水面节点）</td><td><i class="v">q</i><sub>0</sub><i class="v">tL</i>/6</td><td><b>26.13 kN</b></td><td>1/3</td></tr>
+<tr><td><i class="v">F</i><sub>j</sub>（底部节点）</td><td><i class="v">q</i><sub>0</sub><i class="v">tL</i>/3</td><td><b>52.27 kN</b></td><td>2/3</td></tr>
+<tr><td>合计</td><td><i class="v">q</i><sub>0</sub><i class="v">tL</i>/2</td><td><b>78.40 kN</b></td><td>100 %</td></tr>
+</tbody>
+</table>
+
+<p><b>第 4 步　独立校核。</b>水压力的合力应当等于压力三角形的面积乘厚度：</p>
+<div class="formula"><span class="eq">
+<i class="v">P</i> = <span class="frac"><span>1</span><span>2</span></span><i class="v">ρg h</i><sup>2</sup> <i class="v">t</i> = <span class="frac"><span>1</span><span>2</span></span> × 9800 × 4<sup>2</sup> × 1 = 78 400 N = 78.40 kN ✓
+</span></div>
+<p>合力矩也可核对：等效节点力对水面的力矩 = 52.27 × 4 = 209.1 kN·m；真实压力的合力作用在 2<i class="v">h</i>/3 = 2.667 m 处，力矩 = 78.40 × 2.667 = 209.1 kN·m ✓。<b>两个校核全部通过。</b></p>
+
+<div class="tip">
+  <div class="t-title">◎ 实用提醒</div>
+  用<b>一个</b>单元边跨越整个 4 m 水深，等效载荷是精确的（因为载荷是线性的，被积函数二次，主公式精确积分），<b>但位移解不会精确</b>——CST 的位移模式只有一次，无法表示真实的三次挠度曲线。
+  工程中沿水深至少划分 8～16 个单元。等效载荷"精确"与整体解"精确"是两回事。
+</div>
+</div>
+</details>
+
+<h3>6.5 动画：积分等效的全过程</h3>
+
+<figure class="gifbox">
+  <img src="{{GIF_LOAD}}" alt="分布载荷积分等效动画：四种分布依次沿边积分，实时累积 F_i 与 F_j，最后定格通用主公式">
+  <figcaption><b>动画 ②</b>　<b>分布载荷的积分等效</b>。动画依次演示均布、三角形、抛物线、二次幂四种分布：上图是真实的载荷图，下图是被积函数 <i class="v">N</i><sub>i</sub><i class="v">q</i>（蓝）与 <i class="v">N</i><sub>j</sub><i class="v">q</i>（红），金色竖线沿边扫过，右侧面板实时累加积分值。最后定格在主公式 (4.47) 与分布类型对照表，并给出能量等效与静力等效分道扬镳的 8 节点单元反例。</figcaption>
+</figure>
+
+<h3>6.6 速查卡：把上面的结果排成一页</h3>
+
+<div class="lcards">
+  <div class="lcard">
+    <div class="lc-t">① 均布　q = q<sub>0</sub></div>
+    <svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="14,14 146,14 146,42 14,42" fill="#dbe9f4" stroke="#2980b9" stroke-width="1.4"/>
+      <line x1="14" y1="42" x2="146" y2="42" stroke="#1f2d3d" stroke-width="3"/>
+      <circle cx="14" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <circle cx="146" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <text x="14" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">i</text>
+      <text x="146" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">j</text>
+    </svg>
+    <div class="lc-r">F<sub>i</sub> = F<sub>j</sub> = q<sub>0</sub>tL / 2</div>
+    <div class="lc-n">分配 1 : 1　合力 q<sub>0</sub>tL</div>
+  </div>
+
+  <div class="lcard">
+    <div class="lc-t">② 线性（i 端最大）</div>
+    <svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="14,14 146,42 14,42" fill="#e8dff2" stroke="#7d3c98" stroke-width="1.4"/>
+      <line x1="14" y1="42" x2="146" y2="42" stroke="#1f2d3d" stroke-width="3"/>
+      <circle cx="14" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <circle cx="146" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <text x="14" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">i</text>
+      <text x="146" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">j</text>
+    </svg>
+    <div class="lc-r">q<sub>0</sub>tL/3　,　q<sub>0</sub>tL/6</div>
+    <div class="lc-n">分配 2 : 1　合力 q<sub>0</sub>tL/2</div>
+  </div>
+
+  <div class="lcard">
+    <div class="lc-t">③ 抛物线（中点最大）</div>
+    <svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14,42 Q80,2 146,42 Z" fill="#fdf0d9" stroke="#bf8f14" stroke-width="1.4"/>
+      <line x1="14" y1="42" x2="146" y2="42" stroke="#1f2d3d" stroke-width="3"/>
+      <circle cx="14" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <circle cx="146" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <text x="14" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">i</text>
+      <text x="146" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">j</text>
+    </svg>
+    <div class="lc-r">F<sub>i</sub> = F<sub>j</sub> = q<sub>0</sub>tL / 3</div>
+    <div class="lc-n">分配 1 : 1　合力 2q<sub>0</sub>tL/3</div>
+  </div>
+
+  <div class="lcard">
+    <div class="lc-t">④ 二次幂　q = q<sub>0</sub>ξ²</div>
+    <svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14,42 Q104,42 146,14 L146,42 Z" fill="#fbe4e1" stroke="#b03a2e" stroke-width="1.4"/>
+      <line x1="14" y1="42" x2="146" y2="42" stroke="#1f2d3d" stroke-width="3"/>
+      <circle cx="14" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <circle cx="146" cy="42" r="4" fill="#fff" stroke="#1f2d3d" stroke-width="2"/>
+      <text x="14" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">i</text>
+      <text x="146" y="58" font-size="10" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">j</text>
+    </svg>
+    <div class="lc-r">q<sub>0</sub>tL/12　,　q<sub>0</sub>tL/4</div>
+    <div class="lc-n">分配 1 : 3　合力 q<sub>0</sub>tL/3</div>
+  </div>
+
+  <div class="lcard">
+    <div class="lc-t">⑤ 自重（体力）</div>
+    <svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,48 140,48 62,10" fill="#e6f2ea" stroke="#1e8449" stroke-width="1.4"/>
+      <g stroke="#1e8449" stroke-width="1.3" fill="#1e8449">
+        <line x1="56" y1="26" x2="56" y2="36"/><polygon points="56,41 52,33 60,33"/>
+        <line x1="80" y1="30" x2="80" y2="38"/><polygon points="80,43 76,35 84,35"/>
+      </g>
+      <g fill="#fff" stroke="#1e8449" stroke-width="1.8">
+        <circle cx="20" cy="48" r="3.5"/><circle cx="140" cy="48" r="3.5"/><circle cx="62" cy="10" r="3.5"/>
+      </g>
+    </svg>
+    <div class="lc-r">每节点 −W / 3</div>
+    <div class="lc-n">W = ρg·tA　用面积坐标公式</div>
+  </div>
+
+  <div class="lcard" style="border-color:#e2b04a">
+    <div class="lc-t" style="color:#bf8f14">⑥ Q8 边受均布 q<sub>0</sub></div>
+    <svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="14,14 146,14 146,42 14,42" fill="#fdf3e3" stroke="#bf8f14" stroke-width="1.4"/>
+      <line x1="14" y1="42" x2="146" y2="42" stroke="#1f2d3d" stroke-width="3"/>
+      <g fill="#fff" stroke="#1f2d3d" stroke-width="2">
+        <circle cx="14" cy="42" r="4"/><circle cx="80" cy="42" r="4"/><circle cx="146" cy="42" r="4"/>
+      </g>
+      <text x="14" y="58" font-size="10" font-family="Consolas" fill="#bf8f14" text-anchor="middle">1/6</text>
+      <text x="80" y="58" font-size="10" font-family="Consolas" fill="#b03a2e" text-anchor="middle">2/3</text>
+      <text x="146" y="58" font-size="10" font-family="Consolas" fill="#bf8f14" text-anchor="middle">1/6</text>
+    </svg>
+    <div class="lc-r">L/6　:　2L/3　:　L/6</div>
+    <div class="lc-n" style="color:#b03a2e">不是 1/4 : 1/2 : 1/4！见 6.7 节</div>
+  </div>
+</div>
+
+<h3>6.7 能量等效 ≠ 静力等效：一个必须知道的反例</h3>
+
+<p>对 CST 而言，能量等效与静力等效给出的结果恰好一致（均布 1:1、线性 2:1、自重 1:1:1），于是很多人误以为"等效节点载荷 = 按杠杆分配"。这个误解在遇到<b>高阶单元</b>时会立刻出错。</p>
+
+<p>考察 8 节点四边形（Q8）的一条边，上面有三个节点：两个角节点 1、3 和一个中节点 2。边上的形函数是<b>二次</b>的（自然坐标 <i class="v">ξ</i> ∈ [−1, 1]）：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">N</i><sub>1</sub> = ½<i class="v">ξ</i>(<i class="v">ξ</i> − 1)　，
+<i class="v">N</i><sub>2</sub> = 1 − <i class="v">ξ</i><sup>2</sup>　，
+<i class="v">N</i><sub>3</sub> = ½<i class="v">ξ</i>(<i class="v">ξ</i> + 1)
+</span><span class="eqno">(4.54)</span></div>
+
+<p>边上均布载荷 <i class="v">q</i><sub>0</sub>，雅可比 d<i class="v">s</i> = (<i class="v">L</i>/2)d<i class="v">ξ</i>：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>1</sub> = <i class="v">q</i><sub>0</sub><i class="v">t</i><span class="frac"><span><i class="v">L</i></span><span>2</span></span>∫<sub>−1</sub><sup>1</sup>½(<i class="v">ξ</i><sup>2</sup> − <i class="v">ξ</i>) d<i class="v">ξ</i>
+= <i class="v">q</i><sub>0</sub><i class="v">t</i><span class="frac"><span><i class="v">L</i></span><span>2</span></span> · <span class="frac"><span>1</span><span>3</span></span>
+= <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>6</span></span>
+</span><span class="eqno">(4.55)</span></div>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>2</sub> = <i class="v">q</i><sub>0</sub><i class="v">t</i><span class="frac"><span><i class="v">L</i></span><span>2</span></span>∫<sub>−1</sub><sup>1</sup>(1 − <i class="v">ξ</i><sup>2</sup>) d<i class="v">ξ</i>
+= <i class="v">q</i><sub>0</sub><i class="v">t</i><span class="frac"><span><i class="v">L</i></span><span>2</span></span> · <span class="frac"><span>4</span><span>3</span></span>
+= <span class="frac"><span>2<i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>3</span></span>
+</span><span class="eqno">(4.56)</span></div>
+
+<div class="warn">
+  <div class="t-title">▲ 结果：1/6 : 2/3 : 1/6，而不是 1/4 : 1/2 : 1/4</div>
+  中节点分到了<b>三分之二</b>，比两个角节点加起来还多一倍。合力 <i class="v">q</i><sub>0</sub><i class="v">tL</i>(1/6 + 2/3 + 1/6) = <i class="v">q</i><sub>0</sub><i class="v">tL</i> 仍然正确 ✓，但<b>分配方式与任何"按面积分摊"的直觉都对不上</b>。<br>
+  如果按静力直觉手工输入 1/4 : 1/2 : 1/4，算出的位移解<b>不是</b>该网格下的最优解，而且会破坏第 5.7 节的收敛性质。
+</div>
+
+<p>更极端的例子：Q8 一条边上作用<b>线性分布</b>载荷（节点 1 处为 0、节点 3 处为 <i class="v">q</i><sub>0</sub>），积分给出</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>1</sub> = <b>0</b>　，
+<i class="v">F</i><sub>2</sub> = <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>3</span></span>　，
+<i class="v">F</i><sub>3</sub> = <span class="frac"><span><i class="v">q</i><sub>0</sub><i class="v">tL</i></span><span>6</span></span>
+</span><span class="eqno">(4.57)</span></div>
+
+<p>零载荷那一端的角节点分到的是<b>精确的零</b>，而中节点分到的是另一个角节点的<b>两倍</b>。合力 <i class="v">q</i><sub>0</sub><i class="v">tL</i>/2 依然正确 ✓。Felippa 在 IFEM 第 23 章把这类结果称为 "consistent nodal forces"——<b>一致节点力</b>，强调它们与单元的插值函数"一致"，而非与静力直觉一致。</p>
+
+<div class="lab" id="lab6">
+  <div class="lab-head"><span class="lab-tag">实验台 6</span>载荷等效积分器<span class="lab-hint">任选分布形式与单元边类型，实时数值积分并与静力等效对比</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>分布</label>
+        <select id="l6pre">
+          <option value="u">均布　q = q₀</option>
+          <option value="l1">线性（i 端最大）</option>
+          <option value="l2">线性（j 端最大 / 静水压）</option>
+          <option value="p">抛物线（中点最大）</option>
+          <option value="pw" selected>幂次　q = q₀ξⁿ</option>
+        </select>
+      </div>
+      <div class="ctrl"><label>指数 n</label><input type="range" id="l6n" min="0" max="5" step="0.25" value="2"><span class="val" id="l6nv">2.00</span></div>
+      <div class="ctrl"><button class="lab-btn" id="l6el">单元边：2 节点（CST/Q4）</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px">
+      <svg viewBox="0 0 660 260" id="l6svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="lab-out">
+      <div class="kv">F<sub>i</sub> / (q₀tL)<b id="l6fi">0.0833</b></div>
+      <div class="kv" id="l6mw" style="display:none">F<sub>中</sub> / (q₀tL)<b id="l6fm">—</b></div>
+      <div class="kv">F<sub>j</sub> / (q₀tL)<b id="l6fj">0.2500</b></div>
+      <div class="kv">合力 / (q₀tL)<b id="l6tot">0.3333</b></div>
+      <div class="kv">真实合力 ∫q ds<b id="l6ex">0.3333</b></div>
+      <div class="kv">合力矩校核<b id="l6mom">✓</b></div>
+    </div>
+    <div class="lab-note" id="l6note"></div>
+  </div>
+</div>
+
+<h3>6.8 单元内部的集中力</h3>
+
+<p>若一个集中力 <b class="m">P</b> 不幸作用在单元<b>内部</b>的点 (<i class="v">x</i><sub>P</sub>, <i class="v">y</i><sub>P</sub>)（网格划分时应尽量避免，但有时无法避免），(4.42) 第三项给出</p>
+
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>xi</sub> = <i class="v">N</i><sub>i</sub>(<i class="v">x</i><sub>P</sub>, <i class="v">y</i><sub>P</sub>) · <i class="v">P</i><sub>x</sub>　，
+<i class="v">F</i><sub>xj</sub> = <i class="v">N</i><sub>j</sub>(<i class="v">x</i><sub>P</sub>) · <i class="v">P</i><sub>x</sub>　，
+<i class="v">F</i><sub>xm</sub> = <i class="v">N</i><sub>m</sub>(<i class="v">x</i><sub>P</sub>) · <i class="v">P</i><sub>x</sub>
+</span><span class="eqno">(4.58)</span></div>
+
+<p>即<b>按该点的形函数值（面积坐标）分配</b>。由单位分解性质，三份之和恰为 <i class="v">P</i><sub>x</sub>，合力自动守恒 ✓。若 <b class="m">P</b> 恰在形心，则三节点各得 <i class="v">P</i>/3。</p>
+
+<h3>6.9 从单元载荷到整体载荷列阵</h3>
+
+<p>各单元算出 <b class="m">f</b><sup>e</sup> 后，与单刚一样"<b>对号入座</b>"累加到整体 <b class="m">F</b> 的对应行：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">F</b> = Σ<sub><i class="v">e</i></sub> <b class="m">G</b><sup>e</sup> <b class="m">f</b><sup>e</sup> + <b class="m">P</b><sub>节点</sub>
+</span><span class="eqno">(4.59)</span></div>
+
+<p>其中 <b class="m">P</b><sub>节点</sub> 是直接作用在节点上的集中力，无需任何转化，直接填入即可。</p>
+
+<div class="good">
+  <div class="t-title">✓ 载荷组装的一条重要校核</div>
+  组装完毕后，<b>把 <b class="m">F</b> 中所有 <i class="v">x</i> 方向分量相加，应等于全部外载荷的 <i class="v">x</i> 合力</b>；<i class="v">y</i> 方向同理。
+  这条校核只需几行代码，却能抓住绝大多数载荷输入错误（漏边、重复加载、方向反了、忘乘厚度）。第 9 章的例题三会用它来验证支反力。
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ 相邻单元共享受载边时不要重复计算</div>
+  内部边上的面力在两个单元中<b>大小相等、方向相反</b>，组装后自动抵消——这正是内力不出现在整体方程中的原因。
+  但如果你在建模时手工给<b>两个</b>单元都加上了同一条<b>外边界</b>上的压力，载荷就会<b>翻倍</b>。
+  商业软件按"面（face）"施加载荷正是为了避免这个陷阱。
+</div>
+
+</section>

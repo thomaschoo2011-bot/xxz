@@ -1,0 +1,436 @@
+
+<!-- ================================================== 第 11 章 ================================================== -->
+<section id="ch11">
+<h2><span class="chno">11</span>小结 · 自测 · 习题 · 参考文献</h2>
+
+<p>前十章把平面问题有限元从弹性力学的三组方程一直推到了应力云图。本章不再引入新内容，只做三件事：<b>把整条逻辑链收成一页</b>、<b>把必须记住的公式与数字列成速查表</b>、<b>用思考题和习题把它们逼出来</b>。最后给出本讲义引用的全部文献，其中大部分是可以公开获取的国外顶级课程讲义——真正想学透，读原著是绕不开的一步。</p>
+
+<h3>11.1 一页纸的逻辑链</h3>
+
+<p>整个方法只有<b>一条主线</b>：用分片多项式代替未知的真实位移场，让总势能最小。所有看起来五花八门的技巧——形函数、面积坐标、等效节点力、对号入座、化 1 置 0、绕节点平均——都是这条主线在不同环节上的具体实现。把它们串起来就是：</p>
+
+<figure>
+<svg viewBox="0 0 660 248" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="平面问题有限元十一章的逻辑链流程图">
+  <defs>
+    <marker id="fa11" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 z" fill="#7f8c98"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI" font-size="12">
+  <g class="drawin">
+  <!-- ===== 第一行：建模（蓝） ===== -->
+  <g>
+    <rect x="12"  y="26" width="144" height="38" rx="8" fill="#eaf3f9" stroke="#bcd9ec" stroke-width="1.3"/>
+    <text x="84"  y="44" text-anchor="middle" fill="#1a5276" font-weight="700">弹性力学三组方程</text>
+    <text x="84"  y="57" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 1 章　平衡·几何·物理</text>
+    <rect x="176" y="26" width="144" height="38" rx="8" fill="#eaf3f9" stroke="#bcd9ec" stroke-width="1.3"/>
+    <text x="248" y="44" text-anchor="middle" fill="#1a5276" font-weight="700">离散化与网格</text>
+    <text x="248" y="57" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 2 章　编号·带宽·对称</text>
+    <rect x="340" y="26" width="144" height="38" rx="8" fill="#f3ecf8" stroke="#d9c4e8" stroke-width="1.3"/>
+    <text x="412" y="44" text-anchor="middle" fill="#7d3c98" font-weight="700">形函数 N</text>
+    <text x="412" y="57" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 3 章　位移模式·收敛准则</text>
+    <rect x="504" y="26" width="144" height="38" rx="8" fill="#f3ecf8" stroke="#d9c4e8" stroke-width="1.3"/>
+    <text x="576" y="44" text-anchor="middle" fill="#7d3c98" font-weight="700">几何矩阵 B＝LN</text>
+    <text x="576" y="57" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 4 章　B 与应力矩阵 S</text>
+  </g>
+  <g stroke="#7f8c98" stroke-width="1.3" marker-end="url(#fa11)" fill="none">
+    <line x1="157" y1="45" x2="173" y2="45"/>
+    <line x1="321" y1="45" x2="337" y2="45"/>
+    <line x1="485" y1="45" x2="501" y2="45"/>
+    <path d="M576,65 L576,97"/>
+  </g>
+  <!-- ===== 第二行：单元与系统（右→左） ===== -->
+  <g>
+    <rect x="504" y="100" width="144" height="38" rx="8" fill="#f3ecf8" stroke="#d9c4e8" stroke-width="1.3"/>
+    <text x="576" y="118" text-anchor="middle" fill="#7d3c98" font-weight="700">能量原理 → kᵉ</text>
+    <text x="576" y="131" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 5 章　δΠ＝0，BᵀDB·tA</text>
+    <rect x="340" y="100" width="144" height="38" rx="8" fill="#fdf6e6" stroke="#eddcae" stroke-width="1.3"/>
+    <text x="412" y="118" text-anchor="middle" fill="#8a6d1c" font-weight="700">载荷等效 fᵉ</text>
+    <text x="412" y="131" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 6 章　∫Nᵀt̄ ds 积分推导</text>
+    <rect x="176" y="100" width="144" height="38" rx="8" fill="#eafaf1" stroke="#b7e2c9" stroke-width="1.3"/>
+    <text x="248" y="118" text-anchor="middle" fill="#1e8449" font-weight="700">组装 K、F</text>
+    <text x="248" y="131" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 7 章　对号入座 ΣGᵉᵀkᵉGᵉ</text>
+    <rect x="12"  y="100" width="144" height="38" rx="8" fill="#eafaf1" stroke="#b7e2c9" stroke-width="1.3"/>
+    <text x="84"  y="118" text-anchor="middle" fill="#1e8449" font-weight="700">施加边界条件</text>
+    <text x="84"  y="131" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 8 章　缩减·化1置0·罚函数</text>
+  </g>
+  <g stroke="#7f8c98" stroke-width="1.3" marker-end="url(#fa11)" fill="none">
+    <line x1="501" y1="119" x2="487" y2="119"/>
+    <line x1="337" y1="119" x2="323" y2="119"/>
+    <line x1="173" y1="119" x2="159" y2="119"/>
+    <path d="M84,139 L84,171"/>
+  </g>
+  <!-- ===== 第三行：求解与校核 ===== -->
+  <g>
+    <rect x="12"  y="174" width="144" height="38" rx="8" fill="#eafaf1" stroke="#b7e2c9" stroke-width="1.3"/>
+    <text x="84"  y="192" text-anchor="middle" fill="#1e8449" font-weight="700">解 Kd＝F</text>
+    <text x="84"  y="205" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 9 章　位移·反力·自平衡</text>
+    <rect x="176" y="174" width="144" height="38" rx="8" fill="#fbeceb" stroke="#eec7c2" stroke-width="1.3"/>
+    <text x="248" y="192" text-anchor="middle" fill="#b03a2e" font-weight="700">σ＝DBd</text>
+    <text x="248" y="205" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 9 章　单元常应力</text>
+    <rect x="340" y="174" width="144" height="38" rx="8" fill="#fbeceb" stroke="#eec7c2" stroke-width="1.3"/>
+    <text x="412" y="192" text-anchor="middle" fill="#b03a2e" font-weight="700">平均 · 跳跃 · 收敛</text>
+    <text x="412" y="205" text-anchor="middle" fill="#7f8c98" font-size="9.5">第 10 章　后处理与网格研究</text>
+    <rect x="504" y="174" width="144" height="38" rx="8" fill="#1a5276" stroke="#1a5276" stroke-width="1.3"/>
+    <text x="576" y="192" text-anchor="middle" fill="#ffffff" font-weight="700">校核 · 交付</text>
+    <text x="576" y="205" text-anchor="middle" fill="#cfe2ef" font-size="9.5">第 11 章　清单·自测·文献</text>
+  </g>
+  <g stroke="#7f8c98" stroke-width="1.3" marker-end="url(#fa11)" fill="none">
+    <line x1="157" y1="193" x2="173" y2="193"/>
+    <line x1="321" y1="193" x2="337" y2="193"/>
+    <line x1="485" y1="193" x2="501" y2="193"/>
+  </g>
+  <!-- 阶段标签 -->
+  <g font-size="10.5" fill="#7f8c98">
+    <text x="12" y="18">① 建模阶段：把物理问题变成离散模型</text>
+    <text x="12" y="92">② 格式阶段：把变分原理变成矩阵方程　（右 → 左）</text>
+    <text x="12" y="166">③ 求解与校核阶段：把矩阵解变成可交付的结论</text>
+  </g>
+  </g>
+  </g>
+</svg>
+<figcaption><b>图 4.13</b>　十一章的逻辑链。三行分别对应<b>建模</b>、<b>格式</b>、<b>求解与校核</b>三个阶段，蛇形箭头表示实际操作顺序。注意第 5 章（能量原理）是整条链的<b>枢轴</b>：它左边的内容都是为了给它准备 <b class="m">B</b>，右边的内容都是在处理它产出的 <b class="m">k</b><sup>e</sup>。</figcaption>
+</figure>
+
+<p>如果只允许写一行公式来概括这一整章内容，那就是把第 5、6、7 章合成一句话——<b>单元的能量求和等于整体的能量，于是单元矩阵的"对号入座求和"就等于整体矩阵</b>：</p>
+
+<div class="formula" style="border-left-color:#1a5276"><span class="eq" style="font-size:16.5px">
+<i class="v">Π</i> = ½<b class="m">d</b><sup>T</sup><b class="m">Kd</b> − <b class="m">d</b><sup>T</sup><b class="m">F</b>　，
+<b class="m">K</b> = Σ<sub><i class="v">e</i></sub> (<b class="m">G</b><sup><i class="v">e</i></sup>)<sup>T</sup>
+<span style="font-size:19px">∫</span><sub><i class="v">A</i><sup>e</sup></sub> <b class="m">B</b><sup>T</sup><b class="m">DB</b> <i class="v">t</i> d<i class="v">A</i> · <b class="m">G</b><sup><i class="v">e</i></sup>　，
+<b class="m">F</b> = Σ<sub><i class="v">e</i></sub> (<b class="m">G</b><sup><i class="v">e</i></sup>)<sup>T</sup>
+<span style="font-size:19px">(</span><span style="font-size:19px">∫</span><sub><i class="v">A</i><sup>e</sup></sub> <b class="m">N</b><sup>T</sup><b class="m">b</b> <i class="v">t</i> d<i class="v">A</i>
++ <span style="font-size:19px">∫</span><sub><i class="v">S</i><sub>t</sub><sup>e</sup></sub> <b class="m">N</b><sup>T</sup><b class="m">t̄</b> <i class="v">t</i> d<i class="v">s</i><span style="font-size:19px">)</span>
+<br><span style="display:inline-block;margin-top:9px">⇒　<i class="v">δΠ</i> = 0　⇒　<b class="m">Kd</b> = <b class="m">F</b>　（加上位移边界条件后唯一可解）</span>
+</span><span class="eqno">(4.89)</span></div>
+
+<div class="chain">
+<b>离散</b><i>→</i><b>假设 u = Nd</b><i>→</i><b>求导 ε = Bd</b><i>→</i><b>代入 Π</b><i>→</i><b>δΠ = 0</b><i>→</i><b>kᵉ、fᵉ</b><i>→</i><b>对号入座</b><i>→</i><b>加约束</b><i>→</i><b>解 d</b><i>→</i><b>回代求 σ</b><i>→</i><b>平均与收敛校核</b>
+</div>
+
+<div class="tip">
+  <div class="t-title">◎ 为什么"位移法"能一统天下</div>
+  (4.89) 的形式对<b>任何</b>单元、任何维数、任何材料都不变：换单元只换 <b class="m">N</b>，换材料只换 <b class="m">D</b>，换维数只换积分区域。
+  正因为这种彻底的<b>模块化</b>，同一套求解器可以同时处理杆、梁、板、三维实体；也正因为如此，第 3 章的杆件讲义和本章的平面问题讲义在结构上是<b>逐条对应</b>的——你只要把 <b class="m">B</b> = [−1/<i class="v">L</i>　1/<i class="v">L</i>] 换成 (4.23) 的 3×6 矩阵，把 <i class="v">EA</i> 换成 <b class="m">D</b><i>t</i>，整条推导一字不改。
+</div>
+
+<h3>11.2 核心公式速查表</h3>
+
+<div class="asm-wrap">
+<table>
+<thead><tr><th style="width:20%">名称</th><th style="width:44%">公式</th><th style="width:9%">式号</th><th>一句话备忘</th></tr></thead>
+<tbody>
+<tr><td>平面应力 ↔ 平面应变</td><td><i class="v">E</i> → <i class="v">E</i>/(1−<i class="v">ν</i><sup>2</sup>)，<i class="v">ν</i> → <i class="v">ν</i>/(1−<i class="v">ν</i>)</td><td>(4.8)</td><td>一个替换就能复用全部公式</td></tr>
+<tr><td>半带宽</td><td><i class="v">B</i> = (<i class="v">D</i> + 1) × 2</td><td>(4.9)</td><td><i class="v">D</i> 是单元内最大节点号差；沿<b>短边</b>编号</td></tr>
+<tr><td>CST 形函数</td><td><i class="v">N</i><sub><i class="v">i</i></sub> = (<i class="v">a</i><sub><i class="v">i</i></sub> + <i class="v">b</i><sub><i class="v">i</i></sub><i class="v">x</i> + <i class="v">c</i><sub><i class="v">i</i></sub><i class="v">y</i>)/2<i class="v">A</i></td><td>(4.15)</td><td><i class="v">b</i><sub><i class="v">i</i></sub> = <i class="v">y</i><sub><i class="v">j</i></sub> − <i class="v">y</i><sub><i class="v">m</i></sub>，<i class="v">c</i><sub><i class="v">i</i></sub> = <i class="v">x</i><sub><i class="v">m</i></sub> − <i class="v">x</i><sub><i class="v">j</i></sub>，<b>逆时针轮换</b></td></tr>
+<tr><td>面积坐标积分</td><td>∬<i class="v">L</i><sub>1</sub><sup><i class="v">a</i></sup><i class="v">L</i><sub>2</sub><sup><i class="v">b</i></sup><i class="v">L</i><sub>3</sub><sup><i class="v">c</i></sup> d<i class="v">A</i> = <span class="frac"><span><i class="v">a</i>!<i class="v">b</i>!<i class="v">c</i>!</span><span>(<i class="v">a</i>+<i class="v">b</i>+<i class="v">c</i>+2)!</span></span>·2<i class="v">A</i></td><td>(4.20)</td><td>三角形上一切积分都不必真算</td></tr>
+<tr><td>几何矩阵</td><td><b class="m">B</b> = <b class="m">LN</b>，CST 时为<b>常数</b> 3×6</td><td>(4.23)</td><td>常应变 ⇒ 单元内一个应力值</td></tr>
+<tr><td>应力矩阵</td><td><b class="m">S</b> = <b class="m">DB</b>，<b class="m">σ</b> = <b class="m">Sd</b><sup>e</sup></td><td>(4.27)</td><td>阶梯状应力场的来源</td></tr>
+<tr><td><b>单元刚度矩阵</b></td><td><b class="m">k</b><sup>e</sup> = ∫<b class="m">B</b><sup>T</sup><b class="m">DB</b> <i class="v">t</i> d<i class="v">A</i> = <b class="m">B</b><sup>T</sup><b class="m">DB</b>·<i class="v">tA</i>（CST）</td><td>(4.38)</td><td>最小势能原理的直接产物</td></tr>
+<tr><td>子块含义</td><td><i class="v">k</i><sub><i class="v">rs</i></sub> = 节点 <i class="v">s</i> 单位位移引起的节点 <i class="v">r</i> 处的力</td><td>(4.39)</td><td>解释对称性与行和为零</td></tr>
+<tr><td><b>等效节点力总式</b></td><td><b class="m">f</b><sup>e</sup> = ∫<b class="m">N</b><sup>T</sup><b class="m">b</b> <i class="v">t</i> d<i class="v">A</i> + ∫<b class="m">N</b><sup>T</sup><b class="m">t̄</b> <i class="v">t</i> d<i class="v">s</i> + Σ<b class="m">N</b><sup>T</sup><b class="m">P</b></td><td>(4.42)</td><td>三项：体积力、面力、集中力</td></tr>
+<tr><td><b>边界积分母公式</b></td><td>∫<sub>0</sub><sup><i class="v">L</i></sup> <i class="v">N</i><sub><i class="v">i</i></sub><sup><i class="v">a</i></sup><i class="v">N</i><sub><i class="v">j</i></sub><sup><i class="v">b</i></sup> d<i class="v">s</i> = <span class="frac"><span><i class="v">a</i>!<i class="v">b</i>!</span><span>(<i class="v">a</i>+<i class="v">b</i>+1)!</span></span><i class="v">L</i></td><td>(4.47)</td><td>一切线分布载荷等效都由它导出</td></tr>
+<tr><td>整体组装</td><td><b class="m">K</b> = Σ(<b class="m">G</b><sup>e</sup>)<sup>T</sup><b class="m">k</b><sup>e</sup><b class="m">G</b><sup>e</sup>，实现为 LM 数组</td><td>(4.60)</td><td>"对号入座"的严格写法</td></tr>
+<tr><td>整体自由度编号</td><td>节点 <i class="v">n</i> ⇒ 2<i class="v">n</i>−1（<i class="v">u</i>）、2<i class="v">n</i>（<i class="v">v</i>）</td><td>(4.62)</td><td>程序里 0-based 记作 2<i class="v">n</i>、2<i class="v">n</i>+1</td></tr>
+<tr><td>缩减法</td><td><b class="m">K</b><sub>ff</sub><b class="m">d</b><sub>f</sub> = <b class="m">F</b><sub>f</sub>，<b class="m">R</b><sub>c</sub> = <b class="m">K</b><sub>cf</sub><b class="m">d</b><sub>f</sub></td><td>(4.67)</td><td>最干净，但要建映射表</td></tr>
+<tr><td>化 1 置 0 法</td><td><i class="v">K</i><sub>rr</sub> ← 1，行列清零，<b>先移项</b> <i class="v">F</i><sub><i class="v">s</i></sub> ← <i class="v">F</i><sub><i class="v">s</i></sub> − <i class="v">K</i><sub><i class="v">sr</i></sub>d̄<sub><i class="v">r</i></sub></td><td>(4.68)</td><td>非零强迫位移时漏移项是头号错误</td></tr>
+<tr><td>乘大数法</td><td><i class="v">K</i><sub>rr</sub> ← <i class="v">K</i><sub>rr</sub> + <i class="v">α</i>，<i class="v">F</i><sub>r</sub> ← <i class="v">F</i><sub>r</sub> + <i class="v">α</i>d̄<sub><i class="v">r</i></sub></td><td>(4.69)</td><td><i class="v">α</i> 取 10<sup>8</sup>~10<sup>12</sup>×max <i class="v">K</i><sub><i class="v">ii</i></sub></td></tr>
+<tr><td>支反力</td><td><b class="m">R</b> = <b class="m">Kd</b> − <b class="m">F</b>（用<b>原始</b> <b class="m">K</b>）</td><td>—</td><td>Σ<b class="m">R</b> = −Σ<b class="m">F</b> 是万能校核</td></tr>
+<tr><td>绕节点平均</td><td><b class="m">σ</b><sub><i class="v">k</i></sub> = Σ<i class="v">A</i><sup>e</sup><b class="m">σ</b><sup>e</sup> / Σ<i class="v">A</i><sup>e</sup></td><td>(4.84)</td><td>商业软件云图的默认算法</td></tr>
+<tr><td>误差指示器</td><td><i class="v">η</i><sub><i class="v">k</i></sub> = max<b class="m">σ</b><sup>e</sup> − min<b class="m">σ</b><sup>e</sup>，为 <i class="v">O</i>(<i class="v">h</i>)</td><td>(4.86)</td><td>免费、无需参考解</td></tr>
+<tr><td>Richardson 外推</td><td><i class="v">p</i> = log<sub>2</sub>[(<i class="v">δ</i><sub>2</sub>−<i class="v">δ</i><sub>1</sub>)/(<i class="v">δ</i><sub>3</sub>−<i class="v">δ</i><sub>2</sub>)]，<i class="v">δ</i><sub>∞</sub> ≈ <i class="v">δ</i><sub>3</sub> + <span class="frac"><span><i class="v">δ</i><sub>3</sub>−<i class="v">δ</i><sub>2</sub></span><span>2<sup><i class="v">p</i></sup>−1</span></span></td><td>(4.88)</td><td>三套网格就能反推收敛阶</td></tr>
+<tr style="background:var(--main-ll)"><td><b>总纲</b></td><td><b class="m">Kd</b> = <b class="m">F</b>，由 <i class="v">δΠ</i> = 0 给出</td><td>(4.37)(4.89)</td><td><b>整本讲义只为这一个方程服务</b></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>11.3 必须记住的十四个结论与数字</h3>
+
+<div class="good">
+  <div class="t-title">✓ 概念类（记不住就会出错）</div>
+  ① <b>平面应力是薄板受面内力，平面应变是长柱受横向力</b>；判错会让 <i class="v">σ</i><sub>z</sub> 和横向刚度全错。<br>
+  ② <b>三节点三角形单元内应力是常数</b>，所以它<b>永远</b>画不出弯曲的线性应力分布——弯曲问题用 CST 必须靠网格密度硬堆。<br>
+  ③ <b>收敛准则 = 完备性 + 协调性</b>。完备性由 Pascal 三角形的<b>完全多项式</b>保证，协调性由<b>共享边上位移相同</b>保证。<br>
+  ④ <b>有限元位移解偏小（结构偏硬）</b>，这是最小势能原理的下限性质；四个前提（位移法、精确积分、协调元、精确施加约束）缺一不可。<br>
+  ⑤ <b>力边界条件不需要施加</b>（自然），<b>位移边界条件必须施加</b>（本质）。不加载荷 = 自由表面。<br>
+  ⑥ <b>欠约束会报错，过约束不会报错</b>——后者危险得多，要靠"约束是否有物理依据"来人工排查。<br>
+  ⑦ <b>单元应力精度比位移低一档</b>；以应力为判据的设计必须比"位移收敛"再密一档网格。<br>
+  ⑧ <b>真正的应力奇异点永远不收敛</b>，加密只会得到更大的值；此时要换判据或改模型。
+</div>
+
+<div class="good" style="border-left-color:#7d3c98">
+  <div class="t-title" style="color:#7d3c98">✓ 数字类（考试和手算都要用）</div>
+  ⑨ <b>半带宽系数 f = 2</b>（平面问题每节点 2 个自由度）；<b class="m">K</b> 的秩亏为 <b>3</b>（两平动一转动）。<br>
+  ⑩ <b>自重</b>等效到三角形三个节点：各 <b><i class="v">W</i>/3</b>；这是面积坐标积分 ∬<i class="v">N</i><sub><i class="v">i</i></sub> d<i class="v">A</i> = <i class="v">A</i>/3 的结果。<br>
+  ⑪ <b>均布线载荷</b>等效到两端节点：各 <b><i class="v">qtL</i>/2</b>（对半分）；<b>三角形分布</b>（0→<i class="v">q</i>）：<b>1:2</b>（<i class="v">qtL</i>/6 与 <i class="v">qtL</i>/3）；<b>抛物线分布</b>（两端 0、中间 <i class="v">q</i>）：<b>1:1</b>，各 <i class="v">qtL</i>/3；<b>二次幂分布</b>（<i class="v">q</i>(<i class="v">s</i>/<i class="v">L</i>)<sup>2</sup>）：<b>1:3</b>（<i class="v">qtL</i>/12 与 <i class="v">qtL</i>/4）。<br>
+  ⑫ <b>Q8 单元边上均布载荷</b>按 <b>1/6 : 2/3 : 1/6</b> 分配——<b>角节点比中节点少得多</b>，与直觉相反，是最容易记错的一条。<br>
+  ⑬ <b>罚因子</b> <i class="v">α</i> = 10<sup>8</sup>~10<sup>12</sup> × max <i class="v">K</i><sub><i class="v">ii</i></sub>；<b>单元长宽比</b> &lt; 3，<b>最小内角</b> &gt; 30°。<br>
+  ⑭ <b>位移收敛阶 <i class="v">O</i>(<i class="v">h</i><sup>2</sup>)</b>（误差每加密一次降为 1/4）；<b>跳跃量收敛阶 <i class="v">O</i>(<i class="v">h</i>)</b>；<b>绕节点平均后的应力恢复到 <i class="v">O</i>(<i class="v">h</i><sup>2</sup>)</b>。
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ 三条最容易失分的细节</div>
+  ① CST 的节点<b>必须逆时针</b>编号，否则 2<i class="v">A</i> &lt; 0，<b class="m">B</b> 反号、<b class="m">k</b><sup>e</sup> 不变但应力符号全错（因为 <b class="m">k</b><sup>e</sup> 中 <b class="m">B</b> 出现两次而 <b class="m">σ</b> 中只出现一次）；<br>
+  ② 非零强迫位移时<b>必须移项</b>（8.3 节）；<br>
+  ③ 对称模型算出的<b>支反力和总载荷要按对称倍数还原</b>（例题 4-7：2 000 kN → 4 000 kN），而<b>位移和应力不还原</b>。
+</div>
+
+<h3>11.4 思考题</h3>
+
+<p>下面八题都不需要计算器，但每一题都对应一个真实的工程陷阱。先自己想，再展开看答案。</p>
+
+<details>
+<summary>思考题 1（单元阶次 vs 网格密度）　同样的自由度预算，是用少量 Q8 还是大量 CST？
+<div class="body">
+<p><b>答：</b>绝大多数情况下<b>用高阶单元</b>。第 10.5 节的实测表给出了直接证据：要达到 1.5 % 的挠度精度，CST 需要 1 122 个自由度，Q4 只要约 300 个，而 Q8 会更少。原因是误差 ∝ <i class="v">h</i><sup><i class="v">p</i>+1</sup>，提高阶次 <i class="v">p</i> 的收益是<b>指数级</b>的，而加密 <i class="v">h</i> 的收益是多项式级的。</p>
+<p><b>但有三个例外：</b>① 几何非常复杂、需要靠小单元贴合边界时；② 存在应力奇异点，此时高阶单元的优势消失（真解不光滑，<i class="v">p</i> 收敛失效）；③ 接触、大变形等强非线性问题，高阶单元的中节点容易引起数值困难，工业界反而偏好线性单元 + 密网格。</p>
+</div></summary>
+</details>
+
+<details>
+<summary>思考题 2（为什么 <b class="m">k</b><sup>e</sup> 的行和必须为零）
+<div class="body">
+<p><b>答：</b>令单元做刚体平移 <b class="m">d</b><sup>e</sup> = [1,0,1,0,1,0]<sup>T</sup>（所有节点沿 <i class="v">x</i> 移动一个单位）。刚体运动不产生应变，因此不产生内力，必须有 <b class="m">k</b><sup>e</sup><b class="m">d</b><sup>e</sup> = <b class="m">0</b>，展开正是"每行中所有 <i class="v">x</i> 方向列之和为零"。同理取 <i class="v">y</i> 方向平移得另一组。这也解释了 <b class="m">k</b><sup>e</sup> 的秩为 6 − 3 = 3。</p>
+<p><b>工程用途：</b>这是检查自编程序最快的一招——把 <b class="m">k</b><sup>e</sup> 的奇数列相加、偶数列相加，两个结果都应是机器零。若不为零，<b class="m">B</b> 矩阵里的 <i class="v">b</i><sub><i class="v">i</i></sub>、<i class="v">c</i><sub><i class="v">i</i></sub> 轮换必然写错了。</p>
+</div></summary>
+</details>
+
+<details>
+<summary>思考题 3（集中力能不能直接加在节点上？）
+<div class="body">
+<p><b>答：</b>可以，而且<b>不需要任何等效计算</b>——(4.42) 的第三项在集中力恰好作用于节点时退化为力本身（因为 <i class="v">N</i><sub><i class="v">i</i></sub> 在节点 <i class="v">i</i> 处为 1、其余为 0）。</p>
+<p><b>但要清楚代价：</b>集中力在弹性理论中对应<b>应力奇异点</b>（二维问题里 <i class="v">σ</i> ~ ln <i class="v">r</i> 或 1/<i class="v">r</i> 量级）。加载点附近的应力<b>永远不收敛</b>，加密网格只会算出越来越大的值。若关心的正是加载点附近的应力，就必须把集中力改成真实的<b>分布压力</b>（接触面积上的 <i class="v">p</i> = <i class="v">P</i>/<i class="v">A</i>），这也是 Saint-Venant 原理在有限元里的实际含义：<b>距加载点一个特征长度以外</b>的结果不受这个建模细节影响。</p>
+</div></summary>
+</details>
+
+<details>
+<summary>思考题 4（对称性用错了会怎样）
+<div class="body">
+<p><b>答：</b>三个典型错误。① <b>反对称载荷用了对称边界</b>：例如纯弯的梁取一半却令对称面 <i class="v">u</i> = 0，这会人为堵死本该发生的转动，结果偏硬且完全错；反对称问题应令对称面上<b>切向位移</b>为零（平面 ⊥ <i class="v">x</i> 时是 <i class="v">v</i> = 0）。② <b>忘了还原倍数</b>：取 1/4 模型算出的总反力是真实值的 1/4，载荷也只能加 1/4（例题 4-7）。③ <b>用对称性掩盖了失稳或非对称失效</b>：屈曲、裂纹、接触滑移的真实模式常常是非对称的，对称模型<b>结构上排除了</b>这些解，会给出危险的乐观结果。</p>
+<p>结论：对称性是<b>只在线性、对称载荷、对称约束、对称材料同时成立时</b>才能用的加速手段，不是无条件的建模技巧。</p>
+</div></summary>
+</details>
+
+<details>
+<summary>思考题 5（为什么不直接用更精确的积分或更多高斯点？）
+<div class="body">
+<p><b>答：</b>因为"更精确的积分"并不等于"更精确的解"。<b class="m">k</b><sup>e</sup> 的被积函数 <b class="m">B</b><sup>T</sup><b class="m">DB</b> 对 CST 是常数、对规则 Q4 是低次多项式，2×2 高斯积分已是<b>精确</b>的，再加点毫无收益。</p>
+<p>更有意思的是反方向：Q4 存在<b>剪切自锁</b>，有意采用<b>减缩积分</b>（1 个高斯点）反而能消除虚假剪切刚度，让细长单元的弯曲表现大幅改善——代价是引入<b>沙漏模式</b>（零能模式），需要额外的沙漏控制。商业软件中的 "reduced integration + hourglass control"（Abaqus 的 CPS4R）正是这条思路。可见<b>积分方案是单元设计的一部分</b>，而不是单纯的数值精度问题。</p>
+</div></summary>
+</details>
+
+<details>
+<summary>思考题 6（<i class="v">ν</i> → 0.5 时发生了什么）
+<div class="body">
+<p><b>答：</b><b>平面应变</b>下 <b class="m">D</b> 中含 1/(1−2<i class="v">ν</i>) 因子，<i class="v">ν</i> → 0.5 时体积模量 <i class="v">K</i> = <i class="v">E</i>/[3(1−2<i class="v">ν</i>)] → ∞，材料趋于不可压缩。低阶位移单元无法在<b>逐点</b>满足 <i class="v">ε</i><sub>x</sub> + <i class="v">ε</i><sub>y</sub> = 0 的同时还保留足够的变形自由度，于是被"锁死"——位移严重偏小、应力出现剧烈振荡，这就是<b>体积自锁</b>（volumetric locking）。</p>
+<p><b>三条出路：</b>① 混合格式（把压力 <i class="v">p</i> 作为独立未知量，u/p 单元）；② 减缩积分或选择性减缩积分（只对体积项降阶）；③ B-bar / F-bar 方法（把体积应变在单元上取平均）。橡胶、饱和土、塑性流动（塑性不可压）都会遇到这个问题，所以它在工程中远比听起来常见。<b>平面应力不受影响</b>，因为板厚方向可以自由收缩。</p>
+</div></summary>
+</details>
+
+<details>
+<summary>思考题 7（跳跃量小一定说明网格好吗）
+<div class="body">
+<p><b>答：</b>不一定。第 10.6 节的表给出了反例：2×1 网格的跳跃量 3.05 MPa 反而<b>小于</b> 4×2 的 6.76 MPa，但 2×1 的结果错得多。原因是当网格太粗时，应力场<b>整体被算小了</b>，差值自然也小——跳跃量小是"都算小了"而不是"都算准了"。</p>
+<p>所以误差指示器只有在网格<b>进入渐近收敛区</b>之后才可信。判断是否进入渐近区的唯一办法是至少算三套网格，看关键量是否单调、比值是否趋于 2<sup><i class="v">p</i></sup>。这正是把"网格收敛研究"写进规范（ASME V&amp;V）而不是只要求"跳跃量小于 5 %"的原因。</p>
+</div></summary>
+</details>
+
+<details>
+<summary>思考题 8（商业软件给你看的应力，是哪一个？）
+<div class="body">
+<p><b>答：</b>默认几乎总是<b>绕节点平均后</b>的值（甚至是 SPR 恢复后的值），并且在单元内用形函数插值成连续云图。这意味着：</p>
+<p>① 你看到的<b>峰值应力比任何单元的原始应力都低</b>——平均本质上是一次低通滤波；<br>
+② 跨材料界面、跨厚度突变处的云图<b>可能是错的</b>，除非软件按材料/属性分组平均（多数软件有这个选项，但需要手动开启）；<br>
+③ 做强度校核、写报告时，必须写清楚给出的是<b>单元应力（unaveraged / element nodal）还是平均应力（averaged / nodal）</b>。规范审查时这一条经常被追问。</p>
+<p>实用建议：<b>同时看两张图</b>。平均图用来判断应力分布形态是否合理，未平均图用来判断网格是否够密（阶梯有多明显）。两张图差别很大的地方，就是必须加密的地方。</p>
+</div></summary>
+</details>
+
+<h3>11.5 建议习题</h3>
+
+<div class="warn" style="margin-bottom:16px">
+  <div class="t-title">▲ 关于本节的说明</div>
+  本节习题由本讲义<b>自行编写</b>，用于配合前十章的内容自测，<b>不是课程的正式作业</b>。其中<b>习题 4 采用课件中"两端固支矩形深梁"例题的题设</b>（两个三角形单元 + 对称性），是最能把全部环节串起来的一道题，强烈建议动手做完。
+  所有题目都附有可核对的答案要点；带 <b>★</b> 的是需要动笔算到底的题。
+</div>
+
+<div class="qa">
+<ol>
+<li><b>习题 1（平面应力还是平面应变）</b>　判断下列构件各属于哪一类，并写出对应的 <b class="m">D</b> 矩阵（取 <i class="v">E</i> = 30 GPa，<i class="v">ν</i> = 0.2）：<br>
+  (a) 厚 8 mm 的钢板，四周受面内拉力；<br>
+  (b) 长 200 m 的重力坝坝体横截面；<br>
+  (c) 内压作用下的长直厚壁管道（远离两端）；<br>
+  (d) 受横向弯曲的薄板。<br>
+  <span class="ans"><b>答案要点：</b>(a) 平面应力；(b)(c) 平面应变；(d) <b>两者都不是</b>——板弯曲的位移垂直于板面，属于板壳理论，不是平面问题，这是本题的陷阱。<br>
+  平面应力 <b class="m">D</b> = <span class="frac"><span><i class="v">E</i></span><span>1−<i class="v">ν</i><sup>2</sup></span></span>[[1,<i class="v">ν</i>,0],[<i class="v">ν</i>,1,0],[0,0,(1−<i class="v">ν</i>)/2]] = 31.25 GPa × [[1,0.2,0],[0.2,1,0],[0,0,0.4]]；<br>
+  平面应变按 (4.8) 替换：<i class="v">E</i>′ = <i class="v">E</i>/(1−<i class="v">ν</i><sup>2</sup>) = 31.25 GPa，<i class="v">ν</i>′ = <i class="v">ν</i>/(1−<i class="v">ν</i>) = 0.25，代回同一式得 33.333 GPa × [[1,0.25,0],[0.25,1,0],[0,0,0.375]]。注意平面应变的刚度<b>更大</b>。</span>
+</li>
+
+<li><b>习题 2（形函数与 B 矩阵）★</b>　三角形单元节点坐标为 <i class="v">i</i>(0,0)、<i class="v">j</i>(2,0)、<i class="v">m</i>(0,1)（单位 m，厚 <i class="v">t</i> = 10 mm）。<br>
+  (a) 判断编号是否逆时针，算出 2<i class="v">A</i> 与 <i class="v">A</i>；<br>
+  (b) 写出全部 <i class="v">a</i><sub><i class="v">i</i></sub>、<i class="v">b</i><sub><i class="v">i</i></sub>、<i class="v">c</i><sub><i class="v">i</i></sub> 与三个形函数；<br>
+  (c) 验证在形心处三个形函数都等于 1/3，且 Σ<i class="v">N</i> ≡ 1 对任意点成立；<br>
+  (d) 写出 3×6 的 <b class="m">B</b> 矩阵；<br>
+  (e) 用 (4.20) 算出 ∬<i class="v">N</i><sub><i class="v">i</i></sub><sup>2</sup> d<i class="v">A</i> 与 ∬<i class="v">N</i><sub><i class="v">i</i></sub><i class="v">N</i><sub><i class="v">j</i></sub> d<i class="v">A</i>。<br>
+  <span class="ans"><b>答案要点：</b>(a) 2<i class="v">A</i> = +2（正，逆时针 ✓），<i class="v">A</i> = 1 m<sup>2</sup>；<br>
+  (b) <i class="v">b</i> = [<i class="v">y</i><sub><i class="v">j</i></sub>−<i class="v">y</i><sub><i class="v">m</i></sub>, <i class="v">y</i><sub><i class="v">m</i></sub>−<i class="v">y</i><sub><i class="v">i</i></sub>, <i class="v">y</i><sub><i class="v">i</i></sub>−<i class="v">y</i><sub><i class="v">j</i></sub>] = [−1, 1, 0]，<i class="v">c</i> = [<i class="v">x</i><sub><i class="v">m</i></sub>−<i class="v">x</i><sub><i class="v">j</i></sub>, <i class="v">x</i><sub><i class="v">i</i></sub>−<i class="v">x</i><sub><i class="v">m</i></sub>, <i class="v">x</i><sub><i class="v">j</i></sub>−<i class="v">x</i><sub><i class="v">i</i></sub>] = [−2, 0, 2]，<i class="v">a</i> = [2, 0, 0]；<br>
+  <i class="v">N</i><sub><i class="v">i</i></sub> = 1 − <i class="v">x</i>/2 − <i class="v">y</i>，<i class="v">N</i><sub><i class="v">j</i></sub> = <i class="v">x</i>/2，<i class="v">N</i><sub><i class="v">m</i></sub> = <i class="v">y</i>；<br>
+  (c) 形心 (2/3, 1/3)：1−1/3−1/3 = 1/3 ✓，1/3 ✓，1/3 ✓；三式相加恒为 1 ✓；<br>
+  (d) 2<i class="v">A</i>·<b class="m">B</b> = [[−1,0,1,0,0,0],[0,−2,0,0,0,2],[−2,−1,0,1,2,0]]，即 <b class="m">B</b> = 该矩阵 /2；<br>
+  (e) ∬<i class="v">N</i><sub><i class="v">i</i></sub><sup>2</sup> d<i class="v">A</i> = (2!0!0!/4!)·2<i class="v">A</i> = <i class="v">A</i>/6 = 0.1667 m<sup>2</sup>；∬<i class="v">N</i><sub><i class="v">i</i></sub><i class="v">N</i><sub><i class="v">j</i></sub> d<i class="v">A</i> = (1!1!0!/4!)·2<i class="v">A</i> = <i class="v">A</i>/12 = 0.0833 m<sup>2</sup>。<br>
+  <b>提醒：</b>这个单元的长宽比是 2:1、最小内角约 26.6°，已经接近第 2 章的形状下限——真实建模中应避免。</span>
+</li>
+
+<li><b>习题 3（非均布载荷的积分等效）★</b>　单元一条边长 <i class="v">L</i>、厚 <i class="v">t</i>，边上两端节点记作 <i class="v">i</i>、<i class="v">j</i>。用母公式 (4.47) 推导下列分布压力的等效节点力，并<b>逐一验算合力与合力矩</b>：<br>
+  (a) 线性分布，<i class="v">i</i> 端为 <i class="v">q</i><sub>1</sub>、<i class="v">j</i> 端为 <i class="v">q</i><sub>2</sub>（一般梯形）；<br>
+  (b) 三次分布 <i class="v">q</i>(<i class="v">s</i>) = <i class="v">q</i>(<i class="v">s</i>/<i class="v">L</i>)<sup>3</sup>；<br>
+  (c) 正弦分布 <i class="v">q</i>(<i class="v">s</i>) = <i class="v">q</i> sin(π<i class="v">s</i>/<i class="v">L</i>)（此题需真做积分，母公式不适用）。<br>
+  <span class="ans"><b>答案要点：</b>(a) <i class="v">f</i><sub><i class="v">i</i></sub> = <i class="v">tL</i>(2<i class="v">q</i><sub>1</sub>+<i class="v">q</i><sub>2</sub>)/6，<i class="v">f</i><sub><i class="v">j</i></sub> = <i class="v">tL</i>(<i class="v">q</i><sub>1</sub>+2<i class="v">q</i><sub>2</sub>)/6；令 <i class="v">q</i><sub>1</sub>=<i class="v">q</i><sub>2</sub>=<i class="v">q</i> 退化为 <i class="v">qtL</i>/2 ✓，令 <i class="v">q</i><sub>1</sub>=0 退化为 1:2 ✓。合力 <i class="v">tL</i>(<i class="v">q</i><sub>1</sub>+<i class="v">q</i><sub>2</sub>)/2 = 梯形面积 ✓。<br>
+  (b) <i class="v">N</i><sub><i class="v">i</i></sub> = 1−<i class="v">ξ</i>、<i class="v">N</i><sub><i class="v">j</i></sub> = <i class="v">ξ</i>，<i class="v">q</i> = <i class="v">qξ</i><sup>3</sup>：<i class="v">f</i><sub><i class="v">i</i></sub> = <i class="v">qtL</i>∫(1−<i class="v">ξ</i>)<i class="v">ξ</i><sup>3</sup>d<i class="v">ξ</i> = <i class="v">qtL</i>(1/4−1/5) = <b><i class="v">qtL</i>/20</b>，<i class="v">f</i><sub><i class="v">j</i></sub> = <i class="v">qtL</i>/5 = <b>4<i class="v">qtL</i>/20</b>，比例 <b>1:4</b>；合力 <i class="v">qtL</i>/4 = ∫<i class="v">ξ</i><sup>3</sup> ✓。<br>
+  规律：<i class="v">q</i> ∝ <i class="v">ξ</i><sup><i class="v">n</i></sup> 时比例恒为 <b>1 : (<i class="v">n</i>+1)</b>（<i class="v">n</i>=0 → 1:1、<i class="v">n</i>=1 → 1:2、<i class="v">n</i>=2 → 1:3、<i class="v">n</i>=3 → 1:4），这是 (4.47) 的一个漂亮推论。<br>
+  (c) <i class="v">f</i><sub><i class="v">i</i></sub> = <i class="v">f</i><sub><i class="v">j</i></sub> = <i class="v">qtL</i>/π ≈ 0.3183<i class="v">qtL</i>（由对称性必相等）；合力 2<i class="v">qtL</i>/π ≈ 0.6366<i class="v">qtL</i> = ∫sin ✓。与抛物线分布的 1:1、各 <i class="v">qtL</i>/3 ≈ 0.3333<i class="v">qtL</i> 相当接近——这解释了工程上常用抛物线近似正弦载荷。</span>
+</li>
+
+<li><b>习题 4（两端固支矩形深梁，课件例题题设）★★</b>　跨度 2<i class="v">a</i>、梁高 <i class="v">a</i>、厚 <i class="v">t</i> 的矩形深梁，<b>两端整边固支</b>，上边受均布压力 <i class="v">q</i>（单位 N/m<sup>2</sup>），平面应力，<i class="v">ν</i> = 1/3。利用对称性取<b>右半</b>（<i class="v">x</i> ∈ [0, <i class="v">a</i>]，<i class="v">x</i> = 0 为对称面），划分为<b>两个</b>三角形单元：节点 1(0,0)、2(<i class="v">a</i>,0)、3(0,<i class="v">a</i>)、4(<i class="v">a</i>,<i class="v">a</i>)，单元 ①(2,3,1)、②(3,2,4)。<br>
+  (a) 检查两个单元的编号是否逆时针；<br>
+  (b) 写出对称面与固支端应施加的<b>全部</b>约束，数一数剩下几个未知量；<br>
+  (c) 把上边 3–4 的均布压力等效为节点力；<br>
+  (d) 求解位移，用 <i class="v">qa</i>/<i class="v">E</i> 表示；<br>
+  (e) 求两个单元的应力与全部支反力，校核自平衡；<br>
+  (f) 与 Euler 梁和 Timoshenko 梁的理论挠度比较，评价这个两单元模型。<br>
+  <span class="ans"><b>答案要点：</b>(a) 两个单元的 2<i class="v">A</i> 都等于 +<i class="v">a</i><sup>2</sup> &gt; 0 ✓（这是本题设计的关键——"交叉"式的局部编号 2-3-1 和 3-2-4 都是逆时针）。<br>
+  (b) 对称面 <i class="v">x</i> = 0 上的节点 1、3 令 <b><i class="v">u</i> = 0</b>（法向位移为零，切向自由）；固支端 <i class="v">x</i> = <i class="v">a</i> 上的节点 2、4 令 <b><i class="v">u</i> = <i class="v">v</i> = 0</b>。8 个自由度中约束了 6 个，<b>只剩 <i class="v">v</i><sub>1</sub> 和 <i class="v">v</i><sub>3</sub> 两个未知量</b>——所以这道题真的可以手算到底。<br>
+  (c) 边 3–4 长 <i class="v">a</i>，均布 ⇒ 节点 3、4 各 <b>−<i class="v">qta</i>/2</b>（向下），总计 −<i class="v">qta</i>。<br>
+  (d) <b><i class="v">v</i><sub>1</sub> = −(8/7)<i class="v">qa</i>/<i class="v">E</i> ≈ −1.1429 <i class="v">qa</i>/<i class="v">E</i>，<i class="v">v</i><sub>3</sub> = −(32/21)<i class="v">qa</i>/<i class="v">E</i> ≈ −1.5238 <i class="v">qa</i>/<i class="v">E</i></b>（与 <i class="v">t</i> 无关，因为载荷与刚度都 ∝ <i class="v">t</i>）。取 <i class="v">a</i>=1 m、<i class="v">t</i>=10 mm、<i class="v">E</i>=210 GPa、<i class="v">q</i>=1 MPa 时 <i class="v">qa</i>/<i class="v">E</i> = 0.0047619 mm，得 <i class="v">v</i><sub>1</sub> = −0.005442 mm、<i class="v">v</i><sub>3</sub> = −0.007256 mm。<br>
+  (e) 单元 ① <b class="m">σ</b> = <i class="v">q</i>(−1/7, −3/7, +3/7) ≈ <i class="v">q</i>(−0.143, −0.429, +0.429)；单元 ② <b class="m">σ</b> = <i class="v">q</i>(0, 0, +4/7)。支反力（以 <i class="v">qta</i> 为单位）：节点 1 (−1/7, 0)、节点 2 (−5/14, +3/14)、节点 3 (+3/14, 0)、节点 4 (+2/7, +11/14)。Σ<i class="v">R</i><sub>x</sub> = 0 ✓；Σ<i class="v">R</i><sub>y</sub> = 3/14 + 11/14 = <b>1 × <i class="v">qta</i></b>，恰等于半模型上的外载 ✓（全梁的实际支反力为 2<i class="v">qta</i>，需按对称倍数还原）。<br>
+  (f) 参照解：全梁两端固支 + 满跨均布，<i class="v">w</i> = <i class="v">qt</i>，跨中 Euler 挠度 <i class="v">wL</i><sup>4</sup>/(384<i class="v">EI</i>) = <b>0.5 <i class="v">qa</i>/<i class="v">E</i></b>；剪切附加项 1.2<i class="v">wL</i><sup>2</sup>/(8<i class="v">GA</i>) = <b>1.6 <i class="v">qa</i>/<i class="v">E</i></b>，Timoshenko 合计 <b>2.1 <i class="v">qa</i>/<i class="v">E</i></b>。有限元给出的对称面平均挠度 (1.1429+1.5238)/2 = <b>1.3333 <i class="v">qa</i>/<i class="v">E</i></b>，仅为 Timoshenko 解的 <b>63.5 %</b>——偏小，符合下限性质 ✓。<br>
+  <b>三条必须写进结论的评价：</b>① <i class="v">L</i>/<i class="v">h</i> = 2 的深梁，剪切变形占总挠度的 <b>76 %</b>（1.6/2.1），<b>绝对不能用 Euler 梁</b>；② 固支端真实的弯曲应力为 <i class="v">M</i><sub>端</sub> = <i class="v">qta</i><sup>2</sup>/3，表面 <i class="v">σ</i><sub><i class="v">x</i></sub> = ±2<i class="v">q</i>，而两单元模型最大只给出 0.143<i class="v">q</i>——<b>差一个数量级以上</b>，因为 CST 的常应力根本无法表示线性弯曲应力；③ 结论：这个模型只能用来<b>演示流程</b>，工程上至少需要第 10 章那样 16×8 量级的网格，或者直接改用 Q8。</span>
+</li>
+
+<li><b>习题 5（约束诊断）</b>　对第 9 章例题五那块 2 m × 1 m 的板（节点 1(0,0)、2(0,1)、3(2,0)、4(2,1)），判断下列四种约束方案属于<b>欠约束、恰当约束还是过约束</b>，并预测它对位移和应力的影响方向：<br>
+  (a) 仅固定节点 1 的 <i class="v">u</i>、<i class="v">v</i>；<br>
+  (b) 固定节点 1 的 <i class="v">u</i>、<i class="v">v</i> 和节点 2 的 <i class="v">u</i>；<br>
+  (c) 固定节点 1、2 的 <i class="v">u</i>、<i class="v">v</i>（左边整边固支）；<br>
+  (d) 固定节点 1、2 的 <i class="v">u</i>、<i class="v">v</i>，再额外固定节点 3 的 <i class="v">v</i>。<br>
+  <span class="ans"><b>答案要点：</b>(a) <b>欠约束</b>：消去了 2 个平动但转动仍自由，<b class="m">K</b><sub>ff</sub> 奇异，求解器报错。<br>
+  (b) <b>恰当约束</b>：3 个约束正好消去 3 个刚体自由度，且都有物理依据（这就是例题 4-5 的 Case A）。单轴拉伸时给出 <b>精确解</b> <i class="v">σ</i><sub><i class="v">x</i></sub> = 2 MPa、<i class="v">σ</i><sub><i class="v">y</i></sub> = 0，因为它允许左边界自由收缩。<br>
+  (c) <b>过约束</b>（相对于"单轴拉伸"这个物理问题）：多约束了 <i class="v">v</i><sub>2</sub>，堵死了泊松收缩。结果：<b>结构偏硬</b>（例题 4-5 实测 <i class="v">u</i><sub>3</sub> 偏小 0.82 %、应变能偏小 5.57 %），并出现<b>本不该有的 <i class="v">σ</i><sub><i class="v">y</i></sub></b> 和 ±6.68 kN 的虚假竖向反力。<b>求解器不会给任何警告。</b>注意：若真实构件确实焊死在刚性基础上，(c) 才是对的——<b>过约束与否取决于物理，不取决于数学</b>。<br>
+  (d) <b>严重过约束</b>：节点 3 在自由端，固定它的 <i class="v">v</i> 等于凭空加了一个支座，会把悬臂变成简支，位移和应力<b>定性地</b>错。这类错误最常见的来源是"批量选点时多框进了几个节点"。<br>
+  <b>通用排查法：</b>做一次<b>零载荷、仅重力</b>或<b>纯热膨胀</b>的试算——理论上应无应力自由膨胀，若算出了应力，就说明存在过约束。</span>
+</li>
+
+<li><b>习题 6（网格收敛研究与 Richardson 外推）★</b>　用 Q4 单元计算某悬臂深梁端部挠度，三级网格结果为：8×4 → 0.173745 mm，16×8 → 0.179673 mm，32×16 → 0.181585 mm。<br>
+  (a) 用 (4.88) 反推实测收敛阶 <i class="v">p</i>；<br>
+  (b) 外推出 <i class="v">δ</i><sub>∞</sub>；<br>
+  (c) 已知 Timoshenko 梁理论给出 0.182857 mm，而 48×24 网格（2 450 个自由度）算出 0.182038 mm。请比较外推值与 48×24 的直接计算值，说出你的结论。<br>
+  <span class="ans"><b>答案要点：</b>(a) <i class="v">p</i> = log<sub>2</sub>[(0.179673−0.173745)/(0.181585−0.179673)] = log<sub>2</sub>(0.005928/0.001912) = log<sub>2</sub>(3.100) = <b>1.633</b>——接近理论值 2，略低是因为固支端存在应力奇异，污染了渐近收敛率。<br>
+  (b) <i class="v">δ</i><sub>∞</sub> = 0.181585 + 0.001912/(2<sup>1.633</sup>−1) = 0.181585 + 0.000910 = <b>0.182495 mm</b>。<br>
+  (c) 相对 Timoshenko 解：外推值偏差 <b>−0.20 %</b>，而 48×24 的直接计算偏差 <b>−0.45 %</b>。<b>结论：用三套粗网格（90 + 306 + 1 122 个自由度）做一次外推，比直接算一套 2 450 自由度的细网格更准，而且总计算量更小。</b>这就是为什么规范要求"网格收敛研究"而不是"用尽可能细的网格"——<b>三套粗网格的信息量大于一套细网格</b>。<br>
+  <b>补充思考：</b><i class="v">p</i> = 1.633 明显低于 2，本身就是一个<b>诊断信号</b>，提示模型中存在奇异点或严重畸形单元。如果你在实际项目中算出 <i class="v">p</i> ≈ 0.5，几乎可以肯定关键部位有尖角需要倒圆。</span>
+</li>
+
+<li><b>习题 7（编程题）★</b>　用任意语言写一个最小的平面问题 CST 求解器（约 80 行），要求：读入节点/单元/约束/载荷，组装 <b class="m">K</b>，用化 1 置 0 法施加约束，求解，输出位移、单元应力、支反力。然后：<br>
+  (a) 用例题 4-7（双向均布拉伸的四分之一模型）验证你的程序，应得到<b>精确解</b> <i class="v">σ</i> = (100, 100, 0) MPa——这是一次<b>patch test</b>；<br>
+  (b) 复现第 10.5 节的收敛表（2×1 到 32×16 六级网格），画出误差–自由度双对数曲线；<br>
+  (c) 加入绕节点平均，复现第 10.6 节跨中截面的九行数据。<br>
+  <span class="ans"><b>答案要点与自检靶标：</b>① <b class="m">k</b><sup>e</sup> 的奇数列之和、偶数列之和都应是机器零（思考题 2）；② <b class="m">K</b> 的秩必须是 2<i class="v">n</i> − 3；③ 全部支反力之和必须等于外载合力的相反数；④ 自由节点的"反力"必须为零；⑤ patch test 必须给出<b>机器精度</b>的精确解，而不是"接近"——若只有 3 位有效数字吻合，说明 <b class="m">B</b> 或 LM 数组有错。<br>
+  第 ⑤ 条是整份清单里最有价值的一条：<b>常应力场是任何协调完备单元都必须精确再现的，它把"差不多对"和"真的对"区分开来</b>。本讲义的实验台 9、实验台 10 就是这个程序的浏览器版本，可以先在实验台上对照数字，再去调自己的代码。</span>
+</li>
+</ol>
+</div>
+
+<h3>11.6 三分钟自检</h3>
+
+<div class="lab reveal" id="lab11">
+  <div class="lab-head"><span class="lab-tag">实验台 11</span>概念快测：8 道题
+    <span class="lab-hint">点选即判，答错会告诉你回哪一节复习</span></div>
+  <div class="lab-body">
+    <div style="height:7px;border-radius:4px;background:var(--line);overflow:hidden;margin-bottom:14px">
+      <div id="qzBar" style="height:100%;width:0;background:linear-gradient(90deg,#2980b9,#48c9b0);transition:width .5s var(--ease)"></div>
+    </div>
+    <div id="quiz"></div>
+    <div class="ctrls" style="margin-top:14px">
+      <button class="lab-btn ghost" id="qzReset">↺ 再做一次</button>
+      <span style="font-size:13.5px">得分：<b id="qzScore" style="color:var(--main)">0 / 8</b></span>
+    </div>
+  </div>
+</div>
+
+<h3>11.7 参考文献</h3>
+
+<p>本讲义的理论框架、术语选择和若干关键论断直接取自下列著作与公开课程讲义。<b>[1]~[6] 是国外有限元教学的标杆</b>，其中 [1][2][3] 的课程讲义可在相应学校的公开课页面免费获取；节号以所注版本为准。</p>
+
+<div class="refs">
+<div><b>K.-J. Bathe</b>, <em>Finite Element Procedures</em>, 2nd ed., Prentice Hall / K.-J. Bathe, 2014.
+  <br><em>第 4 章系统给出位移法的变分基础、单元列式与收敛性理论（完备性与协调性、非协调元、patch test）；第 8 章讲平衡方程求解与 skyline 存储。本讲义第 3、5、7、9 章的论证骨架取自此书。配套公开课：MIT OpenCourseWare <b>2.092 / 2.093 Finite Element Analysis of Solids and Fluids I</b> 与 <b>2.094</b>（含全套视频讲义）。</em></div>
+
+<div><b>C. A. Felippa</b>, <em>Introduction to Finite Element Methods (IFEM)</em>, 课程讲义 ASEN 5007, University of Colorado Boulder.
+  <br><em>第 14~17 章依次讲平面应力问题、三节点三角形单元、等参表示与等参三角形，对<b>一致节点力</b>（consistent nodal forces）的推导最为细致，本讲义第 6 章的母公式 (4.47) 及其一系列推论即按此路线组织。讲义按章节以 PDF 公开发布。</em></div>
+
+<div><b>T. J. R. Hughes</b>, <em>The Finite Element Method: Linear Static and Dynamic Finite Element Analysis</em>, Prentice Hall 1987；Dover 重印 2000.
+  <br><em>第 1~2 章用一维问题把<b>本质边界条件 / 自然边界条件</b>（essential / natural）这对概念讲得最透，本讲义第 8.1 节的表格与"为什么力边界自然"的解释出自此处；第 3~4 章推广到多维。</em></div>
+
+<div><b>O. C. Zienkiewicz, R. L. Taylor, J. Z. Zhu</b>, <em>The Finite Element Method: Its Basis and Fundamentals</em>, 7th ed., Butterworth-Heinemann, 2013.
+  <br><em>第 14 章"误差、恢复过程与误差估计"是本讲义第 10.3、10.4 节的来源，包含超收敛点、应力恢复与后验误差估计的完整理论。</em></div>
+
+<div><b>R. D. Cook, D. S. Malkus, M. E. Plesha, R. J. Witt</b>, <em>Concepts and Applications of Finite Element Analysis</em>, 4th ed., John Wiley &amp; Sons, 2002.
+  <br><em>工程视角最强的一本，关于<b>网格质量、约束诊断、建模陷阱</b>的讨论（长宽比、过约束、奇异点、结果校核）直接支撑了本讲义第 2.4 节、第 8.8 节和第 10.7 节的检查清单。</em></div>
+
+<div><b>J. N. Reddy</b>, <em>An Introduction to the Finite Element Method</em>, 4th ed., McGraw-Hill, 2019；及 <b>D. L. Logan</b>, <em>A First Course in the Finite Element Method</em>, 6th ed., Cengage, 2017.
+  <br><em>前者从变分原理与加权残量法出发，理论链条最完整；后者手算例题最多，适合逐步核对本讲义第 9 章的每一步数字。</em></div>
+
+<div><b>M. J. Turner, R. W. Clough, H. C. Martin, L. J. Topp</b>, "Stiffness and deflection analysis of complex structures", <em>Journal of the Aeronautical Sciences</em>, 23(9): 805–823, 1956.
+  <br><em>有限元的奠基论文，<b>三节点常应变三角形单元（CST）在此首次提出</b>。本讲义第 3~5 章推导的就是这篇论文里的单元，读一遍会发现七十年前的表达与今天几乎一致。</em></div>
+
+<div><b>O. C. Zienkiewicz, J. Z. Zhu</b>, "The superconvergent patch recovery and a posteriori error estimates. Part 1: The recovery technique", <em>International Journal for Numerical Methods in Engineering</em>, 33(7): 1331–1364, 1992.
+  <br><em>SPR 的原始论文，现代商业软件应力恢复与自适应加密的算法基础，对应本讲义第 10.3 节的提示框。</em></div>
+
+<div><b>B. M. Irons, A. Razzaque</b>, "Experience with the patch test for convergence of finite elements", in A. K. Aziz (ed.), <em>The Mathematical Foundations of the Finite Element Method with Applications to Partial Differential Equations</em>, Academic Press, 1972, pp. 557–587.
+  <br><em>patch test 的出处。本讲义第 9.4 节把例题 4-7 解释成一次 patch test，依据即此文：<b>能精确再现常应力场</b>是单元通过收敛性检验的必要条件。</em></div>
+
+<div><b>S. P. Timoshenko, J. N. Goodier</b>, <em>Theory of Elasticity</em>, 3rd ed., McGraw-Hill, 1970.
+  <br><em>平面问题的弹性力学基础（第 1~4 章），包括本讲义第 1 章的三组方程、平面应力与平面应变的等价替换，以及第 10 章用作参照的悬臂深梁精确解与剪切修正。</em></div>
+
+<div><b>ASME V&amp;V 10</b>, <em>Guide for Verification and Validation in Computational Solid Mechanics</em>；<b>ASME V&amp;V 20</b>, <em>Standard for Verification and Validation in Computational Fluid Dynamics and Heat Transfer</em>, ASME.
+  <br><em>V&amp;V 10 面向计算固体力学，给出验证与确认的总体框架；V&amp;V 20 中的<b>数值不确定度评估</b>（基于 Richardson 外推的网格收敛研究与 GCI）是本讲义第 10.5 节流程的规范依据，工业界的固体力学报告普遍沿用其做法。</em></div>
+
+<div><b>王勖成</b>，《有限单元法》，清华大学出版社，2003；<b>曾攀</b>，《有限元分析基础教程》，清华大学出版社，2008.
+  <br><em>中文标准教材。前者理论体系完备、术语规范（本讲义的"刚度集成法""对号入座""化 1 置 0 法""乘大数法""绕节点平均法""两单元平均法"等中文术语均依此书）；后者例题与软件操作结合紧密。</em></div>
+
+<div><b>本课程课件</b>：《Chapter 4　平面问题有限元》，计算力学，2026.
+  <br><em>本讲义的章节顺序、例题题设与符号约定以该课件为准，并在此基础上补充了能量原理的完整推导、载荷等效的逐项积分、边界条件四法的定量对比、三个例题的全过程数值、以及第 10 章的收敛与后处理数值实验。</em></div>
+</div>
+
+<h3>11.8 结语</h3>
+
+<p>回头看，平面问题有限元并没有引入任何新的力学——它用的还是 1 章那三组方程，还是最小势能原理，还是矩阵乘法。它做的唯一一件事，是把"求解偏微分方程"这个几乎无法下手的问题，换成"求解一个大型线性方程组"这个计算机最擅长的问题。为此付出的代价，是在两个地方引入了误差：<b>用分片多项式近似真实位移场</b>（离散误差，靠网格加密和高阶单元控制），以及<b>用等效节点力近似真实分布载荷</b>（在能量意义上其实是精确的，所以这一项不是误差，而是等价变换）。</p>
+
+<p>把这本讲义的内容压成一句可以带进考场、也可以带进项目的话：</p>
+
+<div class="formula" style="border-left-color:#1e8449;text-align:center">
+<span class="eq" style="font-size:16px;line-height:2">
+<b>假设位移 → 求导得应变 → 能量最小 → 单元刚度 → 对号入座 → 加约束 → 解方程 → 回代求应力 → 平均并校核收敛</b>
+</span>
+</div>
+
+<div class="good">
+  <div class="t-title">✓ 学完这一章之后，你应该能独立做到</div>
+  ① 看到一个平面构件，说出它是平面应力还是平面应变，并画出合理的网格与约束；<br>
+  ② 对任意分布载荷，用 (4.47) 在纸上算出等效节点力，并用合力/合力矩校核；<br>
+  ③ 从能量原理出发，独立推出 <b class="m">k</b><sup>e</sup> = ∫<b class="m">B</b><sup>T</sup><b class="m">DB</b><i class="v">t</i>d<i class="v">A</i>，并解释它为什么对称、为什么秩亏 3；<br>
+  ④ 手工完成一个 2~4 单元模型的全过程，包括支反力自平衡校核；<br>
+  ⑤ 判断一份有限元报告<b>是否可信</b>——这一条最重要，也是本讲义真正想教的东西。
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ 下一步：从平面走向一般</div>
+  接下来的内容都是本章方法的直接推广，逻辑链 (4.89) 一字不改，只换 <b class="m">N</b>、<b class="m">D</b> 和积分域：<br>
+  <b>等参单元与数值积分</b>（把任意四边形映射成正方形，用高斯积分算 (4.38) 的积分）→
+  <b>轴对称问题</b>（<b class="m">B</b> 中出现 <i class="v">N</i><sub><i class="v">i</i></sub>/<i class="v">r</i> 项，积分权重变成 2π<i class="v">r</i>）→
+  <b>三维实体</b>（每节点 3 个自由度，<b class="m">D</b> 变 6×6）→
+  <b>板壳</b>（引入转动自由度与 Kirchhoff / Mindlin 假设）→
+  <b>非线性</b>（<b class="m">K</b> 依赖于 <b class="m">d</b>，要迭代）。<br>
+  真正的分界线只有一条：<b>只要还是"位移法 + 最小势能"，本章的一切结论都成立</b>；一旦进入混合格式或非线性，下限性质、行和为零这些漂亮的性质就需要逐条重新检查。
+</div>
+
+</section>

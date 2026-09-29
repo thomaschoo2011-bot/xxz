@@ -1,0 +1,262 @@
+
+<!-- ================================================== 第 5 章 ================================================== -->
+<section id="ch5">
+<h2><span class="chno">5</span>用能量原理导出单元刚度矩阵</h2>
+
+<p>这是全章理论上最重要的一节。第 3 章处理杆件时，我们靠"给单元加单位位移、看需要多大的力"这种<b>直接刚度法</b>就凑出了单刚。对平面单元这招行不通——三角形内部的应力状态没那么直观，硬凑会既繁琐又容易错。</p>
+
+<p>Bathe 在 MIT 2.092 与《Finite Element Procedures》第 4 章采取的路线是：<b>先建立一个能量泛函，再让它取驻值</b>。这条路的好处是<b>普适</b>——同一套推导，换任何单元、任何维数、甚至换成热传导或电磁场，形式全都不变。学会它，你就不必为每种新单元重新发明推导方法。</p>
+
+<h3>5.1 总势能泛函</h3>
+
+<p>对一个处于平衡状态的弹性体，定义<b>总势能</b>（total potential energy）</p>
+
+<div class="formula"><span class="eq">
+<i class="v">Π</i> = <i class="v">U</i> − <i class="v">W</i>
+</span><span class="eqno">(4.29)</span></div>
+
+<p><i class="v">U</i> 是<b>应变能</b>（储存在材料内部的弹性势能），<i class="v">W</i> 是<b>外力功</b>。二者的表达式为</p>
+
+<div class="formula"><span class="eq">
+<i class="v">U</i> = <span class="frac"><span>1</span><span>2</span></span> ∫<sub><i class="v">V</i></sub> <b class="m">ε</b><sup>T</sup><b class="m">σ</b> d<i class="v">V</i>
+= <span class="frac"><span>1</span><span>2</span></span> ∫<sub><i class="v">V</i></sub> <b class="m">ε</b><sup>T</sup><b class="m">D</b><b class="m">ε</b> d<i class="v">V</i>
+</span><span class="eqno">(4.30)</span></div>
+
+<div class="formula"><span class="eq">
+<i class="v">W</i> = ∫<sub><i class="v">V</i></sub> <b class="m">u</b><sup>T</sup><b class="m">b</b> d<i class="v">V</i>
+&nbsp;+&nbsp; ∫<sub><i class="v">S</i><sub>t</sub></sub> <b class="m">u</b><sup>T</sup><b class="m">t̄</b> d<i class="v">S</i>
+&nbsp;+&nbsp; Σ<sub><i class="v">k</i></sub> <b class="m">u</b><sub><i class="v">k</i></sub><sup>T</sup><b class="m">P</b><sub><i class="v">k</i></sub>
+</span><span class="eqno">(4.31)</span></div>
+
+<p>三项依次是<b>体力</b>（自重、离心力，单位体积的力 <b class="m">b</b>）、<b>面力</b>（作用在边界 <i class="v">S</i><sub>t</sub> 上的分布压力 <b class="m">t̄</b>，单位面积的力）和<b>集中力</b>。<i class="v">U</i> 前面的 ½ 来自线弹性加载过程中力从 0 线性增长到终值（做功等于力位移曲线下的三角形面积），而外力功 <i class="v">W</i> 中的外载是<b>恒定的</b>（保守力），所以没有 ½。</p>
+
+<div class="tip">
+  <div class="t-title">◎ 泛函与函数的区别</div>
+  <i class="v">Π</i> 的自变量不是一个数，而是<b>整个位移场 <b class="m">u</b>(<i class="v">x</i>,<i class="v">y</i>)</b>——输入一个函数，输出一个数。这种"函数的函数"叫<b>泛函</b>，求它的驻值属于<b>变分法</b>的范畴。
+  有限元的精妙之处在于：一旦把 <b class="m">u</b> 限制为 <b class="m">Nd</b> 的形式，<i class="v">Π</i> 就退化为<b>有限个变量 <b class="m">d</b> 的普通二次函数</b>，变分问题立刻变回微积分里的求极值问题。
+</div>
+
+<h3>5.2 最小势能原理</h3>
+
+<div class="good">
+  <div class="t-title">✓ 最小势能原理（Principle of Minimum Potential Energy）</div>
+  在所有<b>满足位移边界条件</b>且<b>几何上连续</b>的位移场（称为<b>容许位移场</b>）中，<b>真实的位移场</b>使总势能 <i class="v">Π</i> 取<b>最小值</b>。<br>
+  <div class="formula" style="background:transparent;margin:10px 0"><span class="eq"><i class="v">δΠ</i> = 0　，　<i class="v">δ</i><sup>2</sup><i class="v">Π</i> &gt; 0</span></div>
+  这个原理与"平衡方程 + 力的边界条件"<b>完全等价</b>：它是二者的积分（弱）形式。用它的好处是——平衡方程只需被<b>整体地、平均地</b>满足，不必逐点满足，因而对位移函数的光滑性要求大为降低。
+</div>
+
+<p>注意原理的前提：位移场必须<b>预先满足位移边界条件</b>。所以 <i class="v">W</i> 中的面力积分只在<b>力边界 <i class="v">S</i><sub>t</sub></b> 上做，位移边界 <i class="v">S</i><sub>u</sub> 上的支反力不做功（那里位移已知，虚位移为零）。</p>
+
+<h3>5.3 代入离散位移场：推出 <b class="m">Kd</b> = <b class="m">F</b></h3>
+
+<p>现在把有限元的近似 <b class="m">u</b> = <b class="m">Nd</b>、<b class="m">ε</b> = <b class="m">Bd</b> 代入 (4.30)(4.31)。先看<b>一个单元</b>：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">U</i><sup>e</sup> = <span class="frac"><span>1</span><span>2</span></span> ∫<sub><i class="v">V</i><sup>e</sup></sub> (<b class="m">B</b><b class="m">d</b><sup>e</sup>)<sup>T</sup><b class="m">D</b>(<b class="m">B</b><b class="m">d</b><sup>e</sup>) d<i class="v">V</i>
+= <span class="frac"><span>1</span><span>2</span></span> (<b class="m">d</b><sup>e</sup>)<sup>T</sup>
+<span style="border-bottom:2px solid var(--main);padding-bottom:2px">[ ∫<sub><i class="v">V</i><sup>e</sup></sub> <b class="m">B</b><sup>T</sup><b class="m">D</b><b class="m">B</b> d<i class="v">V</i> ]</span>
+<b class="m">d</b><sup>e</sup>
+</span><span class="eqno">(4.32)</span></div>
+
+<p>关键一步：<b class="m">d</b><sup>e</sup> 是一组<b>与积分变量 <i class="v">x</i>、<i class="v">y</i> 无关的常数</b>，所以可以提到积分号外面。方括号里剩下的量只依赖单元的几何与材料——它就是<b>单元刚度矩阵</b>：</p>
+
+<div class="formula" style="border-left-color:#b03a2e"><span class="eq">
+<b class="m">k</b><sup>e</sup> = ∫<sub><i class="v">V</i><sup>e</sup></sub> <b class="m">B</b><sup>T</sup><b class="m">D</b><b class="m">B</b> d<i class="v">V</i>
+= ∫<sub><i class="v">A</i><sup>e</sup></sub> <b class="m">B</b><sup>T</sup><b class="m">D</b><b class="m">B</b> <i class="v">t</i> d<i class="v">A</i>
+</span><span class="eqno">(4.33)</span></div>
+
+<p>同样地，外力功变成</p>
+
+<div class="formula"><span class="eq">
+<i class="v">W</i><sup>e</sup> = (<b class="m">d</b><sup>e</sup>)<sup>T</sup>
+<span style="border-bottom:2px solid #b03a2e;padding-bottom:2px">[ ∫<sub><i class="v">A</i><sup>e</sup></sub> <b class="m">N</b><sup>T</sup><b class="m">b</b> <i class="v">t</i> d<i class="v">A</i> + ∫<sub><i class="v">s</i></sub> <b class="m">N</b><sup>T</sup><b class="m">t̄</b> <i class="v">t</i> d<i class="v">s</i> + Σ <b class="m">N</b><sup>T</sup><b class="m">P</b> ]</span>
+≡ (<b class="m">d</b><sup>e</sup>)<sup>T</sup> <b class="m">f</b><sup>e</sup>
+</span><span class="eqno">(4.34)</span></div>
+
+<p><b class="m">f</b><sup>e</sup> 就是<b>等效节点载荷列阵</b>——它的完整推导是第 6 章的全部内容。把所有单元累加（第 7 章的组装），得到整体的总势能</p>
+
+<div class="formula"><span class="eq">
+<i class="v">Π</i>(<b class="m">d</b>) = <span class="frac"><span>1</span><span>2</span></span> <b class="m">d</b><sup>T</sup><b class="m">K</b><b class="m">d</b> − <b class="m">d</b><sup>T</sup><b class="m">F</b>
+</span><span class="eqno">(4.35)</span></div>
+
+<p>这是一个关于 <i class="v">n</i> 个未知量的<b>二次函数</b>。令它对每个自由度的偏导为零：</p>
+
+<div class="formula"><span class="eq">
+<span class="frac"><span>∂<i class="v">Π</i></span><span>∂<b class="m">d</b></span></span> = <b class="m">K</b><b class="m">d</b> − <b class="m">F</b> = <b class="m">0</b>
+</span><span class="eqno">(4.36)</span></div>
+
+<div class="formula" style="border-left-color:#b03a2e;background:var(--main-ll)"><span class="eq" style="font-size:19px">
+<b class="m">K</b> <b class="m">d</b> = <b class="m">F</b>
+</span><span class="eqno">(4.37)</span></div>
+
+<p>有限元的基本方程就这样被推出来了。求 (4.35) 的二阶变分：<i class="v">δ</i><sup>2</sup><i class="v">Π</i> = <i class="v">δ</i><b class="m">d</b><sup>T</sup><b class="m">K</b><i class="v">δ</i><b class="m">d</b>，而约束后的 <b class="m">K</b> 正定，故 <i class="v">δ</i><sup>2</sup><i class="v">Π</i> &gt; 0，驻值确实是<b>极小值</b>——与原理的名称吻合。</p>
+
+<div class="tip">
+  <div class="t-title">◎ 等价路线：虚功原理</div>
+  不用势能泛函也能得到同样的结果。给单元一个任意的<b>虚位移</b> <i class="v">δ</i><b class="m">d</b><sup>e</sup>，则虚应变 <i class="v">δ</i><b class="m">ε</b> = <b class="m">B</b><i class="v">δ</i><b class="m">d</b><sup>e</sup>。虚功方程"外力虚功 = 内力虚功"写作
+  <div class="formula" style="background:transparent;margin:8px 0"><span class="eq">(<i class="v">δ</i><b class="m">d</b><sup>e</sup>)<sup>T</sup><b class="m">f</b><sup>e</sup> = ∫<sub><i class="v">V</i></sub> <i class="v">δ</i><b class="m">ε</b><sup>T</sup><b class="m">σ</b> d<i class="v">V</i> = (<i class="v">δ</i><b class="m">d</b><sup>e</sup>)<sup>T</sup>∫<sub><i class="v">V</i></sub><b class="m">B</b><sup>T</sup><b class="m">D</b><b class="m">B</b> d<i class="v">V</i> · <b class="m">d</b><sup>e</sup></span></div>
+  由 <i class="v">δ</i><b class="m">d</b><sup>e</sup> 的任意性，两边消去，立得 <b class="m">f</b><sup>e</sup> = <b class="m">k</b><sup>e</sup><b class="m">d</b><sup>e</sup> 与 (4.33)。
+  虚功原理<b>不要求材料是弹性的</b>（它只是平衡的另一种表述），因此在塑性、大变形等非线性分析中更通用；最小势能原理则要求存在势函数。Bathe《Finite Element Procedures》第 4.2 节正是以虚位移原理（而非势能泛函）作为整个位移法的出发点，并说明了这样做在非线性分析中的好处。
+</div>
+
+<h3>5.4 CST 的单刚：一次积分都不用做</h3>
+
+<p>回忆 4.1 节的结论：CST 的 <b class="m">B</b> 是<b>常数矩阵</b>。若单元厚度 <i class="v">t</i> 也是常数，(4.33) 的被积函数就整个是常数，积分退化为<b>乘面积</b>：</p>
+
+<div class="formula" style="border-left-color:#b03a2e"><span class="eq" style="font-size:18px">
+<b class="m">k</b><sup>e</sup> = <b class="m">B</b><sup>T</sup><b class="m">D</b><b class="m">B</b> · <i class="v">t</i> <i class="v">A</i>　　(6×6)
+</span><span class="eqno">(4.38)</span></div>
+
+<p>这是 CST 唯一能"手算到底"的关键。（Q4 的 <b class="m">B</b> 含 <i class="v">ξ</i>、<i class="v">η</i>，必须用 2×2 高斯积分数值求 (4.33)；Q8 需要 3×3 或缩减的 2×2。）</p>
+
+<p>按节点分块，<b class="m">k</b><sup>e</sup> 是 3×3 个 2×2 子块。对平面应力，逐项相乘得到显式表达式（<i class="v">r</i>, <i class="v">s</i> ∈ {<i class="v">i</i>, <i class="v">j</i>, <i class="v">m</i>}）：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">k</b><sub><i class="v">rs</i></sub> = <span class="frac"><span><i class="v">Et</i></span><span>4<i class="v">A</i>(1 − <i class="v">ν</i><sup>2</sup>)</span></span>
+<span class="mat c2">
+<span><i class="v">b</i><sub>r</sub><i class="v">b</i><sub>s</sub> + <span class="frac"><span>1−<i class="v">ν</i></span><span>2</span></span><i class="v">c</i><sub>r</sub><i class="v">c</i><sub>s</sub></span>
+<span><i class="v">νb</i><sub>r</sub><i class="v">c</i><sub>s</sub> + <span class="frac"><span>1−<i class="v">ν</i></span><span>2</span></span><i class="v">c</i><sub>r</sub><i class="v">b</i><sub>s</sub></span>
+<span><i class="v">νc</i><sub>r</sub><i class="v">b</i><sub>s</sub> + <span class="frac"><span>1−<i class="v">ν</i></span><span>2</span></span><i class="v">b</i><sub>r</sub><i class="v">c</i><sub>s</sub></span>
+<span><i class="v">c</i><sub>r</sub><i class="v">c</i><sub>s</sub> + <span class="frac"><span>1−<i class="v">ν</i></span><span>2</span></span><i class="v">b</i><sub>r</sub><i class="v">b</i><sub>s</sub></span>
+</span>
+</span><span class="eqno">(4.39)</span></div>
+
+<p>注意 <b class="m">k</b><sub><i class="v">rs</i></sub><sup>T</sup> = <b class="m">k</b><sub><i class="v">sr</i></sub>：交换 <i class="v">r</i>、<i class="v">s</i> 相当于把 2×2 子块转置。这保证了整个 <b class="m">k</b><sup>e</sup> 的对称性。</p>
+
+<h3>5.5 单刚的六条性质及其来历</h3>
+
+<table class="left">
+<thead><tr><th style="width:20%">性质</th><th style="width:34%">来源</th><th>意义 / 用途</th></tr></thead>
+<tbody>
+<tr><td><b>① 对称</b><br><b class="m">k</b><sup>T</sup> = <b class="m">k</b></td>
+  <td>(<b class="m">B</b><sup>T</sup><b class="m">DB</b>)<sup>T</sup> = <b class="m">B</b><sup>T</sup><b class="m">D</b><sup>T</sup><b class="m">B</b>，而 <b class="m">D</b> 对称</td>
+  <td>只需存半个矩阵；可用 Cholesky 分解。物理上即<b>功的互等定理</b>（Maxwell–Betti）。</td></tr>
+<tr><td><b>② 奇异</b><br>det <b class="m">k</b> = 0</td>
+  <td>单元未受约束，可自由飘移</td>
+  <td>单刚<b>不能单独求逆</b>。必须先组装、再施加足够的约束，方程才有唯一解。</td></tr>
+<tr><td><b>③ 秩 = 3</b><br>零空间维数 3</td>
+  <td>rank(<b class="m">k</b>) = rank(<b class="m">B</b>) = 3（<b class="m">D</b> 正定）</td>
+  <td>6 − 3 = 3 个<b>刚体模式</b>（2 平动 + 1 转动）。若程序算出的秩不是 3，说明单元退化或节点重合。</td></tr>
+<tr><td><b>④ 主对角元为正</b></td>
+  <td><i class="v">k</i><sub>rr</sub> = <b class="m">B</b><sub>(:,r)</sub><sup>T</sup><b class="m">D</b><b class="m">B</b><sub>(:,r)</sub> &gt; 0</td>
+  <td>"沿某方向推它，它就沿该方向顶回来"。这是材料稳定性的直接反映。</td></tr>
+<tr><td><b>⑤ 每行 <i class="v">x</i>-列之和 = 0，<i class="v">y</i>-列之和 = 0</b></td>
+  <td><i class="v">b</i><sub>i</sub>+<i class="v">b</i><sub>j</sub>+<i class="v">b</i><sub>m</sub> = 0，<i class="v">c</i><sub>i</sub>+<i class="v">c</i><sub>j</sub>+<i class="v">c</i><sub>m</sub> = 0</td>
+  <td>刚体平动不产生节点力。这是<b>手算校核单刚最快的方法</b>：算完立刻验行和。</td></tr>
+<tr><td><b>⑥ 与单元位置无关</b></td>
+  <td><b class="m">B</b> 只含坐标之差</td>
+  <td>同形状同材料的单元可共用一个 <b class="m">k</b><sup>e</sup>，规则网格中只需算一次，大幅节省。</td></tr>
+</tbody>
+</table>
+
+<h3>5.6 例题一：一个能算到整数的单刚</h3>
+
+<details class="steps" open>
+<summary><b>例题 4-1</b>　求标准直角三角形单元的刚度矩阵（平面应力，<i class="v">ν</i> = 1/3，厚 <i class="v">t</i>）</summary>
+<div>
+
+<p><b>题设：</b>节点 <i class="v">i</i>(0, 0)、<i class="v">j</i>(1, 0)、<i class="v">m</i>(0, 1)，逆时针，单位取米。材料 <i class="v">E</i>，<i class="v">ν</i> = 1/3，厚度 <i class="v">t</i>。</p>
+
+<p><b>第 1 步　几何常数。</b>由 (4.25)：<i class="v">b</i> = [−1, 1, 0]，<i class="v">c</i> = [−1, 0, 1]，2<i class="v">A</i> = 1，<i class="v">A</i> = 1/2。</p>
+
+<p><b>第 2 步　写 <b class="m">B</b>。</b>即 (4.26)，因 1/(2<i class="v">A</i>) = 1，元素恰为整数：</p>
+<div class="formula"><span class="eq"><b class="m">B</b> = <span class="mat c6"><span>−1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span><span>0</span><span>−1</span><span>0</span><span>0</span><span>0</span><span>1</span><span>−1</span><span>−1</span><span>0</span><span>1</span><span>1</span><span>0</span></span></span></div>
+
+<p><b>第 3 步　写 <b class="m">D</b>。</b>代 <i class="v">ν</i> = 1/3 进 (4.6)，<i class="v">E</i>/(1−<i class="v">ν</i><sup>2</sup>) = 9<i class="v">E</i>/8：</p>
+<div class="formula"><span class="eq"><b class="m">D</b> = <i class="v">E</i><span class="mat c3"><span>9/8</span><span>3/8</span><span>0</span><span>3/8</span><span>9/8</span><span>0</span><span>0</span><span>0</span><span>3/8</span></span></span></div>
+
+<p><b>第 4 步　乘出来。</b><b class="m">k</b><sup>e</sup> = <b class="m">B</b><sup>T</sup><b class="m">DB</b> · <i class="v">t</i> · (1/2)，提出公因子 <i class="v">Et</i>/16：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">k</b><sup>e</sup> = <span class="frac"><span><i class="v">Et</i></span><span>16</span></span>
+<span class="mat c6">
+<span>12</span><span>6</span><span>−9</span><span>−3</span><span>−3</span><span>−3</span>
+<span>6</span><span>12</span><span>−3</span><span>−3</span><span>−3</span><span>−9</span>
+<span>−9</span><span>−3</span><span>9</span><span>0</span><span>0</span><span>3</span>
+<span>−3</span><span>−3</span><span>0</span><span>3</span><span>3</span><span>0</span>
+<span>−3</span><span>−3</span><span>0</span><span>3</span><span>3</span><span>0</span>
+<span>−3</span><span>−9</span><span>3</span><span>0</span><span>0</span><span>9</span>
+</span>
+</span><span class="eqno">(4.40)</span></div>
+
+<p><b>第 5 步　校核。</b>这一步是本例题的精髓，每一条都对应 5.5 节的一条性质：</p>
+
+<table>
+<thead><tr><th>校核项</th><th>做法</th><th>结果</th></tr></thead>
+<tbody>
+<tr><td>对称性</td><td>比较 <i class="v">k</i><sub>13</sub> 与 <i class="v">k</i><sub>31</sub> 等</td><td>−9 = −9 ✓</td></tr>
+<tr><td><i class="v">x</i>-列行和</td><td>第 1 行的 1、3、5 列：12 − 9 − 3</td><td>= 0 ✓</td></tr>
+<tr><td><i class="v">y</i>-列行和</td><td>第 1 行的 2、4、6 列：6 − 3 − 3</td><td>= 0 ✓</td></tr>
+<tr><td>迹</td><td>(12+12+9+3+3+9)/16</td><td>= 3<i class="v">Et</i> ✓（= 非零特征值之和）</td></tr>
+<tr><td>奇异性</td><td>第 4 行与第 5 行<b>完全相同</b></td><td>行列式必为 0 ✓</td></tr>
+<tr><td>秩</td><td>数值计算</td><td><b>rank = 3</b> ✓</td></tr>
+<tr><td>特征值（单位 <i class="v">Et</i>）</td><td>数值计算</td><td>0, 0, 0, 0.4755, 0.7500, 1.7745 ✓</td></tr>
+<tr><td>刚体模式</td><td><b class="m">k</b>·[1,0,1,0,1,0]<sup>T</sup>、<b class="m">k</b>·[0,1,0,1,0,1]<sup>T</sup>、<b class="m">k</b>·[−<i class="v">y</i>,<i class="v">x</i>,…]<sup>T</sup></td><td>三者范数均 &lt; 4×10<sup>−17</sup> ✓</td></tr>
+</tbody>
+</table>
+
+<div class="good">
+  <div class="t-title">✓ 结论</div>
+  三个零特征值 ↔ 三个刚体模式 ↔ 秩亏 3。三个非零特征值分别对应三种"会储存应变能"的变形模式：体积膨胀、纯剪、以及一种混合模式。
+  它们的比值 1.7745 : 0.75 : 0.4755 只取决于 <i class="v">ν</i> 与单元形状，与 <i class="v">E</i>、<i class="v">t</i> 无关。
+</div>
+
+<p><b>第 6 步　为什么第 4、5 行相同？</b>这不是巧合。<b class="m">B</b> 的第 4 列（<i class="v">v</i><sub>j</sub>）与第 5 列（<i class="v">u</i><sub>m</sub>）都等于 [0, 0, 1]<sup>T</sup>——对这个特定的直角三角形，"节点 <i class="v">j</i> 向上移"与"节点 <i class="v">m</i> 向右移"产生<b>完全相同的应变状态</b>（都是纯剪切 <i class="v">γ</i><sub>xy</sub>）。把单元换成非直角三角形，这种巧合就消失了——可以在下面的实验台里亲眼验证。</p>
+
+</div>
+</details>
+
+<div class="lab" id="lab5">
+  <div class="lab-head"><span class="lab-tag">实验台 5</span>单刚显微镜<span class="lab-hint">改变泊松比与单元形状，观察 6×6 单刚、秩、行和与特征值</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>ν</label><input type="range" id="l5nu" min="0" max="0.45" step="0.01" value="0.33"><span class="val" id="l5nuv">0.33</span></div>
+      <div class="ctrl"><label>节点 m 的 x</label><input type="range" id="l5mx" min="-0.8" max="1.6" step="0.05" value="0"><span class="val" id="l5mxv">0.00</span></div>
+      <div class="ctrl"><label>节点 m 的 y</label><input type="range" id="l5my" min="0.3" max="2" step="0.05" value="1"><span class="val" id="l5myv">1.00</span></div>
+      <div class="ctrl"><button class="lab-btn" id="l5blk">显示 2×2 分块</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px;display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:center">
+      <svg viewBox="0 0 200 180" id="l5tri" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div>
+        <div class="k6" id="l5grid"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:7px;font-family:Consolas,monospace">单位：Et / 16　（行列顺序 u<sub>i</sub> v<sub>i</sub> u<sub>j</sub> v<sub>j</sub> u<sub>m</sub> v<sub>m</sub>）</div>
+      </div>
+    </div>
+    <div class="lab-out">
+      <div class="kv">面积 A<b id="l5A">0.500</b></div>
+      <div class="kv">迹 tr(k)/(Et)<b id="l5tr">3.000</b></div>
+      <div class="kv">最大 |行和|<b id="l5rs">0.0e+0</b></div>
+      <div class="kv">秩<b id="l5rk">3</b></div>
+      <div class="kv">非零特征值 (×Et)<b id="l5ev">—</b></div>
+    </div>
+    <div class="lab-note" id="l5note"></div>
+  </div>
+</div>
+
+<h3>5.7 一个深刻的推论：有限元解为什么"偏刚"</h3>
+
+<p>最小势能原理说：<b>真解</b>在<b>所有</b>容许位移场中使 <i class="v">Π</i> 最小。而有限元只在 <b class="m">u</b> = <b class="m">Nd</b> 这个<b>有限维子空间</b>里找最小值。子空间是全空间的一部分，所以</p>
+
+<div class="formula"><span class="eq">
+<i class="v">Π</i><sub>FEM</sub> ≥ <i class="v">Π</i><sub>真解</sub>
+</span><span class="eqno">(4.41)</span></div>
+
+<p>对于只受给定外载的线弹性体，可以证明 <i class="v">Π</i> = −<i class="v">U</i>（驻值处应变能等于外力功的一半，<i class="v">Π</i> = <i class="v">U</i> − 2<i class="v">U</i> = −<i class="v">U</i>）。代入上式得 <i class="v">U</i><sub>FEM</sub> ≤ <i class="v">U</i><sub>真解</sub>：</p>
+
+<div class="good">
+  <div class="t-title">✓ 位移法有限元解的单调下限性质</div>
+  <b>协调位移元算出的应变能恒不大于真解</b>，因而<b>位移恒不大于真解</b>——结构在有限元模型中<b>显得比实际更刚</b>。<br>
+  网格加密时，插值子空间单调扩大，<i class="v">Π</i> 单调下降、位移<b>从下方单调逼近</b>真解。
+  这正是第 10 章收敛表中 CST 与 Q4 的挠度<b>全部为负误差</b>（−67.7 %、−42.3 %、−17.5 %、−5.5 %、−1.5 %、−0.6 %）的理论解释。
+  <div class="lab-note" style="margin-top:9px">
+  这条性质属于 Rayleigh–Ritz 方法的一般结论：有限元的位移法本质上就是以形函数为试函数的 Rayleigh–Ritz 法。Bathe《Finite Element Procedures》第 4.3 节对单调收敛性质给出了完整证明（并指出它要求位移元协调、积分精确），Zienkiewicz &amp; Taylor《The Finite Element Method: Its Basis and Fundamentals》讨论了同一结论在一般变分近似框架下的形式，见参考文献 [1][4]。
+  </div>
+</div>
+
+<div class="warn">
+  <div class="t-title">▲ "偏刚"有前提，别滥用</div>
+  单调下限性质只在下列条件<b>全部满足</b>时成立：① 协调元；② 精确积分（不用缩减积分）；③ 载荷按<b>能量等效</b>转化为节点载荷；④ 位移边界条件精确施加。
+  一旦用了缩减积分、非协调模式或罚函数约束，单元可能反而变软，误差不再单调。所以"网格越细位移越大"只能作为<b>合理性检查</b>，不能当成证明收敛的依据。
+</div>
+
+</section>

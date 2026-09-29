@@ -1,0 +1,150 @@
+
+<!-- ================================================== 第 4 章 ================================================== -->
+<section id="ch4">
+<h2><span class="chno">4</span>几何矩阵 <b class="m">B</b> 与应力矩阵 <b class="m">S</b></h2>
+
+<p>有了位移插值 <b class="m">u</b> = <b class="m">Nd</b><sup>e</sup>，把它依次代进几何方程和物理方程，就能把<b>应变</b>和<b>应力</b>也用节点位移表示出来。这两步各产生一个矩阵，它们是第 5 章能量推导的直接原料。</p>
+
+<h3>4.1 几何矩阵 B：从节点位移到应变</h3>
+
+<p>把 (4.16) 代入几何方程 (4.5)：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">ε</b> = <b class="m">L</b><b class="m">u</b> = <b class="m">L</b>(<b class="m">N</b><b class="m">d</b><sup>e</sup>) = (<b class="m">L</b><b class="m">N</b>)<b class="m">d</b><sup>e</sup> ≡ <b class="m">B</b> <b class="m">d</b><sup>e</sup>
+</span><span class="eqno">(4.22)</span></div>
+
+<p><b class="m">B</b> = <b class="m">L</b><b class="m">N</b> 称为<b>几何矩阵</b>或<b>应变－位移矩阵</b>（strain–displacement matrix），尺寸 3×6。逐项求导：<i class="v">∂N</i><sub>i</sub>/<i class="v">∂x</i> = <i class="v">b</i><sub>i</sub>/2<i class="v">A</i>，<i class="v">∂N</i><sub>i</sub>/<i class="v">∂y</i> = <i class="v">c</i><sub>i</sub>/2<i class="v">A</i>，于是</p>
+
+<div class="formula"><span class="eq">
+<b class="m">B</b> = <span class="frac"><span>1</span><span>2<i class="v">A</i></span></span>
+<span class="mat c6">
+<span><i class="v">b</i><sub>i</sub></span><span>0</span><span><i class="v">b</i><sub>j</sub></span><span>0</span><span><i class="v">b</i><sub>m</sub></span><span>0</span>
+<span>0</span><span><i class="v">c</i><sub>i</sub></span><span>0</span><span><i class="v">c</i><sub>j</sub></span><span>0</span><span><i class="v">c</i><sub>m</sub></span>
+<span><i class="v">c</i><sub>i</sub></span><span><i class="v">b</i><sub>i</sub></span><span><i class="v">c</i><sub>j</sub></span><span><i class="v">b</i><sub>j</sub></span><span><i class="v">c</i><sub>m</sub></span><span><i class="v">b</i><sub>m</sub></span>
+</span>
+= [ <b class="m">B</b><sub>i</sub>　<b class="m">B</b><sub>j</sub>　<b class="m">B</b><sub>m</sub> ]
+</span><span class="eqno">(4.23)</span></div>
+
+<p>其中每个 3×2 的子块为</p>
+
+<div class="formula"><span class="eq">
+<b class="m">B</b><sub>i</sub> = <span class="frac"><span>1</span><span>2<i class="v">A</i></span></span>
+<span class="mat c2"><span><i class="v">b</i><sub>i</sub></span><span>0</span><span>0</span><span><i class="v">c</i><sub>i</sub></span><span><i class="v">c</i><sub>i</sub></span><span><i class="v">b</i><sub>i</sub></span></span>
+</span><span class="eqno">(4.24)</span></div>
+
+<div class="good">
+  <div class="t-title">✓ 三个立刻能看出来的事实</div>
+  <b>① <b class="m">B</b> 中不含 <i class="v">x</i>、<i class="v">y</i></b>：<i class="v">b</i>、<i class="v">c</i>、<i class="v">A</i> 全是由节点坐标算出的<b>常数</b>。所以整个单元内应变处处相同——这就是"<b>常应变单元</b>（Constant Strain Triangle）"名字的由来。<br>
+  <b>② <b class="m">B</b> 与单元的绝对位置无关</b>：<i class="v">b</i><sub>i</sub> = <i class="v">y</i><sub>j</sub> − <i class="v">y</i><sub>m</sub> 是坐标之<b>差</b>。把整个单元平移到任何地方，<b class="m">B</b> 一模一样。这正是"刚体平动不产生应变"在矩阵层面的体现。<br>
+  <b>③ <b class="m">B</b> 的量纲是 1/长度</b>：位移除以长度得应变。所以单元越小，<b class="m">B</b> 中的元素越大，<b class="m">k</b><sup>e</sup> ∝ <b class="m">B</b><sup>T</sup><b class="m">B</b>·<i class="v">A</i> ∝ 1/<i class="v">L</i><sup>2</sup>·<i class="v">L</i><sup>2</sup> = 常数级——单刚的量级<b>不随网格加密而爆炸</b>。
+</div>
+
+<h4>一个手算例：标准直角三角形</h4>
+<p>取 <i class="v">i</i>(0, 0)、<i class="v">j</i>(1, 0)、<i class="v">m</i>(0, 1)（逆时针）。由 (4.15)：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">b</i><sub>i</sub> = 0 − 1 = −1，<i class="v">b</i><sub>j</sub> = 1 − 0 = 1，<i class="v">b</i><sub>m</sub> = 0 − 0 = 0<br>
+<i class="v">c</i><sub>i</sub> = 0 − 1 = −1，<i class="v">c</i><sub>j</sub> = 0 − 0 = 0，<i class="v">c</i><sub>m</sub> = 1 − 0 = 1<br>
+2<i class="v">A</i> = 1，<i class="v">A</i> = 1/2
+</span><span class="eqno">(4.25)</span></div>
+
+<div class="formula"><span class="eq">
+<b class="m">B</b> =
+<span class="mat c6">
+<span>−1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span>
+<span>0</span><span>−1</span><span>0</span><span>0</span><span>0</span><span>1</span>
+<span>−1</span><span>−1</span><span>0</span><span>1</span><span>1</span><span>0</span>
+</span>
+</span><span class="eqno">(4.26)</span></div>
+
+<p>验算一下：若节点位移取 <b class="m">d</b><sup>e</sup> = [0, 0, 0.01, 0, 0, 0]<sup>T</sup>（只有节点 <i class="v">j</i> 沿 <i class="v">x</i> 移动 0.01），则 <b class="m">ε</b> = <b class="m">Bd</b><sup>e</sup> = [0.01, 0, 0]<sup>T</sup>。单元底边长 1，右端伸长 0.01，<i class="v">ε</i><sub>x</sub> = 0.01 ✓，且不产生 <i class="v">ε</i><sub>y</sub> 与剪应变。再取 <b class="m">d</b><sup>e</sup> = [0, 0, 0, 0.01, 0, 0]，得 <b class="m">ε</b> = [0, 0, 0.01]<sup>T</sup>——纯剪切 ✓。</p>
+
+<div class="lab" id="lab4">
+  <div class="lab-head"><span class="lab-tag">实验台 4</span>常应变实验：拖动节点，看单元怎么变形<span class="lab-hint">六个自由度独立可调，实时显示 B·d 与 D·B·d</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>u<sub>j</sub></label><input type="range" id="l4uj" min="-40" max="40" step="1" value="20"><span class="val" id="l4ujv">20</span></div>
+      <div class="ctrl"><label>v<sub>j</sub></label><input type="range" id="l4vj" min="-40" max="40" step="1" value="0"><span class="val" id="l4vjv">0</span></div>
+      <div class="ctrl"><label>u<sub>m</sub></label><input type="range" id="l4um" min="-40" max="40" step="1" value="0"><span class="val" id="l4umv">0</span></div>
+      <div class="ctrl"><label>v<sub>m</sub></label><input type="range" id="l4vm" min="-40" max="40" step="1" value="12"><span class="val" id="l4vmv">12</span></div>
+      <div class="ctrl"><button class="lab-btn" id="l4rb">演示：刚体转动</button><button class="lab-btn" id="l4rs">清零</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px">
+      <svg viewBox="0 0 660 250" id="l4svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="lab-out">
+      <div class="kv">ε<sub>x</sub><b id="l4ex">0.200</b></div>
+      <div class="kv">ε<sub>y</sub><b id="l4ey">0.120</b></div>
+      <div class="kv">γ<sub>xy</sub><b id="l4gxy">0.000</b></div>
+      <div class="kv">σ<sub>x</sub> / E<b id="l4sx">—</b></div>
+      <div class="kv">σ<sub>y</sub> / E<b id="l4sy">—</b></div>
+      <div class="kv">τ<sub>xy</sub> / E<b id="l4txy">—</b></div>
+      <div class="kv">应变能 U / (Et)<b id="l4u">—</b></div>
+    </div>
+    <div class="lab-note" id="l4note">节点 <b>i</b> 固定在原点。把 u<sub>j</sub>、v<sub>m</sub> 设为 0 而只动 v<sub>j</sub>、u<sub>m</sub> 且取相反数，就得到纯刚体转动——应变应当全部归零。</div>
+  </div>
+</div>
+
+<h3>4.2 应力矩阵 S：从节点位移直达应力</h3>
+
+<p>再把 (4.22) 代入物理方程 <b class="m">σ</b> = <b class="m">Dε</b>：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">σ</b> = <b class="m">D</b><b class="m">B</b><b class="m">d</b><sup>e</sup> ≡ <b class="m">S</b> <b class="m">d</b><sup>e</sup>　，　<b class="m">S</b> = <b class="m">D</b><b class="m">B</b>　(3×6)
+</span><span class="eqno">(4.27)</span></div>
+
+<p>对平面应力，把 (4.6) 与 (4.23) 相乘，得到子块形式（<i class="v">r</i> = <i class="v">i</i>, <i class="v">j</i>, <i class="v">m</i>）：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">S</b><sub>r</sub> = <span class="frac"><span><i class="v">E</i></span><span>2<i class="v">A</i>(1 − <i class="v">ν</i><sup>2</sup>)</span></span>
+<span class="mat c2">
+<span><i class="v">b</i><sub>r</sub></span><span><i class="v">ν c</i><sub>r</sub></span>
+<span><i class="v">ν b</i><sub>r</sub></span><span><i class="v">c</i><sub>r</sub></span>
+<span><span class="frac"><span>1−<i class="v">ν</i></span><span>2</span></span><i class="v">c</i><sub>r</sub></span><span><span class="frac"><span>1−<i class="v">ν</i></span><span>2</span></span><i class="v">b</i><sub>r</sub></span>
+</span>
+</span><span class="eqno">(4.28)</span></div>
+
+<p>既然 <b class="m">B</b> 和 <b class="m">D</b> 都是常数矩阵，<b class="m">S</b> 也是常数矩阵，因此<b>单元内应力处处相同</b>。这是 CST 最大的局限，也是它区别于所有高阶单元的标志。</p>
+
+<figure>
+<svg viewBox="0 0 660 216" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CST 的阶梯状应力场与真解对比">
+  <g font-family="Segoe UI" font-size="12">
+  <!-- 坐标轴 -->
+  <line x1="60" y1="170" x2="600" y2="170" stroke="#b4c3d0" stroke-width="1.6"/>
+  <line x1="60" y1="170" x2="60" y2="30" stroke="#b4c3d0" stroke-width="1.6"/>
+  <text x="608" y="175" fill="#7f8c98">x</text>
+  <text x="46" y="28" fill="#7f8c98">σ</text>
+  <!-- 真解 -->
+  <path d="M60,150 Q200,40 330,66 T600,44" fill="none" stroke="#b03a2e" stroke-width="2.6"/>
+  <text x="470" y="34" fill="#b03a2e" font-weight="700">真实应力场（连续）</text>
+  <!-- 阶梯 -->
+  <g stroke="#1a5276" stroke-width="2.4" fill="none">
+    <path d="M60,138 L150,138 M150,86 L240,86 M240,74 L330,74 M330,62 L420,62 M420,54 L510,54 M510,47 L600,47"/>
+  </g>
+  <g stroke="#9fb8c9" stroke-width="1.4" stroke-dasharray="4 3">
+    <line x1="150" y1="138" x2="150" y2="86"/><line x1="240" y1="86" x2="240" y2="74"/>
+    <line x1="330" y1="74" x2="330" y2="62"/><line x1="420" y1="62" x2="420" y2="54"/>
+    <line x1="510" y1="54" x2="510" y2="47"/>
+  </g>
+  <g fill="#eaf3f9" stroke="#1a5276" stroke-width="1.2" opacity=".5">
+    <rect x="60" y="138" width="90" height="32"/><rect x="150" y="86" width="90" height="84"/>
+    <rect x="240" y="74" width="90" height="96"/><rect x="330" y="62" width="90" height="108"/>
+    <rect x="420" y="54" width="90" height="116"/><rect x="510" y="47" width="90" height="123"/>
+  </g>
+  <text x="180" y="200" fill="#1a5276" font-weight="700">CST 解：每个单元内一个常数，单元间跳跃</text>
+  <g stroke="#bf8f14" stroke-width="2"><line x1="150" y1="112" x2="132" y2="112"/><polygon points="126,112 136,107 136,117" fill="#bf8f14" stroke="none"/></g>
+  <text x="120" y="108" fill="#bf8f14" text-anchor="end">跳跃量 ≈ 误差指示器</text>
+  </g>
+</svg>
+<figcaption><b>图 4.5</b>　CST 的应力场是<b>阶梯状</b>的。单元界面上的应力跳跃既是 CST 的缺点，也是一种廉价的<b>误差估计器</b>：跳跃越大，说明该处网格越不够细（Zienkiewicz–Zhu 误差估计的雏形）。</figcaption>
+</figure>
+
+<div class="tip">
+  <div class="t-title">◎ 为什么应力允许跳、位移不允许跳</div>
+  弹性力学的泛函里只出现位移的<b>一阶导数</b>。为了让 ∫(∂<i class="v">u</i>/∂<i class="v">x</i>)<sup>2</sup> d<i class="v">A</i> 有限，<i class="v">u</i> 本身必须连续（否则导数含 <i class="v">δ</i> 函数，平方积分发散），但<b>导数可以有跳跃</b>（分段常数的平方积分完全有限）。
+  所以有限元只要求 <i class="v">C</i><sup>0</sup> 连续，应变和应力的间断是被允许的——这是变分法"弱形式"带来的最大便利。板壳问题的泛函含二阶导数，就必须 <i class="v">C</i><sup>1</sup> 连续，单元设计因此困难得多。
+</div>
+
+<p>正因为存在跳跃，CST 算出的应力<b>不能直接使用</b>，工程上必须做后处理平均（第 10.1 节的绕节点平均法与两单元平均法）。而且还有一条经验：<b>位移的精度远高于应力的精度</b>——位移是直接解出来的主变量，应力是求导后的派生量，求导会放大误差，通常掉一个精度阶。</p>
+
+</section>

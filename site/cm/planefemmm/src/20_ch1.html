@@ -1,0 +1,191 @@
+
+<!-- ================================================== 第 1 章 ================================================== -->
+<section id="ch1">
+<h2><span class="chno">1</span>从杆件到连续体：平面问题是什么</h2>
+
+<h3>1.1 上一章留下的一个漏洞</h3>
+<p>第 3 章我们处理了杆和桁架，并且反复强调了一件很舒服的事：桁架是<b>天然离散</b>的。杆与杆之间只在节点处铰接、只传轴力，所以"把结构切成单元"这个动作不引入任何近似——有限元解就是精确解，误差只来自舍入。</p>
+
+<p>但真实的结构很少这么听话。一块开了孔的钢板、一段挡土墙、一个齿轮的轮齿、一根受内压的厚壁管，它们内部的应力是<b>逐点连续变化</b>的场量，没有天然的"节点"，也没有天然的"杆"。要用有限元处理它们，必须先回答一个杆件问题里根本不存在的问题：</p>
+
+<div class="warn">
+  <div class="t-title">▲ 连续体有限元的核心难题</div>
+  连续体有<b>无穷多个自由度</b>——每一点都有自己的位移。而计算机只能解有限个未知量的方程组。
+  我们必须<b>人为地</b>把连续体切成有限个单元、只保留有限个节点位移作为未知量，并<b>人为地</b>规定单元内部的位移如何由节点位移插值出来。
+  这两个"人为"就是<b>离散误差</b>的全部来源，也是本章之后所有讨论（形函数、收敛准则、网格加密）的起点。
+</div>
+
+<p>好消息是：一旦跨过这道坎，整个求解流程与第 3 章<b>一字不差</b>。</p>
+
+<div class="chain">
+  <b>离散化</b><i>→</i><b>选位移模式</b><i>→</i><b>单元分析 k<sup>e</sup></b><i>→</i><b>组装总刚 K</b><i>→</i><b>载荷等效 F</b><i>→</i><b>施加边界条件</b><i>→</i><b>解 Kd = F</b><i>→</i><b>回代求应力</b>
+</div>
+
+<p>变的只是"单元"这个词的含义：从"一根两节点的杆"变成"一小片三节点的三角形"；从 2×2 或 4×4 的单刚，变成 6×6 的单刚。<b>矩阵变大了，逻辑没变。</b></p>
+
+<h3>1.2 降维的代价与红利：什么叫"平面问题"</h3>
+<p>一般的弹性力学问题有 3 个位移分量、6 个应变分量、6 个应力分量，未知量共 15 个。直接做三维有限元当然可以，但在教学和很多工程实践中，我们先考察一类特殊而常见的情形：<b>所有场量都与 <i class="v">z</i> 无关，且面外的力学量可以被消掉</b>。这类问题叫<b>平面问题</b>，未知量缩到 2 个位移、3 个应变、3 个应力。</p>
+
+<p>平面问题分两种，它们的几何图景几乎相反，数学形式却只差一组常数替换。</p>
+
+<figure>
+<svg viewBox="0 0 660 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="平面应力与平面应变的几何对比">
+  <!-- 左：平面应力 薄板 -->
+  <text x="150" y="22" font-size="14.5" font-family="Segoe UI" fill="#1a5276" font-weight="700" text-anchor="middle">平面应力 Plane Stress</text>
+  <text x="150" y="40" font-size="12" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">薄板，厚度 t 很小，两表面自由</text>
+  <g>
+    <polygon points="60,70 230,70 260,52 90,52" fill="#dbe9f4" stroke="#1a5276" stroke-width="1.6"/>
+    <polygon points="230,70 260,52 260,80 230,98" fill="#b9d5ea" stroke="#1a5276" stroke-width="1.6"/>
+    <polygon points="60,70 230,70 230,98 60,98" fill="#eaf3f9" stroke="#1a5276" stroke-width="1.6"/>
+    <line x1="246" y1="61" x2="246" y2="89" stroke="#b03a2e" stroke-width="1.4"/>
+    <text x="272" y="79" font-size="12.5" font-family="Segoe UI" fill="#b03a2e">t</text>
+  </g>
+  <g stroke="#b03a2e" stroke-width="1.8" fill="#b03a2e">
+    <line x1="40" y1="84" x2="58" y2="84"/><polygon points="34,84 44,79 44,89"/>
+    <line x1="232" y1="84" x2="252" y2="84"/><polygon points="258,84 248,79 248,89"/>
+  </g>
+  <text x="150" y="124" font-size="12.5" font-family="Segoe UI" fill="#1a5276" text-anchor="middle">上下两个表面无外力</text>
+  <text x="150" y="146" font-size="13" font-family="Georgia" fill="#b03a2e" text-anchor="middle" font-style="italic">σz = τzx = τzy = 0</text>
+  <text x="150" y="170" font-size="12.5" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">但 εz ≠ 0（板会变薄）</text>
+  <text x="150" y="196" font-size="12" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">例：深梁 · 开孔板 · 墙板</text>
+  <text x="150" y="216" font-size="12" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">旋转圆盘 · 平面桁架节点板</text>
+
+  <line x1="330" y1="14" x2="330" y2="236" stroke="#d6e4ee" stroke-width="1.5" stroke-dasharray="5 5"/>
+
+  <!-- 右：平面应变 长柱 -->
+  <text x="500" y="22" font-size="14.5" font-family="Segoe UI" fill="#7d3c98" font-weight="700" text-anchor="middle">平面应变 Plane Strain</text>
+  <text x="500" y="40" font-size="12" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">长柱体，z 向很长，两端受约束</text>
+  <g>
+    <polygon points="410,58 470,58 590,52 530,52" fill="#ece0f5" stroke="#7d3c98" stroke-width="1.6"/>
+    <polygon points="470,58 590,52 590,104 470,110" fill="#dbc9ec" stroke="#7d3c98" stroke-width="1.6"/>
+    <polygon points="410,58 470,58 470,110 410,110" fill="#f3ecf8" stroke="#7d3c98" stroke-width="1.6"/>
+    <line x1="480" y1="122" x2="596" y2="116" stroke="#7d3c98" stroke-width="1.2"/>
+    <text x="538" y="138" font-size="12.5" font-family="Segoe UI" fill="#7d3c98" text-anchor="middle">L → ∞</text>
+  </g>
+  <g stroke="#b03a2e" stroke-width="1.8" fill="#b03a2e">
+    <line x1="440" y1="34" x2="440" y2="50"/><polygon points="440,56 435,46 445,46"/>
+  </g>
+  <text x="500" y="160" font-size="12.5" font-family="Segoe UI" fill="#7d3c98" text-anchor="middle">任一横截面变形都相同</text>
+  <text x="500" y="182" font-size="13" font-family="Georgia" fill="#b03a2e" text-anchor="middle" font-style="italic">εz = γzx = γzy = 0</text>
+  <text x="500" y="206" font-size="12.5" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">但 σz ≠ 0（端部要施加约束力）</text>
+  <text x="500" y="228" font-size="12" font-family="Segoe UI" fill="#7f8c98" text-anchor="middle">例：重力坝 · 隧道衬砌 · 挡土墙 · 厚壁管</text>
+</svg>
+<figcaption><b>图 4.1</b>　平面应力与平面应变的几何图景。两者都只剩 <i class="v">u</i>、<i class="v">v</i> 两个位移分量，但"被清零"的量正好互补：平面应力清零的是<b>面外应力</b>，平面应变清零的是<b>面外应变</b>。</figcaption>
+</figure>
+
+<h4>1.2.1 平面应力：薄板</h4>
+<p>取一块等厚薄板，厚度 <i class="v">t</i> 远小于平面尺寸，所有外力都平行于板面且沿厚度均匀分布。板的上下两个表面是自由面，其上 <i class="v">σ</i><sub>z</sub> = <i class="v">τ</i><sub>zx</sub> = <i class="v">τ</i><sub>zy</sub> = 0；由于板很薄，可以合理地认为这三个量<b>在整个板厚范围内都近似为零</b>：</p>
+
+<div class="formula"><span class="eq"><i class="v">σ</i><sub>z</sub> = <i class="v">τ</i><sub>zx</sub> = <i class="v">τ</i><sub>zy</sub> = 0，　<i class="v">σ</i><sub>x</sub>、<i class="v">σ</i><sub>y</sub>、<i class="v">τ</i><sub>xy</sub> 只是 (<i class="v">x</i>, <i class="v">y</i>) 的函数</span><span class="eqno">(4.1)</span></div>
+
+<div class="tip">
+  <div class="t-title">◎ 常见误解</div>
+  平面应力 <b>不是</b> <i class="v">ε</i><sub>z</sub> = 0。板受面内拉伸时会因泊松效应变薄，<i class="v">ε</i><sub>z</sub> = −<i class="v">ν</i>(<i class="v">σ</i><sub>x</sub> + <i class="v">σ</i><sub>y</sub>)/<i class="v">E</i> ≠ 0。只不过这个变薄是<b>自由发生</b>的，不产生 <i class="v">σ</i><sub>z</sub>，因此不进入能量表达式，可以事后再算。
+</div>
+
+<h4>1.2.2 平面应变：长柱体</h4>
+<p>取一个沿 <i class="v">z</i> 向非常长的柱状体（重力坝、隧道、挡土墙），横截面形状不变，外力也不随 <i class="v">z</i> 变化且垂直于 <i class="v">z</i> 轴。由对称性，中间任一横截面都不会沿 <i class="v">z</i> 向移动、也不会翘曲：</p>
+
+<div class="formula"><span class="eq"><i class="v">ε</i><sub>z</sub> = <i class="v">γ</i><sub>zx</sub> = <i class="v">γ</i><sub>zy</sub> = 0，　<i class="v">w</i> ≡ 0</span><span class="eqno">(4.2)</span></div>
+
+<p>这时 <i class="v">σ</i><sub>z</sub> 并不为零——恰恰相反，正是端部的约束提供了 <i class="v">σ</i><sub>z</sub> = <i class="v">ν</i>(<i class="v">σ</i><sub>x</sub> + <i class="v">σ</i><sub>y</sub>) 才把 <i class="v">ε</i><sub>z</sub> 压成零。分析时取<b>单位厚度</b>（<i class="v">t</i> = 1）的一片来算。</p>
+
+<h3>1.3 平面弹性力学的三组方程</h3>
+<p>无论哪一类平面问题，未知场量都是 <i class="v">u</i>(<i class="v">x</i>,<i class="v">y</i>)、<i class="v">v</i>(<i class="v">x</i>,<i class="v">y</i>)，它们必须同时满足三组方程。这三组方程构成一个闭环，是后面每一步推导的依据，务必记牢。</p>
+
+<h4>① 平衡方程（静力学）</h4>
+<div class="formula"><span class="eq">∂<i class="v">σ</i><sub>x</sub>/∂<i class="v">x</i> + ∂<i class="v">τ</i><sub>xy</sub>/∂<i class="v">y</i> + <i class="v">b</i><sub>x</sub> = 0，　∂<i class="v">τ</i><sub>xy</sub>/∂<i class="v">x</i> + ∂<i class="v">σ</i><sub>y</sub>/∂<i class="v">y</i> + <i class="v">b</i><sub>y</sub> = 0</span><span class="eqno">(4.3)</span></div>
+<p>其中 <i class="v">b</i><sub>x</sub>、<i class="v">b</i><sub>y</sub> 是<b>体力</b>（单位体积的力，如自重 <i class="v">b</i><sub>y</sub> = −<i class="v">ρg</i>、离心力）。</p>
+
+<h4>② 几何方程（运动学）</h4>
+<div class="formula"><span class="eq"><i class="v">ε</i><sub>x</sub> = ∂<i class="v">u</i>/∂<i class="v">x</i>，　<i class="v">ε</i><sub>y</sub> = ∂<i class="v">v</i>/∂<i class="v">y</i>，　<i class="v">γ</i><sub>xy</sub> = ∂<i class="v">u</i>/∂<i class="v">y</i> + ∂<i class="v">v</i>/∂<i class="v">x</i></span><span class="eqno">(4.4)</span></div>
+<p>写成矩阵形式 <b class="m">ε</b> = <b class="m">L</b><b class="m">u</b>，其中 <b class="m">L</b> 是微分算子矩阵：</p>
+<div class="formula"><span class="eq">
+<b class="m">ε</b> = <span class="mat c1"><span><i class="v">ε</i><sub>x</sub></span><span><i class="v">ε</i><sub>y</sub></span><span><i class="v">γ</i><sub>xy</sub></span></span>
+=
+<span class="mat c2"><span>∂/∂<i class="v">x</i></span><span>0</span><span>0</span><span>∂/∂<i class="v">y</i></span><span>∂/∂<i class="v">y</i></span><span>∂/∂<i class="v">x</i></span></span>
+<span class="mat c1"><span><i class="v">u</i></span><span><i class="v">v</i></span></span>
+</span><span class="eqno">(4.5)</span></div>
+
+<div class="tip">
+  <div class="t-title">◎ 为什么剪应变用 γ 而不用 ε<sub>xy</sub></div>
+  张量剪应变 <i class="v">ε</i><sub>xy</sub> = <i class="v">γ</i><sub>xy</sub>/2。有限元里一律用<b>工程剪应变</b> <i class="v">γ</i>，因为这样应变能才能写成简洁的 <i class="v">U</i> = ½<b class="m">ε</b><sup>T</sup><b class="m">σ</b>——三个分量一视同仁，不用在剪切项上补系数 2。这是所有 FEM 教材的统一约定（Bathe 4.2 节称之为 "engineering notation"）。
+</div>
+
+<h4>③ 物理方程（本构关系）</h4>
+<p>各向同性线弹性材料的广义胡克定律，在平面应力下为：</p>
+<div class="formula"><span class="eq">
+<b class="m">σ</b> = <b class="m">D</b><b class="m">ε</b>，
+<b class="m">D</b><sub>平面应力</sub> = <span class="frac"><span><i class="v">E</i></span><span>1 − <i class="v">ν</i><sup>2</sup></span></span>
+<span class="mat c3"><span>1</span><span><i class="v">ν</i></span><span>0</span><span><i class="v">ν</i></span><span>1</span><span>0</span><span>0</span><span>0</span><span><span class="frac"><span>1 − <i class="v">ν</i></span><span>2</span></span></span></span>
+</span><span class="eqno">(4.6)</span></div>
+
+<p>在平面应变下为：</p>
+<div class="formula"><span class="eq">
+<b class="m">D</b><sub>平面应变</sub> = <span class="frac"><span><i class="v">E</i>(1 − <i class="v">ν</i>)</span><span>(1 + <i class="v">ν</i>)(1 − 2<i class="v">ν</i>)</span></span>
+<span class="mat c3"><span>1</span><span><span class="frac"><span><i class="v">ν</i></span><span>1−<i class="v">ν</i></span></span></span><span>0</span><span><span class="frac"><span><i class="v">ν</i></span><span>1−<i class="v">ν</i></span></span></span><span>1</span><span>0</span><span>0</span><span>0</span><span><span class="frac"><span>1 − 2<i class="v">ν</i></span><span>2(1 − <i class="v">ν</i>)</span></span></span></span>
+</span><span class="eqno">(4.7)</span></div>
+
+<div class="good">
+  <div class="t-title">✓ 一个省事的技巧：两类问题的统一</div>
+  把 (4.6) 中的
+  <div class="formula" style="background:transparent;margin:8px 0"><span class="eq"><i class="v">E</i> → <span class="frac"><span><i class="v">E</i></span><span>1 − <i class="v">ν</i><sup>2</sup></span></span>　，　<i class="v">ν</i> → <span class="frac"><span><i class="v">ν</i></span><span>1 − <i class="v">ν</i></span></span></span></div>
+  代入，就<b>精确地</b>得到 (4.7)。所以程序里只需写一个 <code>D_plane_stress(E, nu)</code>，遇到平面应变时先把 <i class="v">E</i>、<i class="v">ν</i> 换掉再调用即可。
+  <b>本章之后的所有推导只写 <b class="m">D</b>，不区分两类问题</b>——这正是"降维"带来的红利。
+</div>
+
+<p>注意一个恒等式：两类问题的<b>剪切模量完全相同</b>。</p>
+<div class="formula"><span class="eq"><i class="v">D</i><sub>33</sub> = <i class="v">G</i> = <span class="frac"><span><i class="v">E</i></span><span>2(1 + <i class="v">ν</i>)</span></span>　（平面应力与平面应变一致）</span><span class="eqno">(4.8)</span></div>
+
+<p>以 <i class="v">E</i> = 210 GPa、<i class="v">ν</i> = 1/3 为例（本讲义后续例题一律用这组常数）：</p>
+
+<table>
+<thead><tr><th>　</th><th><i class="v">D</i><sub>11</sub> = <i class="v">D</i><sub>22</sub></th><th><i class="v">D</i><sub>12</sub></th><th><i class="v">D</i><sub>33</sub> = <i class="v">G</i></th><th><i class="v">D</i><sub>12</sub>/<i class="v">D</i><sub>11</sub></th></tr></thead>
+<tbody>
+<tr><td><span class="pill ps">平面应力</span></td><td>236.25 GPa</td><td>78.75 GPa</td><td>78.75 GPa</td><td>0.333</td></tr>
+<tr><td><span class="pill pe">平面应变</span></td><td>315.00 GPa</td><td>157.50 GPa</td><td>78.75 GPa</td><td>0.500</td></tr>
+<tr><td>比值</td><td>1.33×</td><td>2.00×</td><td>1.00×</td><td>—</td></tr>
+</tbody>
+</table>
+
+<p>平面应变的法向刚度明显更大，这有清楚的物理解释：<b>面外被卡死了</b>，材料不能靠变厚/变薄来"泄压"，于是显得更硬。当 <i class="v">ν</i> → 0.5（不可压缩，如橡胶、饱和黏土）时，(4.7) 的分母 1 − 2<i class="v">ν</i> → 0，<b class="m">D</b> 发散——这就是著名的<b>体积锁死（volumetric locking）</b>的根源，低阶单元在此失效，必须改用杂交元或缩减积分。平面应力则没有这个问题。</p>
+
+<div class="lab" id="lab1">
+  <div class="lab-head"><span class="lab-tag">实验台 1</span>平面应力 vs 平面应变：D 矩阵对照器<span class="lab-hint">拖动滑块，观察 ν → 0.5 时平面应变如何发散</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>E</label><input type="range" id="l1E" min="10" max="400" step="5" value="210"><span class="val" id="l1Ev">210 GPa</span></div>
+      <div class="ctrl"><label>ν</label><input type="range" id="l1nu" min="0" max="0.499" step="0.001" value="0.333"><span class="val" id="l1nuv">0.333</span></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px">
+      <svg viewBox="0 0 660 190" id="l1svg" xmlns="http://www.w3.org/2000/svg">
+        <text x="165" y="20" font-size="13" font-family="Segoe UI" fill="#1a5276" font-weight="700" text-anchor="middle">平面应力 D (GPa)</text>
+        <text x="495" y="20" font-size="13" font-family="Segoe UI" fill="#7d3c98" font-weight="700" text-anchor="middle">平面应变 D (GPa)</text>
+        <g id="l1bars"></g>
+      </svg>
+    </div>
+    <div class="lab-out">
+      <div class="kv">平面应力 D₁₁<b id="l1a">236.3</b></div>
+      <div class="kv">平面应变 D₁₁<b id="l1b">315.0</b></div>
+      <div class="kv">刚度比 D₁₁<sup>pe</sup>/D₁₁<sup>ps</sup><b id="l1r">1.33</b></div>
+      <div class="kv">G（两者相同）<b id="l1g">78.8</b></div>
+      <div class="kv">等效替换后的 ν′<b id="l1nup">0.500</b></div>
+    </div>
+    <div class="lab-note" id="l1note"></div>
+  </div>
+</div>
+
+<h3>1.4 为什么非要用有限元</h3>
+<p>把 (4.3)(4.4)(4.6) 合起来消元，可以得到以位移表示的平衡方程（Navier 方程），这是一组二阶偏微分方程组。弹性力学告诉我们：对于<b>规则区域 + 简单边界条件</b>（半无限平面、圆孔无限板、楔形体……），可以用应力函数法求出漂亮的解析解。</p>
+
+<p>但工程中真正关心的往往是：带圆角的 L 形支架、有多个螺栓孔的连接板、几何非规则的坝体截面……这些问题的<b>边界形状</b>就让解析法无从下手。有限元的策略是绕开"求满足所有方程的函数"，改为：</p>
+
+<div class="good">
+  <div class="t-title">✓ 有限元的根本思路（本章的主线）</div>
+  <b>① 几何上离散：</b>用简单形状的小单元拼出任意复杂的区域；<br>
+  <b>② 函数上离散：</b>在每个单元内用简单的多项式插值位移，插值系数就是节点位移；<br>
+  <b>③ 方程上弱化：</b>不再逐点满足平衡方程，而是要求<b>总势能取驻值</b>（等价于虚功原理），这只需要位移的<b>一阶导数</b>存在，对位移函数的光滑性要求大大降低。<br>
+  这三步把"解偏微分方程"变成了"解代数方程组 <b class="m">K</b><b class="m">d</b> = <b class="m">F</b>"。第 ③ 步是第 5 章的全部内容。
+</div>
+
+</section>
