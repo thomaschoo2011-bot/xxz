@@ -1,0 +1,182 @@
+
+<!-- ================================================== 第 2 章 ================================================== -->
+<section id="ch2">
+<h2><span class="chno">2</span>离散化：网格、节点布置、编号与带宽</h2>
+
+<p>离散化是有限元分析中<b>唯一没有标准答案</b>的一步，也是新手最容易出错的一步。本章把课件里那些"经验性的规定"背后的道理讲清楚——它们几乎全都能归结为两条：<b>保证位移在单元之间连续</b>，以及<b>让插值误差尽可能小</b>。</p>
+
+<h3>2.1 常用的平面单元</h3>
+
+<figure>
+<svg viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="常用平面单元类型">
+  <g font-family="Segoe UI" font-size="12.5">
+  <!-- CST -->
+  <polygon points="40,110 140,110 62,42" fill="#eaf3f9" stroke="#1a5276" stroke-width="1.8"/>
+  <g fill="#fff" stroke="#1a5276" stroke-width="2"><circle cx="40" cy="110" r="5"/><circle cx="140" cy="110" r="5"/><circle cx="62" cy="42" r="5"/></g>
+  <text x="90" y="140" text-anchor="middle" fill="#1a5276" font-weight="700">CST（3 节点）</text>
+  <text x="90" y="158" text-anchor="middle" fill="#7f8c98">常应变 · 线性位移</text>
+  <text x="90" y="176" text-anchor="middle" fill="#7f8c98">6 自由度 · 本章主角</text>
+  <text x="90" y="196" text-anchor="middle" fill="#b03a2e">精度低，但概念最清晰</text>
+
+  <!-- LST -->
+  <polygon points="190,110 290,110 212,42" fill="#eaf6f1" stroke="#1e8449" stroke-width="1.8"/>
+  <g fill="#fff" stroke="#1e8449" stroke-width="2"><circle cx="190" cy="110" r="5"/><circle cx="290" cy="110" r="5"/><circle cx="212" cy="42" r="5"/></g>
+  <g fill="#1e8449" stroke="#1e8449" stroke-width="1.6"><circle cx="240" cy="110" r="3.6"/><circle cx="251" cy="76" r="3.6"/><circle cx="201" cy="76" r="3.6"/></g>
+  <text x="240" y="140" text-anchor="middle" fill="#1e8449" font-weight="700">LST（6 节点）</text>
+  <text x="240" y="158" text-anchor="middle" fill="#7f8c98">线性应变 · 二次位移</text>
+  <text x="240" y="176" text-anchor="middle" fill="#7f8c98">12 自由度</text>
+  <text x="240" y="196" text-anchor="middle" fill="#1e8449">边可弯，贴合曲边界</text>
+
+  <!-- Q4 -->
+  <polygon points="340,110 450,110 450,42 340,42" fill="#f3ecf8" stroke="#7d3c98" stroke-width="1.8"/>
+  <g fill="#fff" stroke="#7d3c98" stroke-width="2"><circle cx="340" cy="110" r="5"/><circle cx="450" cy="110" r="5"/><circle cx="450" cy="42" r="5"/><circle cx="340" cy="42" r="5"/></g>
+  <text x="395" y="140" text-anchor="middle" fill="#7d3c98" font-weight="700">Q4（4 节点）</text>
+  <text x="395" y="158" text-anchor="middle" fill="#7f8c98">双线性位移</text>
+  <text x="395" y="176" text-anchor="middle" fill="#7f8c98">8 自由度</text>
+  <text x="395" y="196" text-anchor="middle" fill="#7d3c98">同样网格精度远高于 CST</text>
+
+  <!-- Q8 -->
+  <polygon points="500,110 610,110 610,42 500,42" fill="#fdf3e3" stroke="#bf8f14" stroke-width="1.8"/>
+  <g fill="#fff" stroke="#bf8f14" stroke-width="2"><circle cx="500" cy="110" r="5"/><circle cx="610" cy="110" r="5"/><circle cx="610" cy="42" r="5"/><circle cx="500" cy="42" r="5"/></g>
+  <g fill="#bf8f14" stroke="#bf8f14" stroke-width="1.6"><circle cx="555" cy="110" r="3.6"/><circle cx="610" cy="76" r="3.6"/><circle cx="555" cy="42" r="3.6"/><circle cx="500" cy="76" r="3.6"/></g>
+  <text x="555" y="140" text-anchor="middle" fill="#bf8f14" font-weight="700">Q8（8 节点）</text>
+  <text x="555" y="158" text-anchor="middle" fill="#7f8c98">serendipity 单元</text>
+  <text x="555" y="176" text-anchor="middle" fill="#7f8c98">16 自由度</text>
+  <text x="555" y="196" text-anchor="middle" fill="#bf8f14">工程通用主力单元</text>
+  </g>
+</svg>
+<figcaption><b>图 4.2</b>　四种常用平面单元。三角形能拼出任意形状但精度低，四边形精度高但对复杂边界适应性差——实际网格往往<b>以四边形为主、局部用三角形过渡</b>。</figcaption>
+</figure>
+
+<p>本章的推导全部围绕 <b>CST</b> 展开，理由和第 3 章选一维杆单元一样：它是唯一能<b>全程手算、结果还是整数</b>的平面单元。掌握了它，换成 Q4 或 Q8 只是把 <b class="m">B</b> 矩阵换掉、把解析积分换成高斯积分，框架完全一样。</p>
+
+<h3>2.2 网格划分必须遵守的规则</h3>
+
+<figure>
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="合法与非法的网格连接">
+  <g font-family="Segoe UI" font-size="12">
+  <!-- 正确 -->
+  <text x="110" y="18" text-anchor="middle" font-size="13" fill="#1e8449" font-weight="700">✓ 合法：节点对节点</text>
+  <polygon points="30,40 190,40 190,120 30,120" fill="#f5faf7" stroke="#1e8449" stroke-width="1.6"/>
+  <line x1="110" y1="40" x2="110" y2="120" stroke="#1e8449" stroke-width="1.6"/>
+  <line x1="30" y1="80" x2="190" y2="80" stroke="#1e8449" stroke-width="1.6"/>
+  <g fill="#fff" stroke="#1e8449" stroke-width="2">
+    <circle cx="30" cy="40" r="4"/><circle cx="110" cy="40" r="4"/><circle cx="190" cy="40" r="4"/>
+    <circle cx="30" cy="80" r="4"/><circle cx="110" cy="80" r="4"/><circle cx="190" cy="80" r="4"/>
+    <circle cx="30" cy="120" r="4"/><circle cx="110" cy="120" r="4"/><circle cx="190" cy="120" r="4"/>
+  </g>
+  <text x="110" y="146" text-anchor="middle" fill="#7f8c98">相邻单元共享整条边</text>
+  <text x="110" y="164" text-anchor="middle" fill="#7f8c98">边上位移由同两个节点决定</text>
+  <text x="110" y="182" text-anchor="middle" fill="#1e8449">→ 位移连续，无裂缝</text>
+
+  <!-- 错误：悬节点 -->
+  <text x="330" y="18" text-anchor="middle" font-size="13" fill="#b03a2e" font-weight="700">✗ 非法：悬节点</text>
+  <polygon points="250,40 410,40 410,120 250,120" fill="#fdf6f5" stroke="#b03a2e" stroke-width="1.6"/>
+  <line x1="330" y1="40" x2="330" y2="120" stroke="#b03a2e" stroke-width="1.6"/>
+  <line x1="330" y1="80" x2="410" y2="80" stroke="#b03a2e" stroke-width="1.6"/>
+  <g fill="#fff" stroke="#b03a2e" stroke-width="2">
+    <circle cx="250" cy="40" r="4"/><circle cx="330" cy="40" r="4"/><circle cx="410" cy="40" r="4"/>
+    <circle cx="410" cy="80" r="4"/>
+    <circle cx="250" cy="120" r="4"/><circle cx="330" cy="120" r="4"/><circle cx="410" cy="120" r="4"/>
+  </g>
+  <circle cx="330" cy="80" r="6.5" fill="#fdecea" stroke="#b03a2e" stroke-width="2.4"/>
+  <text x="344" y="76" fill="#b03a2e" font-size="11.5">悬节点</text>
+  <path d="M330,80 q-18,10 -30,26" stroke="#b03a2e" stroke-width="1.4" fill="none" stroke-dasharray="3 3"/>
+  <text x="330" y="146" text-anchor="middle" fill="#7f8c98">左侧大单元的边由 2 个节点插值，</text>
+  <text x="330" y="164" text-anchor="middle" fill="#7f8c98">右侧两个小单元的边由 3 个节点插值</text>
+  <text x="330" y="182" text-anchor="middle" fill="#b03a2e">→ 边上位移不一致，出现"裂缝"</text>
+
+  <!-- 修正 -->
+  <text x="550" y="18" text-anchor="middle" font-size="13" fill="#1e8449" font-weight="700">✓ 修正：三角形过渡</text>
+  <polygon points="470,40 630,40 630,120 470,120" fill="#f5faf7" stroke="#1e8449" stroke-width="1.6"/>
+  <line x1="550" y1="40" x2="550" y2="120" stroke="#1e8449" stroke-width="1.6"/>
+  <line x1="550" y1="80" x2="630" y2="80" stroke="#1e8449" stroke-width="1.6"/>
+  <line x1="470" y1="40" x2="550" y2="80" stroke="#1e8449" stroke-width="1.6"/>
+  <line x1="470" y1="120" x2="550" y2="80" stroke="#1e8449" stroke-width="1.6"/>
+  <g fill="#fff" stroke="#1e8449" stroke-width="2">
+    <circle cx="470" cy="40" r="4"/><circle cx="550" cy="40" r="4"/><circle cx="630" cy="40" r="4"/>
+    <circle cx="550" cy="80" r="4"/><circle cx="630" cy="80" r="4"/>
+    <circle cx="470" cy="120" r="4"/><circle cx="550" cy="120" r="4"/><circle cx="630" cy="120" r="4"/>
+  </g>
+  <text x="550" y="146" text-anchor="middle" fill="#7f8c98">把大单元劈成三角形，</text>
+  <text x="550" y="164" text-anchor="middle" fill="#7f8c98">使每条边两侧节点数一致</text>
+  <text x="550" y="182" text-anchor="middle" fill="#1e8449">→ 协调性恢复</text>
+  </g>
+</svg>
+<figcaption><b>图 4.3</b>　网格的<b>协调性</b>要求：任意一条单元边，两侧看到的节点必须完全相同。违反此条会在边上产生位移间断，收敛性失去保证。</figcaption>
+</figure>
+
+<p>除了协调性，还有几条来自物理的硬性要求：</p>
+
+<table class="left">
+<thead><tr><th style="width:26%">规则</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td><b>集中力作用点必须是节点</b></td><td>有限元只能在节点上加集中力。若力作用在单元内部，等效方法另说（需用形函数分配），但作为节点最简单也最准确。</td></tr>
+<tr><td><b>支座、约束点必须是节点</b></td><td>约束只能施加在自由度上，而自由度只在节点上。</td></tr>
+<tr><td><b>材料或厚度突变处必须是单元边界</b></td><td>单元内部假设 <b class="m">D</b>、<i class="v">t</i> 为常数。若让界面穿过单元，就等于把两种材料抹成一种。</td></tr>
+<tr><td><b>分布载荷的起止点宜设节点</b></td><td>否则一条边上"半边有载荷半边没有"，积分区间被打断，等效载荷容易算错。</td></tr>
+<tr><td><b>应力梯度大处加密</b></td><td>CST 内部应力是常数，梯度全靠单元之间的跳跃来体现。孔边、缺口、集中力附近、支座角点必须小单元。</td></tr>
+<tr><td><b>单元形状要"胖"</b></td><td>长宽比（aspect ratio）宜 &lt; 3，三角形最小内角宜 &gt; 30°。细长单元会让 <b class="m">B</b> 矩阵病态、应力精度急剧下降。</td></tr>
+</tbody>
+</table>
+
+<div class="warn">
+  <div class="t-title">▲ 关于"加密"的一个反直觉事实</div>
+  在<b>应力奇异点</b>（数学上应力趋于无穷：尖角、集中力作用点、约束突变处），网格加密<b>不会收敛</b>——你会看到应力随着单元变小而单调上升，永无止境。
+  这不是程序出错，而是模型本身在那一点没有有限解。工程上的做法是：报告该处的应力时说明它是奇异的，改用<b>断裂力学参数</b>（应力强度因子）或对结构倒圆角后重新分析。
+</div>
+
+<h3>2.3 节点编号与带宽：一个省一半内存的小技巧</h3>
+
+<p>总刚 <b class="m">K</b> 是<b>稀疏</b>的：只有当节点 <i class="v">i</i>、<i class="v">j</i> 同属某个单元时，分块 <b class="m">K</b><sub>ij</sub> 才非零。更进一步，如果节点编号安排得好，所有非零元会挤在主对角线附近的一条<b>带</b>里，带外全是零，不必存储。</p>
+
+<div class="formula"><span class="eq">半带宽　<i class="v">B</i> = (<i class="v">D</i> + 1) × <i class="v">f</i></span><span class="eqno">(4.9)</span></div>
+
+<p>其中 <i class="v">D</i> 是<b>所有单元中，节点号最大差值</b>的最大者，<i class="v">f</i> 是每节点自由度数（平面问题 <i class="v">f</i> = 2）。于是有一条著名的经验法则：</p>
+
+<div class="good">
+  <div class="t-title">✓ 编号法则</div>
+  <b>沿短边方向连续编号</b>——让每一"排"节点尽可能少，相邻排的节点号差就小，<i class="v">D</i> 自然小。
+  一个 <i class="v">m</i> × <i class="v">n</i> 的矩形网格，沿短边编号可以把存储量降到沿长边编号的
+  <span class="eq-inline">(min + 3)/(max + 3)</span> 倍。
+</div>
+
+<div class="lab" id="lab2">
+  <div class="lab-head"><span class="lab-tag">实验台 2</span>网格与带宽工坊<span class="lab-hint">改变网格疏密与编号方向，看半带宽与存储量如何变化</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>长边分段</label><input type="range" id="l2nx" min="2" max="16" step="1" value="10"><span class="val" id="l2nxv">10</span></div>
+      <div class="ctrl"><label>短边分段</label><input type="range" id="l2ny" min="1" max="10" step="1" value="3"><span class="val" id="l2nyv">3</span></div>
+      <div class="ctrl"><button class="lab-btn" id="l2dir">编号方向：沿短边 ✓</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px">
+      <svg viewBox="0 0 660 230" id="l2svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="lab-out">
+      <div class="kv">节点数<b id="l2nn">44</b></div>
+      <div class="kv">总自由度<b id="l2nd">88</b></div>
+      <div class="kv">最大节点号差 D<b id="l2D">5</b></div>
+      <div class="kv">半带宽 B<b id="l2B">12</b></div>
+      <div class="kv">带状存储<b id="l2sb">1056</b></div>
+      <div class="kv">满阵存储<b id="l2sf">7744</b></div>
+      <div class="kv">节省<b id="l2sv">86%</b></div>
+    </div>
+    <div class="lab-note" id="l2note"></div>
+  </div>
+</div>
+
+<h3>2.4 对称性：最划算的一次减半</h3>
+<p>如果结构的<b>几何、材料、约束、载荷</b>四者同时关于某条轴对称，那么位移场也一定关于该轴对称，只需取一半建模，在对称轴上施加<b>对称边界条件</b>：</p>
+
+<div class="formula"><span class="eq">对称轴垂直于 <i class="v">x</i> 轴　⇒　轴上所有节点 <i class="v">u</i> = 0（法向位移为零，切向自由）</span><span class="eqno">(4.10)</span></div>
+
+<p>若载荷是<b>反对称</b>的（如纯弯、扭转），则改用反对称条件：对称轴上 <i class="v">v</i> = 0 而 <i class="v">u</i> 自由。两条轴同时对称时可取 1/4 模型，自由度降为 1/4，方程求解时间降为约 1/16（直接法约 <i class="v">O</i>(<i class="v">N</i><sup>2</sup><i class="v">B</i>)）。</p>
+
+<div class="warn">
+  <div class="t-title">▲ 对称性的陷阱</div>
+  ① <b>载荷不对称就不能用</b>。一块对称的板，若只在左半边加载，取一半建模是错的——除非把载荷分解为对称 + 反对称两部分分别算再叠加。<br>
+  ② <b>屈曲和模态分析慎用</b>。一半模型只能得到对称模态，会<b>漏掉反对称模态</b>，而最低阶屈曲模态往往恰恰是反对称的。<br>
+  ③ 对称轴上的节点<b>自由度被约束了一半</b>，输出支反力时要记得乘 2 才是整体的量。
+</div>
+
+</section>

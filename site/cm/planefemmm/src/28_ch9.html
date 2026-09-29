@@ -1,0 +1,459 @@
+
+<!-- ================================================== 第 9 章 ================================================== -->
+<section id="ch9">
+<h2><span class="chno">9</span>经典例题：把全部环节串成一条线</h2>
+
+<p>前面八章把有限元拆成了零件：<b class="m">D</b> → <b class="m">N</b> → <b class="m">B</b> → <b class="m">k</b><sup>e</sup> → <b class="m">f</b><sup>e</sup> → <b class="m">K</b> → 边界条件 → 求解。本章用三个可以<b>完全手算</b>、又能和解析解逐位对照的例题，把这些零件装成整机。每个例题都给出<b>全部中间数据</b>，读者可以逐步对照自己的手算或程序。</p>
+
+<h3>9.1 通用求解流程</h3>
+
+<figure>
+<svg viewBox="0 0 660 232" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="有限元位移法的八步求解流程图">
+  <defs>
+    <marker id="fa9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7f8c98"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI" font-size="11.5" text-anchor="middle">
+  <g class="drawin">
+  <!-- row 1 -->
+  <rect x="14" y="20" width="142" height="46" rx="8" fill="#eaf3f9" stroke="#1a5276" stroke-width="1.6"/>
+  <text x="85" y="40" font-weight="700" fill="#1a5276">① 离散化</text>
+  <text x="85" y="56" fill="#31506b" font-size="10.5">分网格、编号、定材料</text>
+
+  <rect x="186" y="20" width="142" height="46" rx="8" fill="#eaf3f9" stroke="#1a5276" stroke-width="1.6"/>
+  <text x="257" y="40" font-weight="700" fill="#1a5276">② 形函数与 B</text>
+  <text x="257" y="56" fill="#31506b" font-size="10.5">b、c、A → B = LN</text>
+
+  <rect x="358" y="20" width="142" height="46" rx="8" fill="#f9ecea" stroke="#b03a2e" stroke-width="1.6"/>
+  <text x="429" y="40" font-weight="700" fill="#b03a2e">③ 单刚 kᵉ</text>
+  <text x="429" y="56" fill="#7b3129" font-size="10.5">kᵉ = BᵀDB·tA　(4.38)</text>
+
+  <rect x="530" y="20" width="116" height="46" rx="8" fill="#f9ecea" stroke="#b03a2e" stroke-width="1.6"/>
+  <text x="588" y="40" font-weight="700" fill="#b03a2e">④ 载荷 fᵉ</text>
+  <text x="588" y="56" fill="#7b3129" font-size="10.5">∫Nᵀt̄ t ds　(4.42)</text>
+
+  <!-- row 2 -->
+  <rect x="14" y="102" width="142" height="46" rx="8" fill="#f3ecf8" stroke="#7d3c98" stroke-width="1.6"/>
+  <text x="85" y="122" font-weight="700" fill="#7d3c98">⑤ 组装</text>
+  <text x="85" y="138" fill="#5b2d70" font-size="10.5">LM 对号入座，累加</text>
+
+  <rect x="186" y="102" width="142" height="46" rx="8" fill="#f3ecf8" stroke="#7d3c98" stroke-width="1.6"/>
+  <text x="257" y="122" font-weight="700" fill="#7d3c98">⑥ 边界条件</text>
+  <text x="257" y="138" fill="#5b2d70" font-size="10.5">消去 3 个刚体自由度</text>
+
+  <rect x="358" y="102" width="142" height="46" rx="8" fill="#eaf6f1" stroke="#1e8449" stroke-width="1.6"/>
+  <text x="429" y="122" font-weight="700" fill="#1e8449">⑦ 解方程</text>
+  <text x="429" y="138" fill="#146034" font-size="10.5">Cholesky / 稀疏分解</text>
+
+  <rect x="530" y="102" width="116" height="46" rx="8" fill="#eaf6f1" stroke="#1e8449" stroke-width="1.6"/>
+  <text x="588" y="122" font-weight="700" fill="#1e8449">⑧ 后处理</text>
+  <text x="588" y="138" fill="#146034" font-size="10.5">ε = Bd，σ = Dε</text>
+
+  <!-- 校核 -->
+  <rect x="14" y="176" width="632" height="42" rx="8" fill="#fdf6e6" stroke="#bf8f14" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="330" y="194" font-weight="700" fill="#8a6a10">⑨ 校　核（贯穿始终，不是可选项）</text>
+  <text x="330" y="210" fill="#8a6a10" font-size="10.5">行和为零 · 对角元为正 · 秩 = 2n−3 · ΣR = −ΣF · 自由节点反力为零 · 量级与材料力学估算相符</text>
+  </g>
+  <g stroke="#7f8c98" stroke-width="1.5" fill="none" marker-end="url(#fa9)">
+    <line x1="158" y1="43" x2="182" y2="43"/><line x1="330" y1="43" x2="354" y2="43"/><line x1="502" y1="43" x2="526" y2="43"/>
+    <path d="M588,68 L588,84 L85,84 L85,98"/>
+    <line x1="158" y1="125" x2="182" y2="125"/><line x1="330" y1="125" x2="354" y2="125"/><line x1="502" y1="125" x2="526" y2="125"/>
+  </g>
+  </g>
+</svg>
+<figcaption><b>图 4.8</b>　有限元位移法的标准流程。第 ③④ 步是<b>单元级</b>工作（可并行、可复用），第 ⑤⑥⑦ 步是<b>结构级</b>工作，第 ⑧ 步回到单元级。黄色的校核不是"有空再做"，而是<b>每一步都要做</b>——错误在哪一步产生，就在哪一步拦住它，代价最小。</figcaption>
+</figure>
+
+<h3>9.2 例题五：悬臂板的完整求解，以及"多加一个约束"的代价</h3>
+
+<details class="steps" open>
+<summary><b>例题 4-5</b>　2 m × 1 m 矩形板右端受 20 kN 拉力，两种左端约束方案的对比（平面应力）</summary>
+<div>
+
+<p><b>题设：</b><i class="v">E</i> = 210 GPa，<i class="v">ν</i> = 1/3，厚 <i class="v">t</i> = 10 mm。节点 1(0, 0)、2(0, 1)、3(2, 0)、4(2, 1)，用一条对角线划成两个 CST：单元 ① = (1, 3, 4)，单元 ② = (1, 4, 2)，均为<b>逆时针</b>。右端两个节点各受 <i class="v">P</i>/2 = 10 kN 的水平拉力。</p>
+
+<figure>
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="悬臂板两单元模型与两种约束方案">
+  <g font-family="Segoe UI" font-size="12">
+  <!-- 方案 A -->
+  <text x="28" y="22" font-weight="700" fill="#1a5276">方案 A：静定约束（3 个）</text>
+  <polygon points="60,110 300,110 300,42" fill="#eaf3f9" stroke="#1a5276" stroke-width="1.5"/>
+  <polygon points="60,110 300,42 60,42" fill="#eaf6f1" stroke="#1e8449" stroke-width="1.5"/>
+  <text x="240" y="98" fill="#1a5276" font-weight="700">①</text>
+  <text x="112" y="62" fill="#1e8449" font-weight="700">②</text>
+  <g fill="#fff" stroke="#1f2d3d" stroke-width="2"><circle cx="60" cy="110" r="6"/><circle cx="60" cy="42" r="6"/><circle cx="300" cy="110" r="6"/><circle cx="300" cy="42" r="6"/></g>
+  <g font-size="11" font-weight="700" fill="#1f2d3d" text-anchor="middle"><text x="60" y="114">1</text><text x="60" y="46">2</text><text x="300" y="114">3</text><text x="300" y="46">4</text></g>
+  <!-- 支座 A -->
+  <g stroke="#b03a2e" stroke-width="2" fill="none"><path d="M48,110 L36,102 M48,110 L36,118 M36,98 L36,122"/></g>
+  <text x="30" y="136" fill="#b03a2e" font-size="10.5" text-anchor="middle">u=v=0</text>
+  <g stroke="#b03a2e" stroke-width="2" fill="none"><path d="M48,42 L36,34 M48,42 L36,50"/></g>
+  <circle cx="33" cy="42" r="4" fill="none" stroke="#b03a2e" stroke-width="1.8"/>
+  <text x="26" y="26" fill="#b03a2e" font-size="10.5" text-anchor="middle">u=0</text>
+  <!-- 载荷 -->
+  <g stroke="#bf8f14" stroke-width="2.4" fill="none"><line x1="300" y1="110" x2="340" y2="110"/><line x1="300" y1="42" x2="340" y2="42"/></g>
+  <polygon points="348,110 336,105 336,115" fill="#bf8f14"/><polygon points="348,42 336,37 336,47" fill="#bf8f14"/>
+  <text x="352" y="82" fill="#bf8f14" font-size="11" font-weight="700">10 kN</text>
+  <text x="180" y="160" text-anchor="middle" fill="#1e8449" font-size="11.5">左端可自由收缩 ⇒ 单向应力场，CST <b>精确</b></text>
+  <text x="180" y="178" text-anchor="middle" fill="#7f8c98" font-size="11">σ<tspan font-size="9" dy="3">x</tspan><tspan dy="-3"> = 2 MPa，σ</tspan><tspan font-size="9" dy="3">y</tspan><tspan dy="-3"> = τ = 0</tspan></text>
+
+  <!-- 方案 B -->
+  <text x="398" y="22" font-weight="700" fill="#b03a2e">方案 B：过约束（4 个）</text>
+  <polygon points="430,110 620,110 620,42" fill="#f9ecea" stroke="#b03a2e" stroke-width="1.5"/>
+  <polygon points="430,110 620,42 430,42" fill="#fdf3e3" stroke="#bf8f14" stroke-width="1.5"/>
+  <g fill="#fff" stroke="#1f2d3d" stroke-width="2"><circle cx="430" cy="110" r="6"/><circle cx="430" cy="42" r="6"/><circle cx="620" cy="110" r="6"/><circle cx="620" cy="42" r="6"/></g>
+  <g stroke="#b03a2e" stroke-width="2.4"><line x1="422" y1="34" x2="422" y2="118"/></g>
+  <g stroke="#b03a2e" stroke-width="1.6">
+    <line x1="422" y1="38" x2="412" y2="30"/><line x1="422" y1="54" x2="412" y2="46"/><line x1="422" y1="70" x2="412" y2="62"/>
+    <line x1="422" y1="86" x2="412" y2="78"/><line x1="422" y1="102" x2="412" y2="94"/><line x1="422" y1="118" x2="412" y2="110"/>
+  </g>
+  <text x="418" y="136" fill="#b03a2e" font-size="10.5" text-anchor="middle">整条边 u=v=0</text>
+  <g stroke="#bf8f14" stroke-width="2.4" fill="none"><line x1="620" y1="110" x2="640" y2="110"/><line x1="620" y1="42" x2="640" y2="42"/></g>
+  <polygon points="648,110 636,105 636,115" fill="#bf8f14"/><polygon points="648,42 636,37 636,47" fill="#bf8f14"/>
+  <text x="524" y="160" text-anchor="middle" fill="#b03a2e" font-size="11.5">左端被<b>禁止</b>泊松收缩 ⇒ 人为加劲</text>
+  <text x="524" y="178" text-anchor="middle" fill="#7f8c98" font-size="11">出现本不该有的 σ<tspan font-size="9" dy="3">y</tspan><tspan dy="-3"> 与 τ</tspan></text>
+  </g>
+</svg>
+<figcaption><b>图 4.9</b>　同一块板、同一张网格、同一组载荷，只是左端约束不同。方案 A 用<b>最少</b>的约束消去 3 个刚体自由度；方案 B 看起来"更像固定端"，却给结构加了一条它本来不存在的限制。</figcaption>
+</figure>
+
+<p><b>第 1 步　几何常数。</b>单元 ① = (1, 3, 4)：由 (4.15)</p>
+<div class="formula"><span class="eq">
+<i class="v">b</i> = [<i class="v">y</i><sub>3</sub>−<i class="v">y</i><sub>4</sub>, <i class="v">y</i><sub>4</sub>−<i class="v">y</i><sub>1</sub>, <i class="v">y</i><sub>1</sub>−<i class="v">y</i><sub>3</sub>] = [−1, 1, 0]　，
+<i class="v">c</i> = [<i class="v">x</i><sub>4</sub>−<i class="v">x</i><sub>3</sub>, <i class="v">x</i><sub>1</sub>−<i class="v">x</i><sub>4</sub>, <i class="v">x</i><sub>3</sub>−<i class="v">x</i><sub>1</sub>] = [0, −2, 2]　，
+2<i class="v">A</i> = 2，<i class="v">A</i> = 1 m<sup>2</sup>
+</span><span class="eqno">(4.72)</span></div>
+
+<p>于是（乘出 2<i class="v">A</i> = 2 后，元素恰为整数）</p>
+<div class="formula"><span class="eq">
+2<i class="v">A</i>·<b class="m">B</b><sup>(1)</sup> =
+<span class="mat c6">
+<span>−1</span><span>0</span><span>1</span><span>0</span><span>0</span><span>0</span>
+<span>0</span><span>0</span><span>0</span><span>−2</span><span>0</span><span>2</span>
+<span>0</span><span>−1</span><span>−2</span><span>1</span><span>2</span><span>0</span>
+</span>
+　，
+2<i class="v">A</i>·<b class="m">B</b><sup>(2)</sup> =
+<span class="mat c6">
+<span>0</span><span>0</span><span>1</span><span>0</span><span>−1</span><span>0</span>
+<span>0</span><span>−2</span><span>0</span><span>0</span><span>0</span><span>2</span>
+<span>−2</span><span>0</span><span>0</span><span>1</span><span>2</span><span>−1</span>
+</span>
+</span><span class="eqno">(4.73)</span></div>
+
+<p><b>第 2 步　单刚与组装。</b>按 (4.38) 算出两个 6×6 单刚，再按 LM<sup>(1)</sup> = [1, 2, 5, 6, 7, 8]、LM<sup>(2)</sup> = [1, 2, 7, 8, 3, 4] 落位累加，得 8×8 的 <b class="m">K</b>。校核：</p>
+<table>
+<thead><tr><th>校核项</th><th>结果</th></tr></thead>
+<tbody>
+<tr><td>对称性 max|<b class="m">K</b> − <b class="m">K</b><sup>T</sup>|</td><td>0.0（严格为零）✓</td></tr>
+<tr><td>秩</td><td>8 − 3 = <b>5</b> ✓</td></tr>
+<tr><td>最大 |行和|</td><td>0.0 ✓</td></tr>
+<tr><td>max(<i class="v">K</i><sub>ii</sub>)</td><td>2.559375 × 10<sup>9</sup> N/m</td></tr>
+</tbody>
+</table>
+
+<p><b>第 3 步　载荷列阵。</b>右端 20 kN 已是集中力，按 (4.42) 第三项直接落到节点上：<i class="v">F</i><sub>5</sub> = <i class="v">F</i><sub>7</sub> = 10 kN，其余为零。</p>
+
+<p><b>第 4 步　方案 A 求解。</b>约束 <i class="v">u</i><sub>1</sub> = <i class="v">v</i><sub>1</sub> = <i class="v">u</i><sub>2</sub> = 0（恰好 3 个）。用直接缩减法解 5 阶方程组：</p>
+
+<div class="formula" style="border-left-color:#1e8449"><span class="eq">
+<b class="m">d</b><sub>A</sub> = [0, 0, 0, −0.003175, 0.019048, 0, 0.019048, −0.003175]<sup>T</sup> mm
+</span><span class="eqno">(4.74)</span></div>
+
+<p><b>第 5 步　方案 A 的应力与校核。</b>两个单元的应变完全相同：</p>
+<div class="formula"><span class="eq">
+<b class="m">ε</b> = [9.52381 × 10<sup>−6</sup>, −3.174603 × 10<sup>−6</sup>, 0]<sup>T</sup>　⇒
+<b class="m">σ</b> = [2.000000, 0, 0]<sup>T</sup> MPa
+</span><span class="eqno">(4.75)</span></div>
+
+<div class="good">
+  <div class="t-title">✓ 方案 A 的解是<b>精确解</b>，一个有限元都不多</div>
+  ① 材料力学：<i class="v">σ</i><sub>x</sub> = <i class="v">P</i>/(<i class="v">ht</i>) = 20 000/(1 × 0.01) = <b>2 MPa</b>，与 (4.75) 逐位相同；<br>
+  ② <i class="v">ε</i><sub>x</sub> = <i class="v">σ</i><sub>x</sub>/<i class="v">E</i> = 2×10<sup>6</sup>/2.1×10<sup>11</sup> = 9.52381×10<sup>−6</sup>，伸长 <i class="v">ε</i><sub>x</sub><i class="v">L</i> = 0.019048 mm ✓；<br>
+  ③ <i class="v">ε</i><sub>y</sub> = −<i class="v">νε</i><sub>x</sub> = −3.174603×10<sup>−6</sup>，横向收缩 0.003175 mm ✓；<br>
+  ④ 支反力 = [−10, 0] 与 [−10, 0] kN，合计 −20 kN，与外载精确反号 ✓；竖向反力<b>恰为零</b>，因为方案 A 没有限制竖向收缩。<br>
+  <b>为什么能精确？</b>真解在这里是<b>常应力场</b>，而 CST 的位移模式（完全一次多项式）恰好能精确表示线性位移场——这正是第 3.6 节<b>分片试验</b>的内容。<b>凡是真解为常应力的问题，CST 一个单元就够。</b>
+</div>
+
+<p><b>第 6 步　方案 B：把左端整条边都固定。</b>多加了一个 <i class="v">v</i><sub>2</sub> = 0。重解得</p>
+
+<div class="formula" style="border-left-color:#b03a2e"><span class="eq">
+<b class="m">d</b><sub>B</sub> = [0, 0, 0, 0, 0.018892, 0.003394, 0.017082, 0.000226]<sup>T</sup> mm
+</span><span class="eqno">(4.76)</span></div>
+
+<table>
+<thead><tr><th>对比项</th><th>方案 A（静定约束）</th><th>方案 B（过约束）</th><th>差别</th></tr></thead>
+<tbody>
+<tr><td><i class="v">u</i><sub>3</sub>（mm）</td><td>0.019048</td><td>0.018892</td><td style="color:#b03a2e">−0.82 %</td></tr>
+<tr><td><i class="v">u</i><sub>4</sub>（mm）</td><td>0.019048</td><td>0.017082</td><td style="color:#b03a2e">−10.3 %</td></tr>
+<tr><td>单元 ① <i class="v">σ</i><sub>x</sub>（MPa）</td><td>2.000000</td><td>1.982183</td><td>−0.89 %</td></tr>
+<tr><td>单元 ② <i class="v">σ</i><sub>x</sub>（MPa）</td><td>2.000000</td><td>2.017817</td><td>+0.89 %</td></tr>
+<tr><td>单元 ① <i class="v">σ</i><sub>y</sub>（MPa）</td><td>0</td><td style="color:#b03a2e">−0.004454</td><td>凭空出现</td></tr>
+<tr><td>单元 ② <i class="v">σ</i><sub>y</sub>（MPa）</td><td>0</td><td style="color:#b03a2e">+0.672606</td><td>凭空出现</td></tr>
+<tr><td><i class="v">τ</i><sub>xy</sub>（MPa）</td><td>0</td><td style="color:#b03a2e">∓0.008909</td><td>凭空出现</td></tr>
+<tr><td>应变能 <i class="v">U</i>（J）</td><td>0.190476</td><td>0.179871</td><td style="color:#b03a2e">−5.57 %</td></tr>
+<tr><td>支反力（kN）</td><td>(−10, 0), (−10, 0)</td><td>(−10, <b>−6.6815</b>), (−10, <b>+6.6815</b>)</td><td>出现自平衡力偶</td></tr>
+</tbody>
+</table>
+
+<div class="warn">
+  <div class="t-title">▲ 请特别注意方案 B 的三个现象</div>
+  ① <b>求解器一声不吭。</b>方案 B 的 <b class="m">K</b><sub>ff</sub> 条件数 44.61，比方案 A 的 51.02 还<b>更好</b>——没有任何数值信号告诉你模型错了；<br>
+  ② <b>结构变硬。</b>同样 20 kN 下应变能少了 5.57 %，位移偏小。若拿这个模型去算许用载荷，会<b>偏于不安全</b>；<br>
+  ③ <b>出现虚假支反力。</b>上下两个固定点出现一对 ±6.68 kN 的竖向力，合力为零、力偶也几乎为零——它们纯粹是"不许收缩"这条人造约束的产物。单元 ② 里 0.67 MPa 的 <i class="v">σ</i><sub>y</sub> 相当于 <i class="v">σ</i><sub>x</sub> 的三分之一，若做强度校核会给出完全不同的结论。
+</div>
+
+<div class="tip">
+  <div class="t-title">◎ 那么实际的"固定端"到底该怎么建模？</div>
+  取决于<b>真实</b>的连接方式。若板是焊死在一块很厚的刚性基座上，左端确实被禁止收缩，方案 B <b>才是对的</b>——此时 0.67 MPa 的 <i class="v">σ</i><sub>y</sub> 是<b>真实</b>存在的边缘效应。若板只是被两个销钉定位，方案 A 才对。
+  <b>建模的本质不是"画得像"，而是把真实的力学约束翻译成数学约束</b>。拿不准时，两种方案都算一遍，比较差异有多大——差异大就说明这个细节重要，必须把连接区也建进模型；差异小则按圣维南原理放心取简单的那个。
+</div>
+
+</div>
+</details>
+
+<h3>9.3 例题六：从分布载荷到应力的全流程</h3>
+
+<details class="steps" open>
+<summary><b>例题 4-6</b>　边长 1 m 的方板，底边固支，顶边受均布压力 <i class="v">q</i> = 1 MPa（平面应力，<i class="v">ν</i> = 1/3，<i class="v">t</i> = 10 mm）</summary>
+<div>
+
+<p><b>题设：</b>沿用例题 4-3 的网格——节点 1(0,0)、2(1,0)、3(1,1)、4(0,1)、5(0.5,0.5)，四个逆时针三角形 ①(1,2,5)、②(2,3,5)、③(3,4,5)、④(4,1,5)。底边两个节点 1、2 完全固定，顶边 4–3 受向下的均布压力。<i class="v">E</i> = 210 GPa。</p>
+
+<figure>
+<svg viewBox="0 0 660 214" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="方板顶边受均布压力的模型与等效节点载荷">
+  <g font-family="Segoe UI" font-size="12">
+  <!-- 左：分布压力 -->
+  <text x="34" y="20" font-weight="700" fill="#1a5276">真实分布压力 q = 1 MPa</text>
+  <polygon points="70,180 230,180 150,100" fill="#eaf3f9" stroke="#1a5276" stroke-width="1.4"/>
+  <polygon points="230,180 230,44 150,100" fill="#eaf6f1" stroke="#1e8449" stroke-width="1.4"/>
+  <polygon points="230,44 70,44 150,100" fill="#f3ecf8" stroke="#7d3c98" stroke-width="1.4"/>
+  <polygon points="70,44 70,180 150,100" fill="#fdf3e3" stroke="#bf8f14" stroke-width="1.4"/>
+  <g stroke="#b03a2e" stroke-width="1.8" fill="none">
+    <line x1="78" y1="16" x2="78" y2="38"/><line x1="98" y1="16" x2="98" y2="38"/><line x1="118" y1="16" x2="118" y2="38"/>
+    <line x1="138" y1="16" x2="138" y2="38"/><line x1="158" y1="16" x2="158" y2="38"/><line x1="178" y1="16" x2="178" y2="38"/>
+    <line x1="198" y1="16" x2="198" y2="38"/><line x1="218" y1="16" x2="218" y2="38"/>
+  </g>
+  <g fill="#b03a2e"><polygon points="78,42 74,34 82,34"/><polygon points="98,42 94,34 102,34"/><polygon points="118,42 114,34 122,34"/><polygon points="138,42 134,34 142,34"/><polygon points="158,42 154,34 162,34"/><polygon points="178,42 174,34 182,34"/><polygon points="198,42 194,34 202,34"/><polygon points="218,42 214,34 222,34"/></g>
+  <line x1="70" y1="14" x2="230" y2="14" stroke="#b03a2e" stroke-width="2.2"/>
+  <!-- 固支 -->
+  <line x1="62" y1="188" x2="238" y2="188" stroke="#1f2d3d" stroke-width="2.4"/>
+  <g stroke="#1f2d3d" stroke-width="1.4">
+    <line x1="70" y1="188" x2="60" y2="198"/><line x1="90" y1="188" x2="80" y2="198"/><line x1="110" y1="188" x2="100" y2="198"/>
+    <line x1="130" y1="188" x2="120" y2="198"/><line x1="150" y1="188" x2="140" y2="198"/><line x1="170" y1="188" x2="160" y2="198"/>
+    <line x1="190" y1="188" x2="180" y2="198"/><line x1="210" y1="188" x2="200" y2="198"/><line x1="230" y1="188" x2="220" y2="198"/>
+  </g>
+  <g fill="#fff" stroke="#1f2d3d" stroke-width="2"><circle cx="70" cy="180" r="5.5"/><circle cx="230" cy="180" r="5.5"/><circle cx="230" cy="44" r="5.5"/><circle cx="70" cy="44" r="5.5"/><circle cx="150" cy="100" r="5.5"/></g>
+  <g font-size="10.5" font-weight="700" fill="#1f2d3d" text-anchor="middle"><text x="70" y="183">1</text><text x="230" y="183">2</text><text x="230" y="47">3</text><text x="70" y="47">4</text><text x="150" y="103">5</text></g>
+
+  <!-- 箭头 -->
+  <g stroke="#7f8c98" stroke-width="1.6" fill="none"><line x1="266" y1="100" x2="316" y2="100"/></g>
+  <polygon points="324,100 312,95 312,105" fill="#7f8c98"/>
+  <text x="295" y="90" text-anchor="middle" fill="#7f8c98" font-size="11">(4.48)</text>
+
+  <!-- 右：等效节点力 -->
+  <text x="368" y="20" font-weight="700" fill="#1e8449">等效节点载荷</text>
+  <polygon points="400,180 560,180 480,100" fill="#f2f6f9" stroke="#b4c3d0" stroke-width="1.2"/>
+  <polygon points="560,180 560,44 480,100" fill="#f2f6f9" stroke="#b4c3d0" stroke-width="1.2"/>
+  <polygon points="560,44 400,44 480,100" fill="#f2f6f9" stroke="#b4c3d0" stroke-width="1.2"/>
+  <polygon points="400,44 400,180 480,100" fill="#f2f6f9" stroke="#b4c3d0" stroke-width="1.2"/>
+  <line x1="392" y1="188" x2="568" y2="188" stroke="#1f2d3d" stroke-width="2.4"/>
+  <g stroke="#1f2d3d" stroke-width="1.4">
+    <line x1="400" y1="188" x2="390" y2="198"/><line x1="430" y1="188" x2="420" y2="198"/><line x1="460" y1="188" x2="450" y2="198"/>
+    <line x1="490" y1="188" x2="480" y2="198"/><line x1="520" y1="188" x2="510" y2="198"/><line x1="550" y1="188" x2="540" y2="198"/>
+  </g>
+  <g stroke="#1e8449" stroke-width="3" fill="none"><line x1="400" y1="8" x2="400" y2="36"/><line x1="560" y1="8" x2="560" y2="36"/></g>
+  <polygon points="400,42 394,30 406,30" fill="#1e8449"/><polygon points="560,42 554,30 566,30" fill="#1e8449"/>
+  <text x="400" y="-2" fill="#1e8449" font-weight="700" text-anchor="middle" font-size="11.5">5 kN</text>
+  <text x="560" y="-2" fill="#1e8449" font-weight="700" text-anchor="middle" font-size="11.5">5 kN</text>
+  <g fill="#fff" stroke="#1f2d3d" stroke-width="2"><circle cx="400" cy="180" r="5.5"/><circle cx="560" cy="180" r="5.5"/><circle cx="560" cy="44" r="5.5"/><circle cx="400" cy="44" r="5.5"/><circle cx="480" cy="100" r="5.5"/></g>
+  <text x="480" y="212" text-anchor="middle" fill="#7f8c98" font-size="11">合力 10 kN = q·t·L = 10<tspan font-size="9" dy="-4">6</tspan><tspan dy="4">×0.01×1 ✓　节点 5 不受力（N</tspan><tspan font-size="9" dy="3">5</tspan><tspan dy="-3"> ≡ 0 于该边）</tspan></text>
+  </g>
+</svg>
+<figcaption><b>图 4.10</b>　顶边的均布压力按 (4.48) 化为两个 5 kN 的节点力。注意<b>中心节点 5 分不到载荷</b>——它不在受载边上，边上的形函数 <i class="v">N</i><sub>5</sub> 恒为零。</figcaption>
+</figure>
+
+<p><b>第 1 步　载荷等效（第 6 章）。</b>受载边 4–3 长 <i class="v">L</i> = 1 m，均布压力 <i class="v">q</i> = 10<sup>6</sup> Pa 向下。由 (4.48)，两端节点各分得一半：</p>
+<div class="formula"><span class="eq">
+<i class="v">F</i><sub>y3</sub> = <i class="v">F</i><sub>y4</sub> = −<span class="frac"><span><i class="v">qtL</i></span><span>2</span></span>
+= −<span class="frac"><span>10<sup>6</sup> × 0.01 × 1</span><span>2</span></span> = −5 000 N = −5 kN
+</span><span class="eqno">(4.77)</span></div>
+
+<p><b>第 2 步　组装（第 7 章）。</b>总刚就是例题 4-3 的那个 10×10 矩阵，秩 7、行和为零、<b class="m">K</b><sub>55</sub> = 3<i class="v">Et</i>·<b class="m">I</b>。</p>
+
+<p><b>第 3 步　边界条件（第 8 章）。</b>节点 1、2 全固定 ⇒ 消去自由度 1、2、3、4，剩下 6 阶方程组，条件数 40.67。</p>
+
+<p><b>第 4 步　求解。</b></p>
+<table>
+<thead><tr><th>自由度</th><th>位移（mm）</th><th>对称性检查</th></tr></thead>
+<tbody>
+<tr><td><i class="v">u</i><sub>3</sub></td><td>+0.001015873</td><td rowspan="2" style="vertical-align:middle">与 <i class="v">u</i><sub>4</sub> <b>反号等值</b> ✓（水平位移反对称）</td></tr>
+<tr><td><i class="v">u</i><sub>4</sub></td><td>−0.001015873</td></tr>
+<tr><td><i class="v">v</i><sub>3</sub></td><td>−0.004571429</td><td rowspan="2" style="vertical-align:middle">与 <i class="v">v</i><sub>4</sub> <b>相等</b> ✓（竖向位移对称）</td></tr>
+<tr><td><i class="v">v</i><sub>4</sub></td><td>−0.004571429</td></tr>
+<tr><td><i class="v">u</i><sub>5</sub></td><td>0.000000000</td><td>在对称轴上，必须为零 ✓</td></tr>
+<tr><td><i class="v">v</i><sub>5</sub></td><td>−0.002031746</td><td>恰为 <i class="v">v</i><sub>3</sub> 的 <b>0.4444</b> = 4/9 倍</td></tr>
+</tbody>
+</table>
+
+<div class="good">
+  <div class="t-title">✓ 对称性是免费的校核工具</div>
+  几何、材料、约束、载荷全都关于 <i class="v">x</i> = 0.5 这条竖线对称，所以位移解<b>必须</b>满足：竖向分量对称、水平分量反对称、对称轴上的节点水平位移为零。
+  上表三条<b>全部逐位满足</b>（不是近似，是到机器精度）。程序算完先验对称性，能抓出绝大部分组装与索引错误，而且<b>不需要任何参考解</b>。
+</div>
+
+<p><b>第 5 步　应力（第 4 章）。</b>对每个单元取出 <b class="m">d</b><sup>e</sup>，算 <b class="m">σ</b> = <b class="m">DBd</b><sup>e</sup>：</p>
+
+<table>
+<thead><tr><th>单元</th><th>位置</th><th><i class="v">σ</i><sub>x</sub>（MPa）</th><th><i class="v">σ</i><sub>y</sub>（MPa）</th><th><i class="v">τ</i><sub>xy</sub>（MPa）</th></tr></thead>
+<tbody>
+<tr><td>①</td><td>下（贴固定端）</td><td>−0.32</td><td>−0.96</td><td>0</td></tr>
+<tr><td>②</td><td>右</td><td>−0.12</td><td>−1.00</td><td>+0.04</td></tr>
+<tr><td>③</td><td>上（贴受载边）</td><td>+0.08</td><td>−1.04</td><td>0</td></tr>
+<tr><td>④</td><td>左</td><td>−0.12</td><td>−1.00</td><td>−0.04</td></tr>
+<tr style="background:var(--main-ll)"><td colspan="2"><b>四单元平均</b></td><td><b>−0.12</b></td><td><b>−1.00</b></td><td><b>0.00</b></td></tr>
+</tbody>
+</table>
+
+<div class="good">
+  <div class="t-title">✓ 三条独立校核</div>
+  ① <b>平均 <i class="v">σ</i><sub>y</sub> 恰为 −1.00 MPa</b>，等于名义压应力 −<i class="v">q</i>。四个单元的值 −0.96、−1.00、−1.04、−1.00 围绕它对称跳动，正是第 4.2 节说的<b>阶梯状应力场</b>；<br>
+  ② 单元 ② 与 ④ 的 <i class="v">τ</i><sub>xy</sub> = ±0.04 MPa <b>等值反号</b>，符合镜像对称；<br>
+  ③ 支反力：节点 1 = (+1.2, +5.0) kN，节点 2 = (−1.2, +5.0) kN。竖向合计 <b>+10 kN</b>，与外载 −10 kN 精确反号 ✓；水平分量自相抵消（合计 &lt; 10<sup>−15</sup> kN），是泊松侧胀被固定端挡住产生的一对内力。
+</div>
+
+<p><b>第 6 步　和材料力学比一比。</b>若忽略固定端的约束效应，把板当作单轴受压柱：</p>
+<div class="formula"><span class="eq">
+<i class="v">v</i><sub>顶</sub> = −<span class="frac"><span><i class="v">qh</i></span><span><i class="v">E</i></span></span>
+= −<span class="frac"><span>10<sup>6</sup> × 1</span><span>2.1 × 10<sup>11</sup></span></span> = −4.7619 × 10<sup>−6</sup> m = −0.004762 mm
+</span><span class="eqno">(4.78)</span></div>
+
+<p>有限元给出 −0.004571 mm，是它的 <b>0.9600</b> 倍，即结构比"自由侧胀的柱"硬 4.0 %。这 4 % 里包含两部分：<b>固定端禁止泊松侧胀</b>带来的真实加劲（物理的），以及 <b>CST 网格太粗</b>带来的人为加劲（数值的，见第 5.7 节的下限性质）。把网格加密，后一部分会单调消失——这是下一章的主题。</p>
+
+</div>
+</details>
+
+<h3>9.4 例题七：对称性与分片试验</h3>
+
+<details class="steps" open>
+<summary><b>例题 4-7</b>　2 m × 2 m 方板四边受 100 MPa 双向均布拉伸，用<b>四分之一</b>模型求解（<i class="v">E</i> = 200 GPa，<i class="v">ν</i> = 0.3，<i class="v">t</i> = 20 mm）</summary>
+<div>
+
+<p><b>题设与简化：</b>整块板关于两条中线<b>双重对称</b>，按第 2.5 节只取右上四分之一（1 m × 1 m），在两条对称边上施加对称边界条件：<i class="v">x</i> = 0 边上 <i class="v">u</i> = 0，<i class="v">y</i> = 0 边上 <i class="v">v</i> = 0。四分之一模型取节点 1(0,0)、2(1,0)、3(1,1)、4(0,1)，两个 CST：①(1,2,3)、②(1,3,4)。</p>
+
+<figure>
+<svg viewBox="0 0 660 218" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="双向拉伸方板取四分之一模型">
+  <g font-family="Segoe UI" font-size="12">
+  <!-- 整体 -->
+  <text x="36" y="18" font-weight="700" fill="#1a5276">整体模型（2 m × 2 m）</text>
+  <rect x="70" y="40" width="150" height="150" fill="#f2f6f9" stroke="#b4c3d0" stroke-width="1.4"/>
+  <rect x="145" y="40" width="75" height="75" fill="#eaf3f9" stroke="#1a5276" stroke-width="2"/>
+  <line x1="145" y1="30" x2="145" y2="200" stroke="#7d3c98" stroke-width="1.6" stroke-dasharray="7 4"/>
+  <line x1="60" y1="115" x2="230" y2="115" stroke="#7d3c98" stroke-width="1.6" stroke-dasharray="7 4"/>
+  <g stroke="#b03a2e" stroke-width="2" fill="none">
+    <line x1="70" y1="60" x2="46" y2="60"/><line x1="70" y1="115" x2="46" y2="115"/><line x1="70" y1="170" x2="46" y2="170"/>
+    <line x1="220" y1="60" x2="244" y2="60"/><line x1="220" y1="115" x2="244" y2="115"/><line x1="220" y1="170" x2="244" y2="170"/>
+    <line x1="95" y1="40" x2="95" y2="18"/><line x1="145" y1="40" x2="145" y2="18"/><line x1="195" y1="40" x2="195" y2="18"/>
+    <line x1="95" y1="190" x2="95" y2="212"/><line x1="145" y1="190" x2="145" y2="212"/><line x1="195" y1="190" x2="195" y2="212"/>
+  </g>
+  <text x="162" y="80" fill="#1a5276" font-weight="700" font-size="11">取此块</text>
+  <text x="145" y="208" text-anchor="middle" fill="#b03a2e" font-size="11">四边均布拉伸 p = 100 MPa</text>
+
+  <!-- 四分之一 -->
+  <text x="330" y="18" font-weight="700" fill="#1e8449">四分之一模型 + 对称边界</text>
+  <polygon points="380,170 520,170 520,60" fill="#eaf6f1" stroke="#1e8449" stroke-width="1.6"/>
+  <polygon points="380,170 520,60 380,60" fill="#f3ecf8" stroke="#7d3c98" stroke-width="1.6"/>
+  <text x="484" y="150" fill="#1e8449" font-weight="700">①</text>
+  <text x="416" y="86" fill="#7d3c98" font-weight="700">②</text>
+  <g fill="#fff" stroke="#1f2d3d" stroke-width="2"><circle cx="380" cy="170" r="6"/><circle cx="520" cy="170" r="6"/><circle cx="520" cy="60" r="6"/><circle cx="380" cy="60" r="6"/></g>
+  <g font-size="11" font-weight="700" fill="#1f2d3d" text-anchor="middle"><text x="380" y="174">1</text><text x="520" y="174">2</text><text x="520" y="64">3</text><text x="380" y="64">4</text></g>
+  <!-- 对称支座：x=0 边 u=0（水平滚轴） -->
+  <g stroke="#7d3c98" stroke-width="2"><line x1="372" y1="50" x2="372" y2="180"/></g>
+  <g fill="none" stroke="#7d3c98" stroke-width="1.6"><circle cx="366" cy="70" r="4"/><circle cx="366" cy="115" r="4"/><circle cx="366" cy="160" r="4"/></g>
+  <text x="352" y="42" fill="#7d3c98" font-size="10.5" text-anchor="middle">u = 0</text>
+  <!-- y=0 边 v=0 -->
+  <g stroke="#7d3c98" stroke-width="2"><line x1="370" y1="178" x2="530" y2="178"/></g>
+  <g fill="none" stroke="#7d3c98" stroke-width="1.6"><circle cx="400" cy="184" r="4"/><circle cx="450" cy="184" r="4"/><circle cx="500" cy="184" r="4"/></g>
+  <text x="450" y="204" fill="#7d3c98" font-size="10.5" text-anchor="middle">v = 0</text>
+  <!-- 载荷 -->
+  <g stroke="#bf8f14" stroke-width="2.4" fill="none"><line x1="520" y1="170" x2="556" y2="170"/><line x1="520" y1="60" x2="556" y2="60"/><line x1="520" y1="60" x2="520" y2="28"/><line x1="380" y1="60" x2="380" y2="28"/></g>
+  <polygon points="564,170 552,165 552,175" fill="#bf8f14"/><polygon points="564,60 552,55 552,65" fill="#bf8f14"/>
+  <polygon points="520,20 515,32 525,32" fill="#bf8f14"/><polygon points="380,20 375,32 385,32" fill="#bf8f14"/>
+  <text x="600" y="118" fill="#bf8f14" font-size="11" font-weight="700" text-anchor="middle">1 000 kN</text>
+  <text x="450" y="16" fill="#bf8f14" font-size="11" font-weight="700" text-anchor="middle">1 000 kN　1 000 kN</text>
+  </g>
+</svg>
+<figcaption><b>图 4.11</b>　双重对称 ⇒ 只取四分之一，自由度从 (整体) 降到 8 个。对称边上的<b>法向位移为零、切向自由</b>，正是 (4.10) 的内容——在图中画成滚轴支座。</figcaption>
+</figure>
+
+<p><b>第 1 步　等效节点载荷。</b>右边 2–3 与上边 3–4 各长 1 m，均布拉应力 <i class="v">p</i> = 100 MPa。由 (4.48)：</p>
+<div class="formula"><span class="eq">
+<span class="frac"><span><i class="v">ptL</i></span><span>2</span></span>
+= <span class="frac"><span>10<sup>8</sup> × 0.02 × 1</span><span>2</span></span> = 10<sup>6</sup> N = 1 000 kN
+</span><span class="eqno">(4.79)</span></div>
+<p>故 <i class="v">F</i><sub>x2</sub> = <i class="v">F</i><sub>x3</sub> = 1 000 kN，<i class="v">F</i><sub>y3</sub> = <i class="v">F</i><sub>y4</sub> = 1 000 kN。</p>
+
+<p><b>第 2 步　边界条件。</b>对称边给出 <i class="v">u</i><sub>1</sub> = <i class="v">u</i><sub>4</sub> = 0（<i class="v">x</i> = 0 边）与 <i class="v">v</i><sub>1</sub> = <i class="v">v</i><sub>2</sub> = 0（<i class="v">y</i> = 0 边）——恰好 4 个约束，其中 3 个用于消刚体位移，第 4 个并非多余，因为它约束的是另一条对称边。</p>
+
+<p><b>第 3 步　求解结果。</b></p>
+<div class="formula" style="border-left-color:#1e8449"><span class="eq">
+<b class="m">d</b> = [0, 0, <b>0.35</b>, 0, <b>0.35</b>, <b>0.35</b>, 0, <b>0.35</b>]<sup>T</sup> mm　（恰好是整数倍，无任何舍入残差）
+</span><span class="eqno">(4.80)</span></div>
+
+<p><b>第 4 步　应力。</b>两个单元<b>完全相同</b>：</p>
+<div class="formula"><span class="eq">
+<b class="m">ε</b><sup>(1)</sup> = <b class="m">ε</b><sup>(2)</sup> = [3.5 × 10<sup>−4</sup>, 3.5 × 10<sup>−4</sup>, 0]<sup>T</sup>　⇒
+<b class="m">σ</b><sup>(1)</sup> = <b class="m">σ</b><sup>(2)</sup> = [100.000000, 100.000000, 0]<sup>T</sup> MPa
+</span><span class="eqno">(4.81)</span></div>
+
+<div class="good">
+  <div class="t-title">✓ 这道题其实是一次<b>分片试验</b></div>
+  解析解：双向等拉时 <i class="v">σ</i><sub>x</sub> = <i class="v">σ</i><sub>y</sub> = <i class="v">p</i>，由 (4.6) 反解
+  <div class="formula" style="background:transparent;margin:8px 0"><span class="eq"><i class="v">ε</i><sub>x</sub> = <span class="frac"><span><i class="v">p</i> − <i class="v">νp</i></span><span><i class="v">E</i></span></span> = <span class="frac"><span><i class="v">p</i>(1 − <i class="v">ν</i>)</span><span><i class="v">E</i></span></span> = <span class="frac"><span>10<sup>8</sup> × 0.7</span><span>2 × 10<sup>11</sup></span></span> = 3.5 × 10<sup>−4</sup></span></div>
+  位移 <i class="v">u</i> = <i class="v">ε</i><sub>x</sub><i class="v">x</i> ⇒ <i class="v">u</i>(1 m) = 0.35 mm，与 (4.80) <b>逐位相同</b>；应力 100.000000 MPa 与 (4.81) <b>逐位相同</b>。
+  这不是巧合：真解是<b>线性位移场 + 常应力场</b>，CST 的位移模式把它包含在内，所以有限元解 = 解析解，与网格划分方式、单元形状<b>完全无关</b>。
+  <b>用它来测试你自己写的程序再合适不过</b>——任意画一张歪歪扭扭的网格，只要还能算出 100.000000 MPa，就说明 <b class="m">B</b>、<b class="m">k</b><sup>e</sup>、组装、边界条件四个环节全部正确。Bathe 在《Finite Element Procedures》§4.4 把它正式化为<b>分片试验</b>（patch test），Irons 最早提出时正是用的这个思路。
+</div>
+
+<p><b>第 5 步　支反力与整体平衡。</b></p>
+<table>
+<thead><tr><th>约束自由度</th><th>反力（kN）</th><th>物理含义</th></tr></thead>
+<tbody>
+<tr><td><i class="v">u</i><sub>1</sub>（<i class="v">x</i>=0 边）</td><td>−1 000</td><td rowspan="2" style="vertical-align:middle"><i class="v">x</i> 方向合计 <b>−2 000 kN</b>，与右边外载 +2 000 kN 精确平衡 ✓<br>（物理上就是被切掉的左半块施加的拉力）</td></tr>
+<tr><td><i class="v">u</i><sub>4</sub>（<i class="v">x</i>=0 边）</td><td>−1 000</td></tr>
+<tr><td><i class="v">v</i><sub>1</sub>（<i class="v">y</i>=0 边）</td><td>−1 000</td><td rowspan="2" style="vertical-align:middle"><i class="v">y</i> 方向合计 <b>−2 000 kN</b>，与上边外载 +2 000 kN 精确平衡 ✓</td></tr>
+<tr><td><i class="v">v</i><sub>2</sub>（<i class="v">y</i>=0 边）</td><td>−1 000</td></tr>
+</tbody>
+</table>
+
+<div class="tip">
+  <div class="t-title">◎ 对称模型的支反力要"还原"</div>
+  这里算出的 2 000 kN 只是<b>四分之一模型</b>对称面上的内力。若题目问的是"整块板左半边对右半边的作用力"，答案是 <b>4 000 kN</b>（对称面全长 2 m）。
+  这正是第 2.5 节提醒的<b>第三个陷阱</b>：<b>对称面上的支反力必须按对称份数还原</b>。忘记乘倍数是对称建模最常见的报告错误。
+</div>
+
+</div>
+</details>
+
+<h3>9.5 三个例题的收束</h3>
+
+<table class="left">
+<thead><tr><th style="width:16%">例题</th><th style="width:30%">重点检验的环节</th><th>最值得记住的一句话</th></tr></thead>
+<tbody>
+<tr><td><b>4-5</b> 悬臂板</td><td>集中载荷、两种约束方案、支反力</td>
+  <td>约束是<b>建模决策</b>，不是画图习惯。多一个约束，求解器不报错，但结构变硬 5.6 %、凭空长出 0.67 MPa 的 <i class="v">σ</i><sub>y</sub>。</td></tr>
+<tr><td><b>4-6</b> 方板受压</td><td>分布载荷等效、组装、固支、应力后处理</td>
+  <td>对称性是<b>免费的、不需要参考解的</b>校核工具；单元应力可以跳，但它们的<b>平均值</b>必须回到名义值。</td></tr>
+<tr><td><b>4-7</b> 双向拉伸</td><td>对称简化、常应力场、分片试验</td>
+  <td>真解是线性位移场时，CST 给出<b>精确解</b>。这条性质既是收敛性的基石，也是最好用的程序自测题。</td></tr>
+</tbody>
+</table>
+
+<div class="warn">
+  <div class="t-title">▲ 三个例题的共同前提：真解都很"简单"</div>
+  它们之所以能手算、能和解析解逐位对照，是因为真实应力场要么是常数，要么接近常数。
+  真实工程问题（孔边应力集中、裂纹尖端、接触区）没有这种好运气，<b>必须靠加密网格来逼近</b>。
+  那么——到底要多密才够？误差怎么估？加密的收益如何随自由度增长？这就是下一章要用数值实验回答的问题。
+</div>
+
+</section>

@@ -1,0 +1,384 @@
+
+  :root{
+    --main:#1a5276; --main-l:#d6eaf8; --main-ll:#eaf2f8;
+    --ink:#1f2d3d; --muted:#5d6d7e; --line:#c9d7e0;
+    --accent:#b03a2e; --ok:#1e8449; --code-bg:#1b2a38; --code-ink:#d8e6f0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--ink);background:#fbfcfd;
+    font-family:Georgia,"Times New Roman","Songti SC","SimSun",serif;
+    font-size:16.5px;line-height:1.9}
+  h1,h2,h3,h4{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--main);line-height:1.4}
+  /* ---------- 布局 ---------- */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:270px;overflow-y:auto;
+    background:#f2f6f9;border-right:1px solid var(--line);padding:22px 14px 40px}
+  .sidebar .brand{font-family:"Segoe UI","PingFang SC",sans-serif;font-weight:700;color:var(--main);font-size:17px;padding:0 10px 6px;border-bottom:2px solid var(--main);margin-bottom:10px}
+  .sidebar .brand small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .sidebar nav a{display:block;padding:6px 10px;margin:2px 0;border-radius:6px;color:#34495e;text-decoration:none;font-size:14px;font-family:"Segoe UI","PingFang SC",sans-serif}
+  .sidebar nav a:hover{background:#e2ecf3}
+  .sidebar nav a.active{background:var(--main);color:#fff}
+  main{margin-left:290px;max-width:880px;padding:40px 46px 90px}
+  @media (max-width:960px){
+    .sidebar{position:static;width:auto;border-right:none;border-bottom:1px solid var(--line)}
+    main{margin-left:0;padding:24px 18px 60px}
+  }
+  /* ---------- 封面区 ---------- */
+  .cover{border:1px solid var(--line);border-left:6px solid var(--main);border-radius:8px;
+    padding:26px 30px;background:linear-gradient(135deg,#f6fafd,#eef5fa);margin-bottom:34px}
+  .cover h1{margin:0 0 6px;font-size:27px}
+  .cover .sub{color:var(--muted);font-size:15px;font-family:"Segoe UI","PingFang SC",sans-serif}
+  .cover .meta{margin-top:12px;font-size:13.5px;color:var(--muted)}
+  /* ---------- 学习目标卡 ---------- */
+  .obj{background:var(--main-ll);border-left:5px solid var(--main);border-radius:0 8px 8px 0;
+    padding:14px 20px;margin:26px 0 18px;font-size:15px}
+  .obj .obj-title{font-family:"Segoe UI","PingFang SC",sans-serif;font-weight:700;color:var(--main);margin-bottom:6px}
+  .obj ol{margin:0;padding-left:22px}
+  .obj li{margin:3px 0}
+  /* ---------- 章节标题 ---------- */
+  section{margin-top:56px}
+  section>h2{font-size:23px;border-bottom:2px solid var(--main);padding-bottom:8px;margin-bottom:18px}
+  section>h2 .chno{display:inline-block;background:var(--main);color:#fff;border-radius:6px;
+    padding:1px 10px;margin-right:10px;font-size:18px;vertical-align:2px}
+  h3{font-size:18px;margin:26px 0 10px;border-left:4px solid var(--main-l);padding-left:10px}
+  h4{font-size:16px;margin:18px 0 8px}
+  /* ---------- 公式排版系统（无外部依赖） ---------- */
+  .formula{display:flex;align-items:center;justify-content:center;gap:14px;
+    margin:16px 0;padding:10px 14px;background:#f7fafc;border-radius:6px;
+    overflow-x:auto;scrollbar-width:thin}
+  .formula .eq{white-space:nowrap;font-size:17.5px}
+  .formula .eqno{margin-left:auto;font-family:"Segoe UI",sans-serif;color:var(--muted);font-size:14px;flex:none}
+  i.v{font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  b.m{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px;line-height:1.25}
+  .frac>span{padding:0 5px}
+  .frac>span:first-child{border-bottom:1.4px solid var(--ink)}
+  .mat{display:inline-grid;grid-auto-flow:row;gap:1px 15px;padding:5px 11px;margin:0 3px;
+    position:relative;vertical-align:middle;line-height:1.45}
+  .mat::before,.mat::after{content:"";position:absolute;top:0;bottom:0;width:7px}
+  .mat::before{left:0;border-left:1.8px solid var(--ink);border-top:1.8px solid var(--ink);border-bottom:1.8px solid var(--ink)}
+  .mat::after{right:0;border-right:1.8px solid var(--ink);border-top:1.8px solid var(--ink);border-bottom:1.8px solid var(--ink)}
+  .mat.c1{grid-template-columns:minmax(14px,auto)}
+  .mat.c2{grid-template-columns:repeat(2,minmax(14px,auto))}
+  .mat.c3{grid-template-columns:repeat(3,minmax(14px,auto))}
+  .mat.c4{grid-template-columns:repeat(4,minmax(14px,auto))}
+  .mat.c6{grid-template-columns:repeat(6,minmax(14px,auto))}
+  .mat span{white-space:nowrap;text-align:center}
+  .eq-inline{white-space:nowrap;font-size:17px}
+  sup,sub{font-size:11.5px}
+  /* ---------- 图 ---------- */
+  figure{margin:24px auto;text-align:center;max-width:680px}
+  figure svg{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px}
+  figure img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
+  figcaption{font-size:13.5px;color:var(--muted);margin-top:8px;font-family:"Segoe UI","PingFang SC",sans-serif}
+  figcaption b{color:var(--main)}
+  /* ---------- 提示框 ---------- */
+  .tip{background:#fdF6e3;border-left:5px solid #d4ac0d;border-radius:0 8px 8px 0;
+    padding:12px 18px;margin:18px 0;font-size:15px}
+  .tip .t-title{font-weight:700;color:#9a7d0a;font-family:"Segoe UI","PingFang SC",sans-serif}
+  .warn{background:#fdf0ee;border-left:5px solid var(--accent);border-radius:0 8px 8px 0;
+    padding:12px 18px;margin:18px 0;font-size:15px}
+  .warn .t-title{font-weight:700;color:var(--accent);font-family:"Segoe UI","PingFang SC",sans-serif}
+  .good{background:#eef7f0;border-left:5px solid var(--ok);border-radius:0 8px 8px 0;
+    padding:12px 18px;margin:18px 0;font-size:15px}
+  .good .t-title{font-weight:700;color:var(--ok);font-family:"Segoe UI","PingFang SC",sans-serif}
+  .borrow{background:#f4f0fa;border-left:5px solid #7d3c98;border-radius:0 8px 8px 0;
+    padding:12px 18px;margin:18px 0;font-size:14.5px;color:#4a3a5c}
+  .borrow .t-title{font-weight:700;color:#7d3c98;font-family:"Segoe UI","PingFang SC",sans-serif}
+  /* ---------- 表格 ---------- */
+  table{border-collapse:collapse;margin:18px auto;font-size:14.5px;font-family:"Segoe UI","PingFang SC",sans-serif;width:100%}
+  th{background:var(--main);color:#fff;padding:8px 12px;font-weight:600}
+  td{border:1px solid var(--line);padding:7px 12px;text-align:center}
+  tbody tr:nth-child(even){background:#f4f8fb}
+  table.left td{text-align:left}
+  /* ---------- 折叠块 ---------- */
+  details{border:1px solid var(--line);border-radius:8px;margin:12px 0;background:#fff}
+  details>summary{cursor:pointer;padding:10px 16px;font-family:"Segoe UI","PingFang SC",sans-serif;
+    font-weight:600;color:var(--main);background:#f2f7fa;border-radius:8px;list-style-position:inside}
+  details[open]>summary{border-bottom:1px dashed var(--line);border-radius:8px 8px 0 0}
+  details .body{padding:8px 20px 14px}
+  details.step>summary{counter-increment:none}
+  details.step{border-left:4px solid var(--main-l)}
+  .steps{counter-reset:step}
+  /* ---------- 代码 ---------- */
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:16px 18px;
+    overflow-x:auto;font-size:13.5px;line-height:1.65;font-family:Consolas,"Courier New",monospace}
+  pre .cm{color:#7fb3d5}
+  pre .kw{color:#f5b041}
+  pre .st{color:#82c99a}
+  code{font-family:Consolas,"Courier New",monospace;background:#eef3f7;border-radius:4px;padding:1px 5px;font-size:14px;color:#1b4f72}
+  pre code{background:none;padding:0}
+  /* ---------- 习题 ---------- */
+  .qa ol{padding-left:24px}
+  .qa li{margin:8px 0}
+  .ans{color:var(--muted);font-size:14px}
+  footer{margin-top:60px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;font-family:"Segoe UI","PingFang SC",sans-serif}
+  /* ---------- 印刷 ---------- */
+  @media print{
+    .sidebar{display:none}
+    main{margin:0;padding:0;max-width:100%}
+    body{font-size:12pt;background:#fff}
+    details{border:none}
+    details .body{display:block !important}
+    details[open]>summary{border:none}
+    a{color:inherit;text-decoration:none}
+    section{page-break-before:always}
+    figure svg{border:none}
+  }
+
+  /* ==================================================================
+     ===============  v2 升级：动效 / 交互 / 暗色主题  =================
+     ================================================================== */
+  :root{
+    --bg:#f7fafc; --card:#ffffff; --card2:#f7fafc;
+    --shadow:0 1px 2px rgba(20,60,90,.05),0 8px 28px rgba(20,60,90,.07);
+    --shadow-lg:0 4px 12px rgba(20,60,90,.08),0 24px 60px rgba(20,60,90,.12);
+    --grad:linear-gradient(135deg,#1a5276,#2980b9);
+    --ease:cubic-bezier(.22,.75,.26,1);
+  }
+  html[data-theme="dark"]{
+    --main:#63b3e8; --main-l:#1d3c52; --main-ll:#16293a;
+    --ink:#e3ecf3; --muted:#9db0c2; --line:#2c4356;
+    --accent:#ec8375; --ok:#5fcb8d; --code-bg:#0d1620; --code-ink:#cfe0ee;
+    --bg:#0e1822; --card:#152130; --card2:#101b26;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.35);
+    --shadow-lg:0 4px 12px rgba(0,0,0,.4),0 24px 60px rgba(0,0,0,.5);
+    --grad:linear-gradient(135deg,#1c4b6b,#2e86c1);
+  }
+  body{background:var(--bg);transition:background .4s ease,color .4s ease}
+  html[data-theme="dark"] .sidebar{background:#101b26;border-right-color:var(--line)}
+  html[data-theme="dark"] .sidebar nav a{color:#b9cbdb}
+  html[data-theme="dark"] .sidebar nav a:hover{background:#1c2c3c}
+  html[data-theme="dark"] .cover{background:linear-gradient(135deg,#15202c,#101b26)}
+  html[data-theme="dark"] details,
+  html[data-theme="dark"] .lab{background:var(--card)}
+  html[data-theme="dark"] details>summary{background:#1a2836}
+  html[data-theme="dark"] .formula{background:#111c27}
+  html[data-theme="dark"] tbody tr:nth-child(even){background:#131f2b}
+  html[data-theme="dark"] tbody tr{background:var(--card)}
+  html[data-theme="dark"] code{background:#1a2836;color:#8fc4e8}
+  html[data-theme="dark"] .tip{background:#231f14}
+  html[data-theme="dark"] .warn{background:#271816}
+  html[data-theme="dark"] .good{background:#12231a}
+  html[data-theme="dark"] .borrow{background:#1d1a26;color:#c9c0d8}
+  html[data-theme="dark"] figure svg,
+  html[data-theme="dark"] figure img{background:#fff;border-color:#2c4356}
+
+  /* ---------- 顶部工具条 + 阅读进度 ---------- */
+  .topbar{position:fixed;top:0;left:0;right:0;height:48px;z-index:60;
+    display:flex;align-items:center;gap:14px;padding:0 18px;
+    background:color-mix(in srgb,var(--bg) 82%,transparent);
+    backdrop-filter:saturate(1.6) blur(12px);
+    -webkit-backdrop-filter:saturate(1.6) blur(12px);
+    border-bottom:1px solid var(--line);
+    font-family:"Segoe UI","PingFang SC",sans-serif;font-size:13.5px}
+  .topbar .tb-title{color:var(--main);font-weight:700;letter-spacing:.2px}
+  .topbar .tb-now{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar button{border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:8px;padding:5px 12px;cursor:pointer;font-size:13px;font-family:inherit;
+    transition:transform .18s var(--ease),border-color .18s,background .18s}
+  .topbar button:hover{transform:translateY(-1px);border-color:var(--main);color:var(--main)}
+  .topbar button:active{transform:translateY(0)}
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;z-index:70;
+    background:linear-gradient(90deg,#2980b9,#48c9b0);box-shadow:0 0 10px rgba(41,128,185,.6)}
+  .sidebar{top:48px;padding-top:16px}
+  main{padding-top:64px}
+  .sidebar nav a{position:relative;transition:background .2s var(--ease),color .2s,padding-left .2s var(--ease)}
+  .sidebar nav a:hover{padding-left:14px}
+  .sidebar nav a.active{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(26,82,118,.28)}
+  .sidebar nav a .dot{position:absolute;left:-1px;top:50%;width:3px;height:0;background:var(--main);
+    border-radius:2px;transform:translateY(-50%);transition:height .25s var(--ease)}
+  .sidebar nav a.active .dot{height:60%}
+  @media (max-width:960px){.topbar .tb-now{display:none} .sidebar{top:0} main{padding-top:14px}}
+
+  /* ---------- 滚动进场动效 ---------- */
+  .reveal{opacity:0;transform:translateY(22px);
+    transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}
+
+  /* ---------- 卡片化与微交互 ---------- */
+  figure{transition:transform .5s var(--ease)}
+  figure svg,figure img{box-shadow:var(--shadow);transition:box-shadow .35s var(--ease),transform .35s var(--ease)}
+  figure:hover svg,figure:hover img{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
+  .obj,.tip,.warn,.good,.borrow{box-shadow:var(--shadow);transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+  .obj:hover,.tip:hover,.warn:hover,.good:hover,.borrow:hover{transform:translateX(3px);box-shadow:var(--shadow-lg)}
+  table{box-shadow:var(--shadow);border-radius:10px;overflow:hidden}
+  tbody tr{transition:background .2s,transform .2s var(--ease)}
+  tbody tr:hover{background:var(--main-ll)}
+  details{box-shadow:var(--shadow);transition:box-shadow .3s var(--ease)}
+  details:hover{box-shadow:var(--shadow-lg)}
+  details>summary{transition:background .2s,letter-spacing .2s}
+  details>summary:hover{background:var(--main-l)}
+  details[open]>summary::after{content:"▾";float:right;color:var(--muted)}
+  details:not([open])>summary::after{content:"▸";float:right;color:var(--muted)}
+  section>h2{position:relative;overflow:hidden}
+  section>h2 .chno{background:var(--grad);box-shadow:0 3px 10px rgba(26,82,118,.3)}
+  section>h2::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;
+    background:linear-gradient(90deg,#48c9b0,transparent);transition:width 1.1s var(--ease) .1s}
+  section.seen>h2::after{width:100%}
+  .formula{transition:background .25s,box-shadow .25s,transform .25s var(--ease)}
+  .formula:hover{background:var(--main-ll);box-shadow:var(--shadow);transform:scale(1.008)}
+  pre{position:relative;box-shadow:var(--shadow-lg)}
+  .copybtn{position:absolute;top:8px;right:8px;border:1px solid #3b5468;background:#24384a;color:#bcd4e6;
+    border-radius:6px;padding:3px 9px;font-size:11.5px;cursor:pointer;opacity:0;
+    font-family:"Segoe UI",sans-serif;transition:opacity .25s,background .2s}
+  pre:hover .copybtn{opacity:1}
+  .copybtn:hover{background:#31536e}
+
+  /* ---------- 封面 Hero ---------- */
+  .cover{position:relative;overflow:hidden;box-shadow:var(--shadow-lg);border-radius:14px}
+  .cover::before{content:"";position:absolute;inset:-60% -20% auto auto;width:460px;height:460px;
+    background:radial-gradient(circle,rgba(41,128,185,.16),transparent 62%);
+    animation:floaty 13s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:translate(0,0)}50%{transform:translate(-26px,26px)}}
+  .cover h1{background:var(--grad);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:var(--main)}
+  .cover .hero-svg{display:block;margin:14px auto 2px;max-width:100%;height:auto}
+  .hero-bar{animation:barpulse 3.4s ease-in-out infinite}
+  .hero-bar.b2{animation-delay:.35s}.hero-bar.b3{animation-delay:.7s}
+  @keyframes barpulse{0%,100%{stroke:#9fb8c9}45%{stroke:#2980b9}}
+  .hero-load{animation:loadmove 3.4s ease-in-out infinite}
+  @keyframes loadmove{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  .cover .chips{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-family:"Segoe UI","PingFang SC",sans-serif;font-size:12.5px;color:var(--main);
+    background:var(--main-ll);border:1px solid var(--main-l);border-radius:999px;padding:3px 12px;
+    transition:transform .25s var(--ease),background .25s}
+  .chip:hover{transform:translateY(-2px);background:var(--main-l)}
+
+  /* ---------- 交互实验台 lab ---------- */
+  .lab{border:1px solid var(--line);border-radius:14px;background:var(--card);
+    box-shadow:var(--shadow);padding:0;margin:26px 0;overflow:hidden;
+    font-family:"Segoe UI","PingFang SC",sans-serif;transition:box-shadow .35s var(--ease)}
+  .lab:hover{box-shadow:var(--shadow-lg)}
+  .lab-head{display:flex;align-items:center;gap:10px;padding:11px 18px;
+    background:var(--grad);color:#fff;font-weight:600;font-size:15px}
+  .lab-head .lab-tag{background:rgba(255,255,255,.2);border-radius:6px;padding:1px 9px;font-size:12px;font-weight:500}
+  .lab-head .lab-hint{margin-left:auto;font-weight:400;font-size:12px;opacity:.88}
+  .lab-body{padding:16px 18px 18px}
+  .lab-stage{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:12px}
+  .lab-stage svg{display:block;width:100%;height:auto}
+  .ctrls{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;font-size:13.5px;color:var(--muted)}
+  .ctrl{display:flex;align-items:center;gap:9px}
+  .ctrl label{min-width:74px;color:var(--ink)}
+  .ctrl input[type=range]{-webkit-appearance:none;appearance:none;width:150px;height:5px;border-radius:4px;
+    background:linear-gradient(90deg,var(--main),#48c9b0);outline:none;cursor:pointer}
+  .ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+    background:#fff;border:2.5px solid var(--main);cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.2);
+    transition:transform .15s var(--ease)}
+  .ctrl input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
+  .ctrl input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:#fff;
+    border:2.5px solid var(--main);cursor:grab}
+  .ctrl .val{font-family:Consolas,monospace;color:var(--main);font-weight:700;min-width:62px;
+    font-size:14px;font-variant-numeric:tabular-nums}
+  .lab-btn{border:1px solid var(--main);background:var(--card);color:var(--main);border-radius:8px;
+    padding:6px 15px;cursor:pointer;font-size:13.5px;font-family:inherit;font-weight:600;
+    transition:all .2s var(--ease)}
+  .lab-btn:hover{background:var(--main);color:#fff;transform:translateY(-1px)}
+  .lab-btn.on{background:var(--main);color:#fff}
+  .lab-btn.ghost{border-color:var(--line);color:var(--muted);font-weight:400}
+  .lab-btn.ghost:hover{border-color:var(--main);background:var(--main-ll);color:var(--main)}
+  .lab-out{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px}
+  .lab-out .kv{background:var(--main-ll);border:1px solid var(--main-l);border-radius:9px;
+    padding:7px 13px;font-size:13px;color:var(--muted);min-width:118px}
+  .lab-out .kv b{display:block;font-size:17px;color:var(--main);font-family:Consolas,monospace;
+    font-variant-numeric:tabular-nums;margin-top:1px}
+  .lab-note{margin-top:11px;font-size:13px;color:var(--muted);line-height:1.75;
+    border-left:3px solid var(--main-l);padding-left:11px}
+  .lab-note b{color:var(--main)}
+
+  /* 组装实验台专用 */
+  .asm-wrap{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;align-items:start}
+  @media (max-width:760px){.asm-wrap{grid-template-columns:1fr}}
+  .kgrid{display:grid;grid-template-columns:22px repeat(4,1fr);gap:3px;font-family:Consolas,monospace}
+  .kgrid .hd{font-size:12px;color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center}
+  .kcell{background:var(--card);border:1px solid var(--line);border-radius:6px;height:46px;
+    display:flex;align-items:center;justify-content:center;font-size:13.5px;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+    transition:background .35s var(--ease),transform .3s var(--ease),color .3s,border-color .3s}
+  .kcell.zero{color:#b9c6d1}
+  .kcell.hit{background:#fdf0d5;border-color:#e2b04a;transform:scale(1.09);z-index:2;box-shadow:0 5px 16px rgba(191,143,20,.3)}
+  .kcell.acc{color:#7d3c98;font-weight:700}
+  .kcell.tgt{background:var(--main-ll);border-color:var(--main-l)}
+  html[data-theme="dark"] .kcell.hit{background:#3b2f14;border-color:#a1801f}
+  .lmtable{width:100%;font-size:13px;border-collapse:collapse;margin:0 0 10px;box-shadow:none}
+  .lmtable th{padding:5px 8px;font-size:12.5px}
+  .lmtable td{padding:5px 8px;border:1px solid var(--line)}
+  .lmtable tr.cur td{background:#fdf0d5;font-weight:700;color:#8a6116}
+  html[data-theme="dark"] .lmtable tr.cur td{background:#3b2f14;color:#e0bd6a}
+  .ke-card{border:2px solid var(--main);border-radius:10px;background:var(--main-ll);
+    padding:9px 11px;text-align:center;transition:opacity .3s,transform .4s var(--ease)}
+  .ke-card .ke-t{font-size:12.5px;color:var(--main);font-weight:700;margin-bottom:6px}
+  .ke-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+  .ke-grid div{background:var(--card);border:1px solid var(--main-l);border-radius:5px;
+    padding:6px 2px;font-family:Consolas,monospace;font-size:13px;color:var(--main)}
+  .asm-steps{display:flex;gap:6px;margin-bottom:10px}
+  .asm-steps i{flex:1;height:5px;border-radius:3px;background:var(--line);transition:background .4s var(--ease)}
+  .asm-steps i.done{background:var(--main)}
+  .asm-steps i.now{background:#e2b04a;animation:pulse 1.1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+  /* 杆 / 桁架动画元素 */
+  .flow{stroke-dasharray:5 5;animation:flowdash 1.1s linear infinite}
+  @keyframes flowdash{to{stroke-dashoffset:-20}}
+  .drawin{stroke-dasharray:1200;stroke-dashoffset:1200;transition:stroke-dashoffset 2.2s var(--ease)}
+  .in .drawin,figure.in .drawin{stroke-dashoffset:0}
+
+  /* 小测验 */
+  .qz-item{border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin-bottom:10px;background:var(--card2)}
+  .qz-q{font-size:14.5px;color:var(--ink);margin-bottom:9px;font-weight:600;line-height:1.6}
+  .qz-q i{color:var(--main);font-style:normal;margin-right:7px}
+  .qz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media (max-width:620px){.qz-opts{grid-template-columns:1fr}}
+  .qz-o{border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13.5px;cursor:pointer;
+    background:var(--card);color:var(--ink);transition:all .2s var(--ease)}
+  .qz-o:hover{border-color:var(--main);background:var(--main-ll);transform:translateY(-1px)}
+  .qz-o.right{border-color:var(--ok);background:#e8f6ed;color:#14663a;font-weight:700}
+  .qz-o.wrong{border-color:var(--accent);background:#fdecea;color:#8e2e22}
+  html[data-theme="dark"] .qz-o.right{background:#12301f;color:#7fdca6}
+  html[data-theme="dark"] .qz-o.wrong{background:#301715;color:#f0a094}
+  .qz-item.done .qz-o{cursor:default;pointer-events:none}
+  .qz-why{margin-top:10px;font-size:13px;color:var(--muted);line-height:1.75;
+    border-left:3px solid var(--main-l);padding-left:11px;display:none}
+  .qz-item.done .qz-why{display:block;animation:fadein .4s var(--ease)}
+  @keyframes fadein{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+  /* 返回顶部 */
+  #totop{position:fixed;right:24px;bottom:26px;width:44px;height:44px;border-radius:50%;z-index:60;
+    border:1px solid var(--line);background:var(--card);color:var(--main);font-size:18px;cursor:pointer;
+    box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;
+    transition:opacity .35s,transform .35s var(--ease)}
+  #totop.show{opacity:1;pointer-events:auto}
+  #totop:hover{transform:translateY(-4px) scale(1.06);background:var(--main);color:#fff}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s!important;animation-iteration-count:1!important;
+      transition-duration:.001s!important}
+    .reveal{opacity:1;transform:none}
+  }
+  @media print{
+    .topbar,#progbar,#totop,.copybtn,.lab-head .lab-hint{display:none!important}
+    .sidebar{display:none}
+    main{padding-top:0}
+    .reveal{opacity:1!important;transform:none!important}
+    .lab{break-inside:avoid;box-shadow:none;border:1px solid #999}
+    .lab-head{background:#eef4f9!important;color:#1a5276!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    figure svg,figure img,table,details{box-shadow:none!important}
+    .drawin{stroke-dashoffset:0!important}
+    section>h2::after{width:100%}
+    /* 深色模式下打印时强制回到浅色纸面，避免整页黑底 */
+    html[data-theme="dark"]{
+      --main:#1a5276;--main-l:#d6eaf8;--main-ll:#eaf2f8;--ink:#1f2d3d;--muted:#5d6d7e;
+      --line:#c9d7e0;--accent:#b03a2e;--ok:#1e8449;--code-bg:#1b2a38;--code-ink:#d8e6f0;
+      --bg:#fff;--card:#fff;--card2:#f7fafc}
+    html[data-theme="dark"] body,
+    html[data-theme="dark"] .sidebar,
+    html[data-theme="dark"] .cover,
+    html[data-theme="dark"] details,
+    html[data-theme="dark"] .lab,
+    html[data-theme="dark"] tbody tr,
+    html[data-theme="dark"] .formula,
+    html[data-theme="dark"] details>summary,
+    html[data-theme="dark"] code{background:#fff !important;color:var(--ink) !important}
+    html[data-theme="dark"] .lab-stage{background:#f6fafd !important}
+  }

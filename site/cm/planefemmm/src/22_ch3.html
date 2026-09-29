@@ -1,0 +1,241 @@
+
+<!-- ================================================== 第 3 章 ================================================== -->
+<section id="ch3">
+<h2><span class="chno">3</span>位移模式与形函数：把无穷维压缩成六维</h2>
+
+<p>网格划好之后，未知量已经从"每一点的位移"缩减为"每个节点的位移"。但还差关键一步：<b>单元内部</b>那些非节点的点，位移是多少？必须人为假定一个函数形式，这就是<b>位移模式</b>（displacement pattern / assumed displacement field）。本章用三节点三角形单元（CST）把这件事做到底，并回答两个理论问题：这个假定凭什么可以用？加密网格凭什么会收敛？</p>
+
+<h3>3.1 位移模式：为什么取完全一次多项式</h3>
+
+<p>三角形单元有 3 个节点、每节点 2 个自由度，共 <b>6 个待定量</b>。位移函数里的待定系数<b>必须恰好等于 6 个</b>——多了解不出来，少了无法满足全部节点条件。于是 <i class="v">u</i>、<i class="v">v</i> 各取 3 个系数：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">u</i>(<i class="v">x</i>,<i class="v">y</i>) = <i class="v">α</i><sub>1</sub> + <i class="v">α</i><sub>2</sub><i class="v">x</i> + <i class="v">α</i><sub>3</sub><i class="v">y</i>　，
+<i class="v">v</i>(<i class="v">x</i>,<i class="v">y</i>) = <i class="v">α</i><sub>4</sub> + <i class="v">α</i><sub>5</sub><i class="v">x</i> + <i class="v">α</i><sub>6</sub><i class="v">y</i>
+</span><span class="eqno">(4.11)</span></div>
+
+<p>问题是：3 个系数的组合方式不止一种，为什么偏偏是 {1, <i class="v">x</i>, <i class="v">y</i>} 而不是 {1, <i class="v">x</i>, <i class="v">x</i><sup>2</sup>} 或 {1, <i class="v">x</i>, <i class="v">xy</i>}？答案藏在 <b>Pascal 三角形</b>里。</p>
+
+<figure>
+<svg viewBox="0 0 660 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pascal 三角形与单元的多项式选取">
+  <g font-family="Georgia,serif" font-size="15" fill="#1f2d3d" text-anchor="middle">
+    <text x="200" y="40">1</text>
+    <text x="160" y="76">x</text><text x="240" y="76">y</text>
+    <text x="120" y="112">x²</text><text x="200" y="112">xy</text><text x="280" y="112">y²</text>
+    <text x="80" y="148">x³</text><text x="160" y="148">x²y</text><text x="240" y="148">xy²</text><text x="320" y="148">y³</text>
+    <text x="40" y="184">x⁴</text><text x="120" y="184">x³y</text><text x="200" y="184">x²y²</text><text x="280" y="184">xy³</text><text x="360" y="184">y⁴</text>
+  </g>
+  <!-- 一次完全式框 -->
+  <path d="M200,22 L146,62 L146,88 L254,88 L254,62 Z" fill="none" stroke="#1a5276" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <text x="300" y="58" font-family="Segoe UI" font-size="12.5" fill="#1a5276">CST：完全一次式，3 项</text>
+  <!-- 二次完全式框 -->
+  <path d="M200,16 L108,98 L108,124 L292,124 L292,98 Z" fill="none" stroke="#1e8449" stroke-width="2" stroke-dasharray="4 4"/>
+  <text x="330" y="118" font-family="Segoe UI" font-size="12.5" fill="#1e8449">LST：完全二次式，6 项</text>
+  <!-- Q4 -->
+  <circle cx="200" cy="36" r="13" fill="none" stroke="#7d3c98" stroke-width="1.8"/>
+  <circle cx="160" cy="72" r="13" fill="none" stroke="#7d3c98" stroke-width="1.8"/>
+  <circle cx="240" cy="72" r="13" fill="none" stroke="#7d3c98" stroke-width="1.8"/>
+  <circle cx="200" cy="108" r="15" fill="none" stroke="#7d3c98" stroke-width="1.8"/>
+  <text x="330" y="158" font-family="Segoe UI" font-size="12.5" fill="#7d3c98">Q4：1, x, y, xy —— 不完全二次式</text>
+  <text x="330" y="176" font-family="Segoe UI" font-size="12" fill="#7f8c98">缺 x²、y²，不能表示纯弯曲</text>
+
+  <g font-family="Segoe UI" font-size="12.5" fill="#7f8c98">
+    <text x="455" y="212">✓ 取项必须「按行整行取」——</text>
+    <text x="455" y="232">否则坐标轴一转，结果就变了。</text>
+  </g>
+  <line x1="430" y1="196" x2="646" y2="196" stroke="#d6e4ee" stroke-width="1.4"/>
+</svg>
+<figcaption><b>图 4.4</b>　Pascal 三角形。单元的位移模式应<b>整行整行地取项</b>，即取"完全多项式"，这样多项式空间在坐标旋转下才不变——这一性质叫<b>几何各向同性</b>（geometric isotropy）。</figcaption>
+</figure>
+
+<div class="tip">
+  <div class="t-title">◎ 几何各向同性：一个具体的反例</div>
+  假设取 <i class="v">u</i> = <i class="v">α</i><sub>1</sub> + <i class="v">α</i><sub>2</sub><i class="v">x</i> + <i class="v">α</i><sub>3</sub><i class="v">x</i><sup>2</sup>（跳过了 <i class="v">y</i>）。
+  把坐标系绕原点转 90°，<i class="v">x</i> → <i class="v">y</i>，这个位移模式就变成了 <i class="v">α</i><sub>1</sub> + <i class="v">α</i><sub>2</sub><i class="v">y</i> + <i class="v">α</i><sub>3</sub><i class="v">y</i><sup>2</sup>——<b>和原来不是同一个函数空间</b>。
+  于是同一个物理问题，仅仅因为你建模时把坐标轴摆的方向不同，算出的答案就不同。这显然荒谬。
+  Logan 和 Reddy 的教材都把这一点列为选位移模式的第一条准则。
+</div>
+
+<h3>3.2 从位移模式到形函数：CST 的完整推导</h3>
+
+<p>设三角形三个节点按<b>逆时针</b>编号为 <i class="v">i</i>、<i class="v">j</i>、<i class="v">m</i>，坐标为 (<i class="v">x</i><sub>i</sub>, <i class="v">y</i><sub>i</sub>) 等。把三个节点坐标代入 (4.11) 的第一式：</p>
+
+<div class="formula"><span class="eq">
+<span class="mat c1"><span><i class="v">u</i><sub>i</sub></span><span><i class="v">u</i><sub>j</sub></span><span><i class="v">u</i><sub>m</sub></span></span>
+=
+<span class="mat c3"><span>1</span><span><i class="v">x</i><sub>i</sub></span><span><i class="v">y</i><sub>i</sub></span><span>1</span><span><i class="v">x</i><sub>j</sub></span><span><i class="v">y</i><sub>j</sub></span><span>1</span><span><i class="v">x</i><sub>m</sub></span><span><i class="v">y</i><sub>m</sub></span></span>
+<span class="mat c1"><span><i class="v">α</i><sub>1</sub></span><span><i class="v">α</i><sub>2</sub></span><span><i class="v">α</i><sub>3</sub></span></span>
+</span><span class="eqno">(4.12)</span></div>
+
+<p>系数矩阵的行列式恰好是三角形面积的 2 倍：</p>
+
+<div class="formula"><span class="eq">
+2<i class="v">A</i> = det
+<span class="mat c3"><span>1</span><span><i class="v">x</i><sub>i</sub></span><span><i class="v">y</i><sub>i</sub></span><span>1</span><span><i class="v">x</i><sub>j</sub></span><span><i class="v">y</i><sub>j</sub></span><span>1</span><span><i class="v">x</i><sub>m</sub></span><span><i class="v">y</i><sub>m</sub></span></span>
+= (<i class="v">x</i><sub>j</sub><i class="v">y</i><sub>m</sub> − <i class="v">x</i><sub>m</sub><i class="v">y</i><sub>j</sub>) + (<i class="v">x</i><sub>m</sub><i class="v">y</i><sub>i</sub> − <i class="v">x</i><sub>i</sub><i class="v">y</i><sub>m</sub>) + (<i class="v">x</i><sub>i</sub><i class="v">y</i><sub>j</sub> − <i class="v">x</i><sub>j</sub><i class="v">y</i><sub>i</sub>)
+</span><span class="eqno">(4.13)</span></div>
+
+<div class="warn">
+  <div class="t-title">▲ 节点必须逆时针编号</div>
+  若按顺时针编号，(4.13) 给出 <b>2<i class="v">A</i> &lt; 0</b>。这会让后面 <b class="m">k</b><sup>e</sup> = <b class="m">B</b><sup>T</sup><b class="m">DB</b>·<i class="v">tA</i> 中的 <i class="v">A</i> 为负——刚度矩阵变负定，结构"越推越缩"，方程解出的位移方向完全错乱。
+  商业软件通常会自动纠正并给出 "negative Jacobian" 警告，但手算时务必自己保证逆时针。
+</div>
+
+<p>求逆并整理（这是纯代数，用 Cramer 法则逐项展开即可），得到形函数表达式：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">N</i><sub>i</sub>(<i class="v">x</i>,<i class="v">y</i>) = <span class="frac"><span>1</span><span>2<i class="v">A</i></span></span>(<i class="v">a</i><sub>i</sub> + <i class="v">b</i><sub>i</sub><i class="v">x</i> + <i class="v">c</i><sub>i</sub><i class="v">y</i>)
+</span><span class="eqno">(4.14)</span></div>
+
+<div class="formula"><span class="eq">
+<i class="v">a</i><sub>i</sub> = <i class="v">x</i><sub>j</sub><i class="v">y</i><sub>m</sub> − <i class="v">x</i><sub>m</sub><i class="v">y</i><sub>j</sub>　，
+<i class="v">b</i><sub>i</sub> = <i class="v">y</i><sub>j</sub> − <i class="v">y</i><sub>m</sub>　，
+<i class="v">c</i><sub>i</sub> = <i class="v">x</i><sub>m</sub> − <i class="v">x</i><sub>j</sub>
+</span><span class="eqno">(4.15)</span></div>
+
+<p>其余两个只需把下标按 <b><i class="v">i</i> → <i class="v">j</i> → <i class="v">m</i> → <i class="v">i</i></b> <b>轮换</b>即可。于是单元内任意一点的位移写成紧凑的矩阵形式：</p>
+
+<div class="formula"><span class="eq">
+<b class="m">u</b> = <span class="mat c1"><span><i class="v">u</i></span><span><i class="v">v</i></span></span>
+=
+<span class="mat c6"><span><i class="v">N</i><sub>i</sub></span><span>0</span><span><i class="v">N</i><sub>j</sub></span><span>0</span><span><i class="v">N</i><sub>m</sub></span><span>0</span><span>0</span><span><i class="v">N</i><sub>i</sub></span><span>0</span><span><i class="v">N</i><sub>j</sub></span><span>0</span><span><i class="v">N</i><sub>m</sub></span></span>
+<b class="m">d</b><sup>e</sup>
+= <b class="m">N</b> <b class="m">d</b><sup>e</sup>
+</span><span class="eqno">(4.16)</span></div>
+
+<div class="formula"><span class="eq">
+<b class="m">d</b><sup>e</sup> = [ <i class="v">u</i><sub>i</sub>　<i class="v">v</i><sub>i</sub>　<i class="v">u</i><sub>j</sub>　<i class="v">v</i><sub>j</sub>　<i class="v">u</i><sub>m</sub>　<i class="v">v</i><sub>m</sub> ]<sup>T</sup>　（6×1 单元节点位移列阵）
+</span><span class="eqno">(4.17)</span></div>
+
+<p><b class="m">N</b> 叫<b>形函数矩阵</b>（2×6）。注意它的结构：<i class="v">u</i> 只由各节点的 <i class="v">u</i> 插值、<i class="v">v</i> 只由各节点的 <i class="v">v</i> 插值，两个方向互不串扰——这是位移型单元的通例。</p>
+
+<h3>3.3 形函数的三条性质（以及它们各自管什么）</h3>
+
+<table class="left">
+<thead><tr><th style="width:22%">性质</th><th style="width:30%">数学表述</th><th>它保证了什么</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>① Kronecker delta</b></td>
+  <td><i class="v">N</i><sub>i</sub>(<i class="v">x</i><sub>j</sub>,<i class="v">y</i><sub>j</sub>) = <i class="v">δ</i><sub>ij</sub><br>（本节点为 1，其余节点为 0）</td>
+  <td>节点处插值出的位移<b>正好等于该节点的位移未知量</b>，未知量才有明确的物理意义，边界条件才能直接施加。</td>
+</tr>
+<tr>
+  <td><b>② 单位分解</b></td>
+  <td><i class="v">N</i><sub>i</sub> + <i class="v">N</i><sub>j</sub> + <i class="v">N</i><sub>m</sub> ≡ 1<br>（单元内处处成立）</td>
+  <td>能精确表示<b>刚体平动</b>。若三节点 <i class="v">u</i> 都等于 <i class="v">u</i><sub>0</sub>，则单元内处处 <i class="v">u</i> = <i class="v">u</i><sub>0</sub>Σ<i class="v">N</i> = <i class="v">u</i><sub>0</sub>，不产生虚假应变。这是<b>完备性</b>的一半。</td>
+</tr>
+<tr>
+  <td><b>③ 边界线性</b></td>
+  <td>在边 <i class="v">ij</i> 上，<i class="v">N</i><sub>m</sub> ≡ 0，<br><i class="v">N</i><sub>i</sub>、<i class="v">N</i><sub>j</sub> 沿边线性变化</td>
+  <td>边上位移<b>只由这条边的两个节点决定</b>，与第三个节点无关。所以相邻单元共享一条边时，两侧算出的位移必然相同——这是<b>协调性</b>的来源。</td>
+</tr>
+</tbody>
+</table>
+
+<p>性质 ③ 值得多说一句：正因为它，网格才可以由形状各异的三角形随意拼接。只要两个单元共用完整的一条边（图 4.3 左），无论它们的第三个节点在哪里、面积差多少，边上的位移场都完全吻合，不会撕裂。</p>
+
+<div class="lab" id="lab3">
+  <div class="lab-head"><span class="lab-tag">实验台 3</span>形函数观察台<span class="lab-hint">移动探针，看三个形函数如何此消彼长、恒和为 1</span></div>
+  <div class="lab-body">
+    <div class="ctrls">
+      <div class="ctrl"><label>探针 L<sub>i</sub></label><input type="range" id="l3a" min="0" max="1" step="0.01" value="0.25"><span class="val" id="l3av">0.25</span></div>
+      <div class="ctrl"><label>探针 L<sub>j</sub></label><input type="range" id="l3b" min="0" max="1" step="0.01" value="0.45"><span class="val" id="l3bv">0.45</span></div>
+      <div class="ctrl"><button class="lab-btn" id="l3sw">显示：N<sub>i</sub> 等值线</button></div>
+    </div>
+    <div class="lab-stage" style="margin-top:12px">
+      <svg viewBox="0 0 660 260" id="l3svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="lab-out">
+      <div class="kv">N<sub>i</sub><b id="l3ni">0.250</b></div>
+      <div class="kv">N<sub>j</sub><b id="l3nj">0.450</b></div>
+      <div class="kv">N<sub>m</sub><b id="l3nm">0.300</b></div>
+      <div class="kv">三者之和<b id="l3sum">1.000</b></div>
+      <div class="kv">探针坐标 (x, y)<b id="l3xy">—</b></div>
+    </div>
+    <div class="lab-note" id="l3note"></div>
+  </div>
+</div>
+
+<h3>3.4 面积坐标：让三角形的积分变成查表</h3>
+
+<p>形函数 <i class="v">N</i><sub>i</sub> 还有一个漂亮的几何解释。在三角形内任取一点 <i class="v">P</i>，连 <i class="v">P</i> 与三个顶点，把三角形分成三块小三角形，面积分别记为 <i class="v">A</i><sub>i</sub>（对着节点 <i class="v">i</i> 的那一块，即 △<i class="v">Pjm</i>）、<i class="v">A</i><sub>j</sub>、<i class="v">A</i><sub>m</sub>。则</p>
+
+<div class="formula"><span class="eq">
+<i class="v">L</i><sub>i</sub> ≡ <i class="v">A</i><sub>i</sub> / <i class="v">A</i> = <i class="v">N</i><sub>i</sub>　，　<i class="v">L</i><sub>i</sub> + <i class="v">L</i><sub>j</sub> + <i class="v">L</i><sub>m</sub> = 1
+</span><span class="eqno">(4.18)</span></div>
+
+<p>这组量叫<b>面积坐标</b>（area / barycentric coordinates）。用它做单元内的积分，有一条一步到位的公式，第 6 章推导体力等效载荷时会反复用到：</p>
+
+<div class="formula"><span class="eq">
+∬<sub><i class="v">A</i></sub> <i class="v">L</i><sub>1</sub><sup><i class="v">a</i></sup> <i class="v">L</i><sub>2</sub><sup><i class="v">b</i></sup> <i class="v">L</i><sub>3</sub><sup><i class="v">c</i></sup> d<i class="v">A</i>
+= <span class="frac"><span><i class="v">a</i>! <i class="v">b</i>! <i class="v">c</i>!</span><span>(<i class="v">a</i> + <i class="v">b</i> + <i class="v">c</i> + 2)!</span></span> · 2<i class="v">A</i>
+</span><span class="eqno">(4.19)</span></div>
+
+<table>
+<thead><tr><th>被积函数</th><th>(<i class="v">a</i>,<i class="v">b</i>,<i class="v">c</i>)</th><th>公式给出</th><th>结果</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>(0,0,0)</td><td>0!0!0!/2! · 2A</td><td><b>A</b></td></tr>
+<tr><td><i class="v">L</i><sub>1</sub></td><td>(1,0,0)</td><td>1!0!0!/3! · 2A</td><td><b>A/3</b></td></tr>
+<tr><td><i class="v">L</i><sub>1</sub><sup>2</sup></td><td>(2,0,0)</td><td>2!0!0!/4! · 2A</td><td><b>A/6</b></td></tr>
+<tr><td><i class="v">L</i><sub>1</sub><i class="v">L</i><sub>2</sub></td><td>(1,1,0)</td><td>1!1!0!/4! · 2A</td><td><b>A/12</b></td></tr>
+<tr><td><i class="v">L</i><sub>1</sub><i class="v">L</i><sub>2</sub><i class="v">L</i><sub>3</sub></td><td>(1,1,1)</td><td>1!1!1!/5! · 2A</td><td><b>A/60</b></td></tr>
+</tbody>
+</table>
+
+<p>第二行 ∬<i class="v">N</i><sub>i</sub> d<i class="v">A</i> = <i class="v">A</i>/3 就是"自重按每节点 <i class="v">W</i>/3 分配"这条经典结论的全部依据——第 6.3 节会正式推出来。</p>
+
+<h3>3.5 收敛准则：什么样的单元才"越细越准"</h3>
+
+<p>有限元只是一种近似，凭什么相信网格加密时解会趋向真解？经典理论给出两条充分条件，Zienkiewicz 称之为<b>收敛准则</b>：</p>
+
+<div class="good">
+  <div class="t-title">✓ 准则一：完备性（completeness）——必要条件</div>
+  单元的位移模式必须能<b>精确表示</b>：<br>
+  ① <b>全部刚体位移</b>（平面问题：2 个平动 + 1 个转动）——否则单元被整体搬走时会凭空产生应力；<br>
+  ② <b>全部常应变状态</b>（<i class="v">ε</i><sub>x</sub>、<i class="v">ε</i><sub>y</sub>、<i class="v">γ</i><sub>xy</sub> 各为常数）——因为网格无限加密时，每个单元内的应变必然趋于常数，若连常应变都表示不了，加密也无济于事。<br>
+  一般地：若微分方程的最高阶导数是 <i class="v">m</i> 阶（弹性力学 <i class="v">m</i> = 1），位移模式必须包含<b>完全 <i class="v">m</i> 次多项式</b>。这正是 3.1 节取 {1, <i class="v">x</i>, <i class="v">y</i>} 的理论依据。
+</div>
+
+<p>验证 CST 满足准则一。把 (4.11) 的应变算出来：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">ε</i><sub>x</sub> = ∂<i class="v">u</i>/∂<i class="v">x</i> = <i class="v">α</i><sub>2</sub>　，
+<i class="v">ε</i><sub>y</sub> = ∂<i class="v">v</i>/∂<i class="v">y</i> = <i class="v">α</i><sub>6</sub>　，
+<i class="v">γ</i><sub>xy</sub> = ∂<i class="v">u</i>/∂<i class="v">y</i> + ∂<i class="v">v</i>/∂<i class="v">x</i> = <i class="v">α</i><sub>3</sub> + <i class="v">α</i><sub>5</sub>
+</span><span class="eqno">(4.20)</span></div>
+
+<ul>
+<li><b>刚体平动：</b><i class="v">α</i><sub>1</sub>、<i class="v">α</i><sub>4</sub> 任意，其余为零 → 应变全零 ✓</li>
+<li><b>刚体转动：</b>取 <i class="v">α</i><sub>3</sub> = −<i class="v">ω</i>、<i class="v">α</i><sub>5</sub> = +<i class="v">ω</i>，得 <i class="v">u</i> = −<i class="v">ωy</i>、<i class="v">v</i> = <i class="v">ωx</i>，正是绕原点转 <i class="v">ω</i> 的小转动，而 <i class="v">γ</i><sub>xy</sub> = −<i class="v">ω</i> + <i class="v">ω</i> = 0 ✓</li>
+<li><b>常应变：</b>由 (4.20)，三个应变分量各自是独立常数，可任意指定 ✓</li>
+</ul>
+
+<p>6 个系数正好分给 3 个刚体模式 + 3 个常应变模式，一个不多一个不少。这也解释了单刚为什么<b>秩为 3</b>（第 5.4 节）——6 维位移空间里恰有 3 维不产生应变能。</p>
+
+<div class="good">
+  <div class="t-title">✓ 准则二：协调性（conformity / compatibility）——充分补足</div>
+  位移场在单元内部连续（多项式天然满足），且在<b>单元之间的公共边上连续</b>（弹性力学只要求 <i class="v">C</i><sup>0</sup>，即位移本身连续，导数可跳）。
+  由形函数性质 ③，CST 自动满足。<br>
+  同时满足两条准则的单元称为<b>协调元</b>，其解保证单调收敛。
+</div>
+
+<div class="tip">
+  <div class="t-title">◎ 不协调元也可能收敛：分片试验</div>
+  协调性是<b>充分</b>而非必要条件。有些故意放弃协调性以换取精度的单元（如 Wilson 非协调四边形，在 Q4 基础上加两个内部气泡模式补偿弯曲能力）反而更准。
+  判断这类单元是否收敛，要用 Irons 提出的<b>分片试验（patch test）</b>：给一小片网格施加对应常应变的边界位移，若所有单元都精确复现出该常应变场，则通过。
+  Bathe 在《Finite Element Procedures》4.4 节把分片试验称为"单元可靠性的最终裁判"，商业软件的单元库全部要经过这一关。
+</div>
+
+<h3>3.6 换个单元，只是换 N：Q4 的形函数</h3>
+
+<p>本章后续的推导只用到 <b class="m">N</b>，不关心它具体长什么样。所以换成四节点四边形（Q4）时，框架完全不变，只需在自然坐标 (<i class="v">ξ</i>, <i class="v">η</i>) ∈ [−1,1]<sup>2</sup> 中写出：</p>
+
+<div class="formula"><span class="eq">
+<i class="v">N</i><sub>k</sub>(<i class="v">ξ</i>, <i class="v">η</i>) = ¼ (1 + <i class="v">ξ</i><sub>k</sub><i class="v">ξ</i>)(1 + <i class="v">η</i><sub>k</sub><i class="v">η</i>)　，　<i class="v">k</i> = 1…4
+</span><span class="eqno">(4.21)</span></div>
+
+<p>容易验证它同样满足三条性质。但它的多项式项是 {1, <i class="v">ξ</i>, <i class="v">η</i>, <i class="v">ξη</i>}——<b>不完全二次式</b>，缺 <i class="v">ξ</i><sup>2</sup> 和 <i class="v">η</i><sup>2</sup>。后果是 Q4 无法精确表示纯弯曲变形（弯曲时截面应保持直线但产生 <i class="v">x</i><sup>2</sup> 型位移），于是弯曲能量被错误地转化为剪切能量，单元显得过硬，这就是<b>剪切自锁（shear locking）</b>。细长单元受弯时尤其严重，工程上用<b>缩减积分</b>或加<b>非协调模式</b>来缓解。</p>
+
+<p>第 10 章的收敛实验会给出 CST 与 Q4 在同一悬臂板问题上的定量对比：在 8×4 网格下，CST 的挠度误差仍有 −17.5%，而 Q4 只有 −4.6%。</p>
+
+</section>
